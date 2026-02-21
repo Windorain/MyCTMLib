@@ -11,6 +11,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import com.github.wohaopa.MyCTMLib.Textures;
 import com.github.wohaopa.MyCTMLib.render.CTMRenderEntry;
@@ -293,22 +294,24 @@ public abstract class MixinRenderBlocks {
     }
 
     @Inject(method = "renderStandardBlockWithAmbientOcclusion", at = @At("HEAD"))
-    private void onRenderStandardBlockAOStart(Block block, IBlockAccess blockAccess, int x, int y, int z,
-        CallbackInfo ci) {
+    private void onRenderStandardBlockAOStart(Block block, int x, int y, int z, float f1, float f2, float f3,
+        CallbackInfoReturnable<Boolean> cir) {
         RenderInvocationContext ctx = RenderInvocationContextHolder.get();
         ctx.pushMethod(RenderMethod.RENDER_STANDARD_BLOCK_WITH_AO);
         ctx.setRenderType(RenderType.BLOCK);
         ctx.setRenderBlocks((RenderBlocks) (Object) this);
-        ctx.setBlockAccess(blockAccess);
+        ctx.setBlockAccess(this.blockAccess);
         ctx.setBlock(block);
         ctx.setX(x);
         ctx.setY(y);
         ctx.setZ(z);
-        ctx.setMeta(blockAccess.getBlockMetadata(x, y, z));
+        if (this.blockAccess != null) {
+            ctx.setMeta(this.blockAccess.getBlockMetadata(x, y, z));
+        }
     }
 
     @Inject(method = "renderStandardBlockWithAmbientOcclusion", at = @At("RETURN"))
-    private void onRenderStandardBlockAOEnd(CallbackInfo ci) {
+    private void onRenderStandardBlockAOEnd(CallbackInfoReturnable<Boolean> cir) {
         RenderInvocationContext ctx = RenderInvocationContextHolder.getIfAvailable();
         if (ctx == null) return;
 
@@ -327,22 +330,24 @@ public abstract class MixinRenderBlocks {
     }
 
     @Inject(method = "renderStandardBlock", at = @At("HEAD"))
-    private void onRenderStandardBlockStart(Block block, IBlockAccess blockAccess, int x, int y, int z,
-        CallbackInfo ci) {
+    private void onRenderStandardBlockStart(Block block, int x, int y, int z,
+        CallbackInfoReturnable<Boolean> cir) {
         RenderInvocationContext ctx = RenderInvocationContextHolder.get();
         ctx.pushMethod(RenderMethod.RENDER_STANDARD_BLOCK);
         ctx.setRenderType(RenderType.BLOCK);
         ctx.setRenderBlocks((RenderBlocks) (Object) this);
-        ctx.setBlockAccess(blockAccess);
+        ctx.setBlockAccess(this.blockAccess);
         ctx.setBlock(block);
         ctx.setX(x);
         ctx.setY(y);
         ctx.setZ(z);
-        ctx.setMeta(blockAccess.getBlockMetadata(x, y, z));
+        if (this.blockAccess != null) {
+            ctx.setMeta(this.blockAccess.getBlockMetadata(x, y, z));
+        }
     }
 
     @Inject(method = "renderStandardBlock", at = @At("RETURN"))
-    private void onRenderStandardBlockEnd(CallbackInfo ci) {
+    private void onRenderStandardBlockEnd(CallbackInfoReturnable<Boolean> cir) {
         RenderInvocationContext ctx = RenderInvocationContextHolder.getIfAvailable();
         if (ctx == null) return;
 
@@ -361,7 +366,7 @@ public abstract class MixinRenderBlocks {
     }
 
     @Inject(method = "renderBlockAsItem", at = @At("HEAD"))
-    private void onRenderBlockAsItemStart(Block block, int metadata, int color, CallbackInfo ci) {
+    private void onRenderBlockAsItemStart(Block block, int metadata, float color, CallbackInfo ci) {
         RenderInvocationContext ctx = RenderInvocationContextHolder.get();
         ctx.pushMethod(RenderMethod.RENDER_BLOCK_AS_ITEM);
         ctx.setRenderType(RenderType.BLOCK_AS_ITEM);
