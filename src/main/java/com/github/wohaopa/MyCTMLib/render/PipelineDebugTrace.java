@@ -4,10 +4,15 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import com.github.wohaopa.MyCTMLib.render.context.RenderContext;
+import com.github.wohaopa.MyCTMLib.render.debug.PipelineDebugListener;
+import com.github.wohaopa.MyCTMLib.render.pipeline.MainRenderState;
+import com.github.wohaopa.MyCTMLib.render.pipeline.SubRenderState;
+
 /**
  * 管线决策过程追踪。用于 Debug HUD 展示决策步骤、退化原因、谓词、连接状态、瓦片坐标等。
  */
-public final class PipelineDebugTrace {
+public final class PipelineDebugTrace implements PipelineDebugListener {
 
     private final List<String> steps = new ArrayList<>();
     private String degradationReason;
@@ -95,5 +100,15 @@ public final class PipelineDebugTrace {
 
     public int[] getConnectionBits() {
         return connectionBits;
+    }
+
+    @Override
+    public void onStateStart(MainRenderState mainState, SubRenderState subState, RenderContext context) {
+        addStep("State START: " + mainState + " / " + subState);
+    }
+
+    @Override
+    public void onStateEnd(MainRenderState mainState, SubRenderState subState, RenderContext context) {
+        addStep("State END: " + mainState + " / " + subState);
     }
 }
