@@ -14,6 +14,7 @@ public class LegacyRenderPhase implements PipelinePhase {
 
     @Override
     public void process(RenderContext context) {
+        context.setDrewAny(false);
         RenderBlocks renderBlocks = context.getRenderBlocks();
         IBlockAccess blockAccess = context.getBlockAccess();
         Block block = context.getBlock();
@@ -22,6 +23,7 @@ public class LegacyRenderPhase implements PipelinePhase {
         double z = context.getZ();
         IIcon icon = context.getOriginalIcon();
         ForgeDirection face = context.getFace();
-        Textures.renderWorldBlock(renderBlocks, blockAccess, block, x, y, z, icon, face);
+        boolean result = Textures.renderWorldBlock(renderBlocks, blockAccess, block, x, y, z, icon, face);
+        context.setDrewAny(result);
     }
 }

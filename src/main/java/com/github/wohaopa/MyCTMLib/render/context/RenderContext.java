@@ -32,6 +32,7 @@ public class RenderContext {
     private final ModelData modelData;
     private final List<ModelElement> elements;
     private final boolean isItemRender;
+    private final String modelId;
 
     private MainRenderState mainState;
     private SubRenderState subState;
@@ -45,6 +46,7 @@ public class RenderContext {
     private RenderLayer renderLayer;
 
     private int brightness;
+    private boolean drewAny;
     private String domain;
     private ConnectionPredicate connectionPredicate;
     private double relMinX, relMaxX, relMinY, relMaxY, relMinZ, relMaxZ;
@@ -66,6 +68,7 @@ public class RenderContext {
         this.modelData = builder.modelData;
         this.elements = builder.elements;
         this.isItemRender = builder.isItemRender;
+        this.modelId = builder.modelId;
         this.brightness = builder.brightness;
         this.domain = builder.domain;
         this.connectionPredicate = builder.connectionPredicate;
@@ -128,10 +131,16 @@ public class RenderContext {
         return debugListener;
     }
 
-    public void setDebugListener(PipelineDebugListener listener) {}
+    public void setDebugListener(PipelineDebugListener listener) {
+        this.debugListener = listener;
+    }
 
     public ModelData getModelData() {
         return modelData;
+    }
+
+    public String getModelId() {
+        return modelId;
     }
 
     public List<ModelElement> getElements() {
@@ -296,6 +305,14 @@ public class RenderContext {
         this.relMaxZ = relMaxZ;
     }
 
+    public boolean isDrewAny() {
+        return drewAny;
+    }
+
+    public void setDrewAny(boolean drewAny) {
+        this.drewAny = drewAny;
+    }
+
     private TextureTypeData computeTextureData() {
         if (iconName != null) {
             return TextureRegistry.getInstance()
@@ -317,6 +334,7 @@ public class RenderContext {
         private ModelData modelData;
         private List<ModelElement> elements;
         private boolean isItemRender = false;
+        private String modelId;
         private int brightness;
         private String domain;
         private ConnectionPredicate connectionPredicate;
@@ -379,6 +397,11 @@ public class RenderContext {
 
         public RenderContextBuilder elements(List<ModelElement> elements) {
             this.elements = elements;
+            return this;
+        }
+
+        public RenderContextBuilder modelId(String modelId) {
+            this.modelId = modelId;
             return this;
         }
 

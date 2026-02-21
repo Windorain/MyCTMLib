@@ -597,7 +597,7 @@ public final class CTMRenderEntry {
         return "no CTM in Model/TexReg, not in Legacy";
     }
 
-    private static String getBlockId(Block block) {
+    public static String getBlockId(Block block) {
         Iterator<?> it = Block.blockRegistry.getKeys()
             .iterator();
         while (it.hasNext()) {
@@ -609,7 +609,7 @@ public final class CTMRenderEntry {
         return null;
     }
 
-    private static List<ModelElement> getElementsWithFace(ModelData modelData, ForgeDirection face) {
+    public static List<ModelElement> getElementsWithFace(ModelData modelData, ForgeDirection face) {
         List<ModelElement> out = new ArrayList<>();
         for (ModelElement el : modelData.getElements()) {
             if (el.getFace(face) != null) out.add(el);
@@ -621,7 +621,7 @@ public final class CTMRenderEntry {
      * 从 TextureRegistry 查找 ConnectingTextureData。使用 TextureKeyNormalizer 多键回退，
      * 兼容 1.7.10 短名（cobblestone）、模型路径（minecraft:block/cobblestone）等格式。
      */
-    private static TextureTypeData getConnectingData(String key) {
+    public static TextureTypeData getConnectingData(String key) {
         return TextureRegistry.getInstance()
             .get(key);
     }
@@ -703,8 +703,9 @@ public final class CTMRenderEntry {
         ModelData modelData = null;
         List<ModelElement> elements = null;
 
+        String modelId = null;
         if (blockId != null) {
-            String modelId = BlockStateRegistry.getInstance()
+            modelId = BlockStateRegistry.getInstance()
                 .getModelId(blockId, meta);
             if (modelId != null) {
                 modelData = ModelRegistry.getInstance()
@@ -726,6 +727,7 @@ public final class CTMRenderEntry {
             .originalIcon(icon)
             .modelData(modelData)
             .elements(elements)
+            .modelId(modelId)
             .brightness(brightness)
             .relMinX(renderBlocks.renderMinX)
             .relMaxX(renderBlocks.renderMaxX)

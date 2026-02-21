@@ -4,6 +4,7 @@ import net.minecraftforge.common.util.ForgeDirection;
 
 import com.github.wohaopa.MyCTMLib.MyCTMLib;
 import com.github.wohaopa.MyCTMLib.Textures;
+import com.github.wohaopa.MyCTMLib.render.CTMRenderEntry;
 import com.github.wohaopa.MyCTMLib.render.PipelineDebugTrace;
 import com.github.wohaopa.MyCTMLib.render.context.RenderContext;
 import com.github.wohaopa.MyCTMLib.render.debug.PipelineDebugListener;
@@ -28,6 +29,7 @@ public class RenderPipeline {
             if (context.getDebugListener() == null) {
                 context.setDebugListener(trace);
             }
+            trace.addStep("New pipeline started");
         }
 
         context.setMainState(MainRenderState.INITIAL);
@@ -57,10 +59,13 @@ public class RenderPipeline {
                     if (context.isItemRender()) {
                         context.setSubState(SubRenderState.ITEM_RENDER);
                     } else if (context.hasElements()) {
+                        if (trace != null) trace.addStep("Branch: MODEL_RENDER_LOOP");
                         context.setSubState(SubRenderState.MODEL_RENDER_LOOP);
                     } else if (shouldUseLegacy(context)) {
+                        if (trace != null) trace.addStep("Branch: LEGACY_RENDER");
                         context.setSubState(SubRenderState.LEGACY_RENDER);
                     } else {
+                        if (trace != null) trace.addStep("Branch: TEXTURE_REG_RENDER");
                         context.setSubState(SubRenderState.TEXTURE_REG_RENDER);
                     }
                     context.setMainState(MainRenderState.RENDERING);
@@ -98,15 +103,50 @@ public class RenderPipeline {
             notifyStateEnd(mainState, subState, context);
         }
 
+        boolean drewAny = context.isDrewAny();
+
         if (MyCTMLib.debugMode && trace != null) {
+            trace.addStep("New pipeline drewAny: " + drewAny);
+
+            if (!drewAny) {
+                trace.addStep("Falling back to tryRender()");
+                boolean tryRenderResult = CTMRenderEntry.tryRender(
+                    context.getRenderBlocks(),
+                    context.getBlockAccess(),
+                    context.getBlock(),
+                    context.getX(),
+                    context.getY(),
+                    context.getZ(),
+                    context.getOriginalIcon(),
+                    context.getFace());
+                trace.addStep("tryRender() result: " + tryRenderResult);
+                drewAny = tryRenderResult;
+
+                if (!drewAny) {
+                    trace.setDegradationReason("New pipeline and tryRender() both failed, falling back to vanilla");
+                }
+            }
+
             int x = (int) context.getX();
             int y = (int) context.getY();
             int z = (int) context.getZ();
             ForgeDirection face = context.getFace();
             RenderPipelineDebugCache.record(x, y, z, face, trace);
+        } else {
+            if (!drewAny) {
+                drewAny = CTMRenderEntry.tryRender(
+                    context.getRenderBlocks(),
+                    context.getBlockAccess(),
+                    context.getBlock(),
+                    context.getX(),
+                    context.getY(),
+                    context.getZ(),
+                    context.getOriginalIcon(),
+                    context.getFace());
+            }
         }
 
-        return true;
+        return drewAny;
     }
 
     private boolean shouldUseLegacy(RenderContext context) {

@@ -60,7 +60,83 @@ public class DebugOverlayHandler {
         int hitSide = Math.min(mop.sideHit, 5);
         ForgeDirection hitFace = ForgeDirection.getOrientation(hitSide);
 
-        // 六面管线摘要
+        PipelineDebugTrace newPipelineTrace = RenderPipelineDebugCache.get(x, y, z, hitFace);
+
+        if (newPipelineTrace != null && !newPipelineTrace.getSteps().isEmpty()) {
+            addNewPipelineInfo(lines, newPipelineTrace);
+        } else {
+            lines.add("=== NO NEW PIPELINE DATA ===");
+        }
+
+        lines.add("---");
+
+        addOldPipelineInfo(lines, world, block, x, y, z, hitFace, hitSide);
+
+        int lineHeight = mc.fontRenderer.FONT_HEIGHT;
+        int xPos = 4;
+        int yPos = 4;
+        for (String line : lines) {
+            mc.fontRenderer.drawStringWithShadow(line, xPos, yPos, 0xFFFFFF);
+            yPos += lineHeight + 2;
+        }
+    }
+
+    private void addNewPipelineInfo(List<String> lines, PipelineDebugTrace trace) {
+        lines.add("========== NEW PIPELINE ==========");
+
+        String branch = null;
+        Boolean drewAny = null;
+        Boolean fallbackToTryRender = null;
+        Boolean tryRenderResult = null;
+        String degradationReason = trace.getDegradationReason();
+
+        for (String step : trace.getSteps()) {
+            if (step.startsWith("Branch: ")) {
+                branch = step.substring("Branch: ".length());
+            } else if (step.startsWith("New pipeline drewAny: ")) {
+                drewAny = Boolean.parseBoolean(step.substring("New pipeline drewAny: ".length()));
+            } else if (step.equals("Falling back to tryRender()")) {
+                fallbackToTryRender = true;
+            } else if (step.startsWith("tryRender() result: ")) {
+                tryRenderResult = Boolean.parseBoolean(step.substring("tryRender() result: ".length()));
+            }
+        }
+
+        String status = "UNKNOWN";
+        if (Boolean.TRUE.equals(drewAny)) {
+            status = "SUCCESS (drew directly)";
+        } else if (Boolean.TRUE.equals(tryRenderResult)) {
+            status = "FALLBACK (tryRender succeeded)";
+        } else if (degradationReason != null) {
+            status = "FAILED (vanilla fallback)";
+        } else if (fallbackToTryRender != null) {
+            status = "FALLBACK (to tryRender)";
+        }
+
+        lines.add("Status: " + status);
+        if (branch != null) {
+            lines.add("Branch: " + branch);
+        }
+        if (drewAny != null) {
+            lines.add("drewAny: " + drewAny);
+        }
+        if (fallbackToTryRender != null) {
+            lines.add("Fallback to tryRender(): " + fallbackToTryRender);
+        }
+        if (tryRenderResult != null) {
+            lines.add("tryRender() result: " + tryRenderResult);
+        }
+        if (degradationReason != null) {
+            lines.add("degrade: " + degradationReason);
+        }
+
+        lines.add("--- steps ---");
+        addAllDecisionSteps(lines, trace);
+    }
+
+    private void addOldPipelineInfo(List<String> lines, World world, Block block, int x, int y, int z, ForgeDirection hitFace, int hitSide) {
+        lines.add("========== OLD PIPELINE ==========");
+
         StringBuilder summary = new StringBuilder("pipeline: ");
         for (int s = 0; s < 6; s++) {
             if (s > 0) summary.append(" ");
@@ -72,27 +148,26 @@ public class DebugOverlayHandler {
         }
         lines.add(summary.toString());
 
-        // 当前面（准星所指）完整管线信息
-        PipelineDebugTrace trace = new PipelineDebugTrace();
-        PipelineInfo hitInfo = CTMRenderEntry.getPipelineInfo(world, block, x, y, z, hitFace, trace);
+        PipelineDebugTrace oldTrace = new PipelineDebugTrace();
+        PipelineInfo hitInfo = CTMRenderEntry.getPipelineInfo(world, block, x, y, z, hitFace, oldTrace);
         lines.add("face: " + SIDE_NAMES_FULL[hitSide] + " | pipeline: " + shortName(hitInfo.getType()));
         lines.add("icon: " + hitInfo.getIconName());
         switch (hitInfo.getType()) {
             case MODEL:
                 lines.add("modelId: " + hitInfo.getModelId());
                 lines.add("textureKey: " + hitInfo.getTextureKey());
-                if (trace.getTexRegGetIconLookupKey() != null) {
-                    Boolean synced = trace.getTexRegTexMapSynced();
+                if (oldTrace.getTexRegGetIconLookupKey() != null) {
+                    Boolean synced = oldTrace.getTexRegTexMapSynced();
                     lines.add(
                         "TexReg/TexMap: " + (Boolean.TRUE.equals(synced) ? "synced"
                             : "OUT OF SYNC (getIcon null, fallback to block icon)"));
                 }
-                addDrawSpriteLine(lines, trace);
+                addDrawSpriteLine(lines, oldTrace);
                 addLayoutMaskLine(lines, hitInfo);
                 break;
             case TEXTURE_REGISTRY:
                 lines.add("lookupKey: " + hitInfo.getIconName());
-                addDrawSpriteLine(lines, trace);
+                addDrawSpriteLine(lines, oldTrace);
                 addLayoutMaskLine(lines, hitInfo);
                 break;
             case LEGACY:
@@ -106,29 +181,58 @@ public class DebugOverlayHandler {
                 break;
         }
 
-        // predicate / tile / conn 合并一行
-        addPredicateTileConnLine(lines, trace);
-        if (trace.getDegradationReason() != null && !trace.getDegradationReason()
+        addPredicateTileConnLine(lines, oldTrace);
+        if (oldTrace.getDegradationReason() != null && !oldTrace.getDegradationReason()
             .isEmpty()) {
-            lines.add("degrade: " + trace.getDegradationReason());
+            lines.add("degrade: " + oldTrace.getDegradationReason());
         }
-        addDecisionSteps(lines, trace);
+        addTruncatedDecisionSteps(lines, oldTrace);
+    }
 
-        if (MyCTMLib.debugMode) {
-            PipelineDebugTrace newPipelineTrace = RenderPipelineDebugCache.get(x, y, z, hitFace);
-            if (newPipelineTrace != null && !newPipelineTrace.getSteps()
-                .isEmpty()) {
-                lines.add("=== NEW PIPELINE ===");
-                addDecisionSteps(lines, newPipelineTrace);
+    private void addAllDecisionSteps(List<String> lines, PipelineDebugTrace trace) {
+        List<String> steps = trace.getSteps();
+        if (steps.isEmpty()) return;
+        for (String s : steps) {
+            lines.add(s);
+        }
+    }
+
+    private void addTruncatedDecisionSteps(List<String> lines, PipelineDebugTrace trace) {
+        List<String> steps = trace.getSteps();
+        if (steps.isEmpty()) return;
+        lines.add("--- decision ---");
+
+        final String[] DECISION_KEYWORDS = { "getIcon", "HIT", "null", "miss", "degrade", "OUT OF SYNC", "不同步" };
+
+        List<String> keySteps = new ArrayList<>();
+        List<String> rest = new ArrayList<>();
+        for (String s : steps) {
+            boolean key = false;
+            if (s != null) {
+                for (String kw : DECISION_KEYWORDS) {
+                    if (s.contains(kw)) {
+                        key = true;
+                        break;
+                    }
+                }
             }
+            if (key) keySteps.add(s);
+            else rest.add(s);
         }
-
-        int lineHeight = mc.fontRenderer.FONT_HEIGHT;
-        int xPos = 4;
-        int yPos = 4;
-        for (String line : lines) {
-            mc.fontRenderer.drawStringWithShadow(line, xPos, yPos, 0xFFFFFF);
-            yPos += lineHeight + 2;
+        int maxSteps = 5;
+        int shown = 0;
+        for (String s : keySteps) {
+            if (shown >= maxSteps) break;
+            lines.add(s);
+            shown++;
+        }
+        for (String s : rest) {
+            if (shown >= maxSteps) break;
+            lines.add(s);
+            shown++;
+        }
+        if (steps.size() > maxSteps) {
+            lines.add("... (" + (steps.size() - maxSteps) + " more)");
         }
     }
 
@@ -180,45 +284,6 @@ public class DebugOverlayHandler {
             }
         }
         if (sb.length() > 0) lines.add(sb.toString());
-    }
-
-    private static final String[] DECISION_KEYWORDS = { "getIcon", "HIT", "null", "miss", "degrade", "OUT OF SYNC",
-        "不同步" };
-
-    private static void addDecisionSteps(List<String> lines, PipelineDebugTrace trace) {
-        List<String> steps = trace.getSteps();
-        if (steps.isEmpty()) return;
-        lines.add("--- decision ---");
-        List<String> keySteps = new ArrayList<>();
-        List<String> rest = new ArrayList<>();
-        for (String s : steps) {
-            boolean key = false;
-            if (s != null) {
-                for (String kw : DECISION_KEYWORDS) {
-                    if (s.contains(kw)) {
-                        key = true;
-                        break;
-                    }
-                }
-            }
-            if (key) keySteps.add(s);
-            else rest.add(s);
-        }
-        int maxSteps = 5;
-        int shown = 0;
-        for (String s : keySteps) {
-            if (shown >= maxSteps) break;
-            lines.add(s);
-            shown++;
-        }
-        for (String s : rest) {
-            if (shown >= maxSteps) break;
-            lines.add(s);
-            shown++;
-        }
-        if (steps.size() > maxSteps) {
-            lines.add("... (" + (steps.size() - maxSteps) + " more)");
-        }
     }
 
     private static String shortName(PipelineInfo.PipelineType t) {
