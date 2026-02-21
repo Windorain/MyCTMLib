@@ -293,7 +293,8 @@ public abstract class MixinRenderBlocks {
     }
 
     @Inject(method = "renderStandardBlockWithAmbientOcclusion", at = @At("HEAD"))
-    private void onRenderStandardBlockAOStart(Block block, IBlockAccess blockAccess, int x, int y, int z, CallbackInfo ci) {
+    private void onRenderStandardBlockAOStart(Block block, IBlockAccess blockAccess, int x, int y, int z,
+        CallbackInfo ci) {
         RenderInvocationContext ctx = RenderInvocationContextHolder.get();
         ctx.pushMethod(RenderMethod.RENDER_STANDARD_BLOCK_WITH_AO);
         ctx.setRenderType(RenderType.BLOCK);
@@ -326,7 +327,8 @@ public abstract class MixinRenderBlocks {
     }
 
     @Inject(method = "renderStandardBlock", at = @At("HEAD"))
-    private void onRenderStandardBlockStart(Block block, IBlockAccess blockAccess, int x, int y, int z, CallbackInfo ci) {
+    private void onRenderStandardBlockStart(Block block, IBlockAccess blockAccess, int x, int y, int z,
+        CallbackInfo ci) {
         RenderInvocationContext ctx = RenderInvocationContextHolder.get();
         ctx.pushMethod(RenderMethod.RENDER_STANDARD_BLOCK);
         ctx.setRenderType(RenderType.BLOCK);

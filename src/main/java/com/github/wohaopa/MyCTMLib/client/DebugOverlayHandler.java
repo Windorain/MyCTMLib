@@ -62,7 +62,8 @@ public class DebugOverlayHandler {
 
         PipelineDebugTrace newPipelineTrace = RenderPipelineDebugCache.get(x, y, z, hitFace);
 
-        if (newPipelineTrace != null && !newPipelineTrace.getSteps().isEmpty()) {
+        if (newPipelineTrace != null && !newPipelineTrace.getSteps()
+            .isEmpty()) {
             addNewPipelineInfo(lines, newPipelineTrace);
         } else {
             lines.add("=== NO NEW PIPELINE DATA ===");
@@ -134,7 +135,8 @@ public class DebugOverlayHandler {
         addAllDecisionSteps(lines, trace);
     }
 
-    private void addOldPipelineInfo(List<String> lines, World world, Block block, int x, int y, int z, ForgeDirection hitFace, int hitSide) {
+    private void addOldPipelineInfo(List<String> lines, World world, Block block, int x, int y, int z,
+        ForgeDirection hitFace, int hitSide) {
         lines.add("========== OLD PIPELINE ==========");
 
         StringBuilder summary = new StringBuilder("pipeline: ");

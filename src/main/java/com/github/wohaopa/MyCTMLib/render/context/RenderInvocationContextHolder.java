@@ -12,9 +12,8 @@ public class RenderInvocationContextHolder {
 
         if (ctx.getStackTop() >= 0) {
             throw new IllegalStateException(
-                "RenderInvocationContext re-entry detected! " +
-                "Current stack: " + Arrays.toString(ctx.getMethodStack())
-            );
+                "RenderInvocationContext re-entry detected! " + "Current stack: "
+                    + Arrays.toString(ctx.getMethodStack()));
         }
 
         return ctx;

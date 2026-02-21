@@ -82,10 +82,10 @@ public class RenderInvocationContext {
 
     public String getDebugLogString() {
         StringBuilder sb = new StringBuilder();
-        
+
         int totalEntries = debugLogFull ? debugLog.length : debugLogIndex;
         int numToShow = Math.min(100, totalEntries);
-        
+
         for (int i = 0; i < numToShow; i++) {
             int logIndex;
             if (debugLogFull) {
