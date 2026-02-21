@@ -145,8 +145,10 @@ public class ModelParser {
                 String key = e.getKey();
                 String storageKey = key.startsWith("#") ? key.substring(1)
                     .trim() : key;
-                out.put(storageKey, e.getValue()
-                    .getAsString());
+                out.put(
+                    storageKey,
+                    e.getValue()
+                        .getAsString());
             }
         }
         return out;

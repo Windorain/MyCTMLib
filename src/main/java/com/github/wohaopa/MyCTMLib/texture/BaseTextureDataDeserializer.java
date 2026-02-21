@@ -14,20 +14,27 @@ public enum BaseTextureDataDeserializer implements TextureTypeRegistry.TextureTy
     public BaseTextureData deserialize(JsonObject json) throws JsonParseException {
         BaseTextureData.Builder builder = BaseTextureData.builder();
 
-        if (json.has("render_type") && json.get("render_type").isJsonPrimitive()) {
-            String rtStr = json.get("render_type").getAsString();
+        if (json.has("render_type") && json.get("render_type")
+            .isJsonPrimitive()) {
+            String rtStr = json.get("render_type")
+                .getAsString();
             BaseTextureData.RenderType rt = BaseTextureData.RenderType.fromString(rtStr);
             if (rt != null) {
                 builder.renderType(rt);
             }
         }
 
-        if (json.has("emissive") && json.get("emissive").isJsonPrimitive()) {
-            builder.emissive(json.get("emissive").getAsBoolean());
+        if (json.has("emissive") && json.get("emissive")
+            .isJsonPrimitive()) {
+            builder.emissive(
+                json.get("emissive")
+                    .getAsBoolean());
         }
 
-        if (json.has("tinting") && json.get("tinting").isJsonPrimitive()) {
-            String tintStr = json.get("tinting").getAsString();
+        if (json.has("tinting") && json.get("tinting")
+            .isJsonPrimitive()) {
+            String tintStr = json.get("tinting")
+                .getAsString();
             builder.tinting(parseQuadTinting(tintStr));
         }
 

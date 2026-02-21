@@ -15,8 +15,10 @@ import com.github.wohaopa.MyCTMLib.mixins.AccessorTextureMap;
 
 /**
  * 纹理路径（如 "modid:blocks/stone"）→ 解析后的 TextureTypeData。
- * 键语义：TexReg 内部统一用 canonicalKey（domain:blocks/name 或 domain:items/name）；图集 mapRegisteredSprites 的键为 mapKey（registerIcon 传入名，各 mod 不统一）。
- * 本类维护 canonicalKey → mapKey 登记表（按 BLOCKS/ITEMS 分），每次我们向 map 写入 sprite 时登记；getIcon 优先用登记表单键查找，无记录时回退 getLookupCandidates。
+ * 键语义：TexReg 内部统一用 canonicalKey（domain:blocks/name 或 domain:items/name）；图集 mapRegisteredSprites 的键为 mapKey（registerIcon
+ * 传入名，各 mod 不统一）。
+ * 本类维护 canonicalKey → mapKey 登记表（按 BLOCKS/ITEMS 分），每次我们向 map 写入 sprite 时登记；getIcon 优先用登记表单键查找，无记录时回退
+ * getLookupCandidates。
  */
 public class TextureRegistry {
 

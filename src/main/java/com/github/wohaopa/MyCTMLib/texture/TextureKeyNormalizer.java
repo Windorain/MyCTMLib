@@ -47,7 +47,8 @@ public final class TextureKeyNormalizer {
         int colon = key.indexOf(':');
         if (colon >= 0) {
             return key.substring(0, colon)
-                .toLowerCase(Locale.ROOT) + ":" + key.substring(colon + 1);
+                .toLowerCase(Locale.ROOT) + ":"
+                + key.substring(colon + 1);
         }
         return key;
     }
@@ -74,12 +75,12 @@ public final class TextureKeyNormalizer {
      * <p>
      * <strong>转换规则</strong>：
      * <ul>
-     *   <li>{@code minecraft:block/cobblestone} → {@code minecraft:blocks/cobblestone}</li>
-     *   <li>{@code minecraft:item/diamond} → {@code minecraft:items/diamond}</li>
-     *   <li>{@code block/cobblestone + domain} → {@code domain:blocks/cobblestone}</li>
-     *   <li>{@code item/diamond + domain} → {@code domain:items/diamond}</li>
-     *   <li>{@code stone + domain} → {@code domain:blocks/stone}（默认 blocks）</li>
-     *   <li>{@code iconsets/xxx + domain} → {@code domain:blocks/iconsets/xxx}（添加 blocks/ 前缀）</li>
+     * <li>{@code minecraft:block/cobblestone} → {@code minecraft:blocks/cobblestone}</li>
+     * <li>{@code minecraft:item/diamond} → {@code minecraft:items/diamond}</li>
+     * <li>{@code block/cobblestone + domain} → {@code domain:blocks/cobblestone}</li>
+     * <li>{@code item/diamond + domain} → {@code domain:items/diamond}</li>
+     * <li>{@code stone + domain} → {@code domain:blocks/stone}（默认 blocks）</li>
+     * <li>{@code iconsets/xxx + domain} → {@code domain:blocks/iconsets/xxx}（添加 blocks/ 前缀）</li>
      * </ul>
      * <p>
      * <strong>注意</strong>：所有非 {@code blocks/} 和 {@code items/} 的路径都会添加 {@code blocks/} 前缀，
@@ -212,8 +213,7 @@ public final class TextureKeyNormalizer {
         if (amp >= 0 && colon >= 0) {
             String pathPart = k.substring(colon + 1);
             if (pathPart.startsWith("blocks/") || pathPart.startsWith("items/")) {
-                String withoutPrefix = pathPart.startsWith("blocks/")
-                    ? pathPart.substring("blocks/".length())
+                String withoutPrefix = pathPart.startsWith("blocks/") ? pathPart.substring("blocks/".length())
                     : pathPart.substring("items/".length());
                 String nativeKey = k.substring(0, colon) + ":" + withoutPrefix.replace('&', ':');
                 if (!out.contains(nativeKey)) {

@@ -238,8 +238,28 @@ public final class FaceRenderer {
         double minV = icon.getMinV() + (icon.getMaxV() - icon.getMinV()) * tileY / gridH;
         double maxV = icon.getMinV() + (icon.getMaxV() - icon.getMinV()) * (tileY + 1) / gridH;
 
-        drawFace(renderBlocks, x, y, z, face, minU, maxU, minV, maxV, fallbackBrightness, 0, 1, 0, 1, 0, 1,
-            baseData, blockAccess, blockX, blockY, blockZ);
+        drawFace(
+            renderBlocks,
+            x,
+            y,
+            z,
+            face,
+            minU,
+            maxU,
+            minV,
+            maxV,
+            fallbackBrightness,
+            0,
+            1,
+            0,
+            1,
+            0,
+            1,
+            baseData,
+            blockAccess,
+            blockX,
+            blockY,
+            blockZ);
     }
 
     /**
@@ -285,92 +305,116 @@ public final class FaceRenderer {
             case DOWN:
                 // 顶点顺序与原版 renderFaceYNeg 一致：TL→BL→BR→TR
                 // UV 约定：minU→西 minV→北 maxU→东 maxV→南。交换 U 与 V 以满足约定。
-                if (useBiomeTint) setTessellatorColorForVertex(renderBlocks, corners[0], baseData, biomeColor, fallbackBrightness);
+                if (useBiomeTint)
+                    setTessellatorColorForVertex(renderBlocks, corners[0], baseData, biomeColor, fallbackBrightness);
                 else if (renderBlocks.enableAO) setTessellatorAO(renderBlocks, corners[0]);
                 tes.addVertexWithUV(minX, minY, maxZ, minU, minV);
-                if (useBiomeTint) setTessellatorColorForVertex(renderBlocks, corners[1], baseData, biomeColor, fallbackBrightness);
+                if (useBiomeTint)
+                    setTessellatorColorForVertex(renderBlocks, corners[1], baseData, biomeColor, fallbackBrightness);
                 else if (renderBlocks.enableAO) setTessellatorAO(renderBlocks, corners[1]);
                 tes.addVertexWithUV(minX, minY, minZ, minU, maxV);
-                if (useBiomeTint) setTessellatorColorForVertex(renderBlocks, corners[2], baseData, biomeColor, fallbackBrightness);
+                if (useBiomeTint)
+                    setTessellatorColorForVertex(renderBlocks, corners[2], baseData, biomeColor, fallbackBrightness);
                 else if (renderBlocks.enableAO) setTessellatorAO(renderBlocks, corners[2]);
                 tes.addVertexWithUV(maxX, minY, minZ, maxU, maxV);
-                if (useBiomeTint) setTessellatorColorForVertex(renderBlocks, corners[3], baseData, biomeColor, fallbackBrightness);
+                if (useBiomeTint)
+                    setTessellatorColorForVertex(renderBlocks, corners[3], baseData, biomeColor, fallbackBrightness);
                 else if (renderBlocks.enableAO) setTessellatorAO(renderBlocks, corners[3]);
                 tes.addVertexWithUV(maxX, minY, maxZ, maxU, minV);
                 break;
             case UP:
                 // 顶点顺序与原版 renderFaceYPos 一致：TL→BL→BR→TR
                 // UV 约定：minU→西 minV→北 maxU→东 maxV→南。交换 U 与 V 以满足约定。
-                if (useBiomeTint) setTessellatorColorForVertex(renderBlocks, corners[0], baseData, biomeColor, fallbackBrightness);
+                if (useBiomeTint)
+                    setTessellatorColorForVertex(renderBlocks, corners[0], baseData, biomeColor, fallbackBrightness);
                 else if (renderBlocks.enableAO) setTessellatorAO(renderBlocks, corners[0]);
                 tes.addVertexWithUV(maxX, maxY, maxZ, maxU, maxV);
-                if (useBiomeTint) setTessellatorColorForVertex(renderBlocks, corners[1], baseData, biomeColor, fallbackBrightness);
+                if (useBiomeTint)
+                    setTessellatorColorForVertex(renderBlocks, corners[1], baseData, biomeColor, fallbackBrightness);
                 else if (renderBlocks.enableAO) setTessellatorAO(renderBlocks, corners[1]);
                 tes.addVertexWithUV(maxX, maxY, minZ, maxU, minV);
-                if (useBiomeTint) setTessellatorColorForVertex(renderBlocks, corners[2], baseData, biomeColor, fallbackBrightness);
+                if (useBiomeTint)
+                    setTessellatorColorForVertex(renderBlocks, corners[2], baseData, biomeColor, fallbackBrightness);
                 else if (renderBlocks.enableAO) setTessellatorAO(renderBlocks, corners[2]);
                 tes.addVertexWithUV(minX, maxY, minZ, minU, minV);
-                if (useBiomeTint) setTessellatorColorForVertex(renderBlocks, corners[3], baseData, biomeColor, fallbackBrightness);
+                if (useBiomeTint)
+                    setTessellatorColorForVertex(renderBlocks, corners[3], baseData, biomeColor, fallbackBrightness);
                 else if (renderBlocks.enableAO) setTessellatorAO(renderBlocks, corners[3]);
                 tes.addVertexWithUV(minX, maxY, maxZ, minU, maxV);
                 break;
             case NORTH:
                 // 顶点顺序与原版 renderFaceZNeg 一致：TL→BL→BR→TR
-                if (useBiomeTint) setTessellatorColorForVertex(renderBlocks, corners[0], baseData, biomeColor, fallbackBrightness);
+                if (useBiomeTint)
+                    setTessellatorColorForVertex(renderBlocks, corners[0], baseData, biomeColor, fallbackBrightness);
                 else if (renderBlocks.enableAO) setTessellatorAO(renderBlocks, corners[0]);
                 tes.addVertexWithUV(minX, maxY, minZ, maxU, minV);
-                if (useBiomeTint) setTessellatorColorForVertex(renderBlocks, corners[1], baseData, biomeColor, fallbackBrightness);
+                if (useBiomeTint)
+                    setTessellatorColorForVertex(renderBlocks, corners[1], baseData, biomeColor, fallbackBrightness);
                 else if (renderBlocks.enableAO) setTessellatorAO(renderBlocks, corners[1]);
                 tes.addVertexWithUV(maxX, maxY, minZ, minU, minV);
-                if (useBiomeTint) setTessellatorColorForVertex(renderBlocks, corners[2], baseData, biomeColor, fallbackBrightness);
+                if (useBiomeTint)
+                    setTessellatorColorForVertex(renderBlocks, corners[2], baseData, biomeColor, fallbackBrightness);
                 else if (renderBlocks.enableAO) setTessellatorAO(renderBlocks, corners[2]);
                 tes.addVertexWithUV(maxX, minY, minZ, minU, maxV);
-                if (useBiomeTint) setTessellatorColorForVertex(renderBlocks, corners[3], baseData, biomeColor, fallbackBrightness);
+                if (useBiomeTint)
+                    setTessellatorColorForVertex(renderBlocks, corners[3], baseData, biomeColor, fallbackBrightness);
                 else if (renderBlocks.enableAO) setTessellatorAO(renderBlocks, corners[3]);
                 tes.addVertexWithUV(minX, minY, minZ, maxU, maxV);
                 break;
             case SOUTH:
                 // 顶点顺序与原版 renderFaceZPos 一致：TL→BL→BR→TR
-                if (useBiomeTint) setTessellatorColorForVertex(renderBlocks, corners[0], baseData, biomeColor, fallbackBrightness);
+                if (useBiomeTint)
+                    setTessellatorColorForVertex(renderBlocks, corners[0], baseData, biomeColor, fallbackBrightness);
                 else if (renderBlocks.enableAO) setTessellatorAO(renderBlocks, corners[0]);
                 tes.addVertexWithUV(minX, maxY, maxZ, minU, minV);
-                if (useBiomeTint) setTessellatorColorForVertex(renderBlocks, corners[1], baseData, biomeColor, fallbackBrightness);
+                if (useBiomeTint)
+                    setTessellatorColorForVertex(renderBlocks, corners[1], baseData, biomeColor, fallbackBrightness);
                 else if (renderBlocks.enableAO) setTessellatorAO(renderBlocks, corners[1]);
                 tes.addVertexWithUV(minX, minY, maxZ, minU, maxV);
-                if (useBiomeTint) setTessellatorColorForVertex(renderBlocks, corners[2], baseData, biomeColor, fallbackBrightness);
+                if (useBiomeTint)
+                    setTessellatorColorForVertex(renderBlocks, corners[2], baseData, biomeColor, fallbackBrightness);
                 else if (renderBlocks.enableAO) setTessellatorAO(renderBlocks, corners[2]);
                 tes.addVertexWithUV(maxX, minY, maxZ, maxU, maxV);
-                if (useBiomeTint) setTessellatorColorForVertex(renderBlocks, corners[3], baseData, biomeColor, fallbackBrightness);
+                if (useBiomeTint)
+                    setTessellatorColorForVertex(renderBlocks, corners[3], baseData, biomeColor, fallbackBrightness);
                 else if (renderBlocks.enableAO) setTessellatorAO(renderBlocks, corners[3]);
                 tes.addVertexWithUV(maxX, maxY, maxZ, maxU, minV);
                 break;
             case WEST:
                 // 顶点顺序与原版 renderFaceXNeg 一致：TL→BL→BR→TR
-                if (useBiomeTint) setTessellatorColorForVertex(renderBlocks, corners[0], baseData, biomeColor, fallbackBrightness);
+                if (useBiomeTint)
+                    setTessellatorColorForVertex(renderBlocks, corners[0], baseData, biomeColor, fallbackBrightness);
                 else if (renderBlocks.enableAO) setTessellatorAO(renderBlocks, corners[0]);
                 tes.addVertexWithUV(minX, maxY, maxZ, maxU, minV);
-                if (useBiomeTint) setTessellatorColorForVertex(renderBlocks, corners[1], baseData, biomeColor, fallbackBrightness);
+                if (useBiomeTint)
+                    setTessellatorColorForVertex(renderBlocks, corners[1], baseData, biomeColor, fallbackBrightness);
                 else if (renderBlocks.enableAO) setTessellatorAO(renderBlocks, corners[1]);
                 tes.addVertexWithUV(minX, maxY, minZ, minU, minV);
-                if (useBiomeTint) setTessellatorColorForVertex(renderBlocks, corners[2], baseData, biomeColor, fallbackBrightness);
+                if (useBiomeTint)
+                    setTessellatorColorForVertex(renderBlocks, corners[2], baseData, biomeColor, fallbackBrightness);
                 else if (renderBlocks.enableAO) setTessellatorAO(renderBlocks, corners[2]);
                 tes.addVertexWithUV(minX, minY, minZ, minU, maxV);
-                if (useBiomeTint) setTessellatorColorForVertex(renderBlocks, corners[3], baseData, biomeColor, fallbackBrightness);
+                if (useBiomeTint)
+                    setTessellatorColorForVertex(renderBlocks, corners[3], baseData, biomeColor, fallbackBrightness);
                 else if (renderBlocks.enableAO) setTessellatorAO(renderBlocks, corners[3]);
                 tes.addVertexWithUV(minX, minY, maxZ, maxU, maxV);
                 break;
             case EAST:
                 // 顶点顺序与原版 renderFaceXPos 一致：TL→BL→BR→TR
-                if (useBiomeTint) setTessellatorColorForVertex(renderBlocks, corners[0], baseData, biomeColor, fallbackBrightness);
+                if (useBiomeTint)
+                    setTessellatorColorForVertex(renderBlocks, corners[0], baseData, biomeColor, fallbackBrightness);
                 else if (renderBlocks.enableAO) setTessellatorAO(renderBlocks, corners[0]);
                 tes.addVertexWithUV(maxX, minY, maxZ, minU, maxV);
-                if (useBiomeTint) setTessellatorColorForVertex(renderBlocks, corners[1], baseData, biomeColor, fallbackBrightness);
+                if (useBiomeTint)
+                    setTessellatorColorForVertex(renderBlocks, corners[1], baseData, biomeColor, fallbackBrightness);
                 else if (renderBlocks.enableAO) setTessellatorAO(renderBlocks, corners[1]);
                 tes.addVertexWithUV(maxX, minY, minZ, maxU, maxV);
-                if (useBiomeTint) setTessellatorColorForVertex(renderBlocks, corners[2], baseData, biomeColor, fallbackBrightness);
+                if (useBiomeTint)
+                    setTessellatorColorForVertex(renderBlocks, corners[2], baseData, biomeColor, fallbackBrightness);
                 else if (renderBlocks.enableAO) setTessellatorAO(renderBlocks, corners[2]);
                 tes.addVertexWithUV(maxX, maxY, minZ, maxU, minV);
-                if (useBiomeTint) setTessellatorColorForVertex(renderBlocks, corners[3], baseData, biomeColor, fallbackBrightness);
+                if (useBiomeTint)
+                    setTessellatorColorForVertex(renderBlocks, corners[3], baseData, biomeColor, fallbackBrightness);
                 else if (renderBlocks.enableAO) setTessellatorAO(renderBlocks, corners[3]);
                 tes.addVertexWithUV(maxX, maxY, maxZ, minU, minV);
                 break;

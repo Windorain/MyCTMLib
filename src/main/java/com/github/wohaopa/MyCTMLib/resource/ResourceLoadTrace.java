@@ -31,6 +31,7 @@ public class ResourceLoadTrace {
     }
 
     public static final class LoadTraceEntry {
+
         public final String phase;
         public final String location;
         public final String path;
@@ -40,8 +41,8 @@ public class ResourceLoadTrace {
         public final String exceptionMessage;
         public final JsonArray stackTrace;
 
-        public LoadTraceEntry(String phase, String location, String path, boolean success,
-            String message, String exceptionClass, String exceptionMessage, JsonArray stackTrace) {
+        public LoadTraceEntry(String phase, String location, String path, boolean success, String message,
+            String exceptionClass, String exceptionMessage, JsonArray stackTrace) {
             this.phase = phase;
             this.location = location;
             this.path = path;
@@ -67,7 +68,8 @@ public class ResourceLoadTrace {
         String excMsg = null;
         JsonArray stack = null;
         if (t != null) {
-            excClass = t.getClass().getName();
+            excClass = t.getClass()
+                .getName();
             excMsg = t.getMessage() != null ? t.getMessage() : "";
             stack = new JsonArray();
             for (StackTraceElement el : t.getStackTrace()) {
@@ -84,7 +86,10 @@ public class ResourceLoadTrace {
     public synchronized void flushToFile(File file) {
         try {
             JsonObject root = new JsonObject();
-            root.addProperty("timestamp", Instant.now().toString());
+            root.addProperty(
+                "timestamp",
+                Instant.now()
+                    .toString());
             JsonArray arr = new JsonArray();
             for (LoadTraceEntry e : entries) {
                 JsonObject obj = new JsonObject();
@@ -103,9 +108,13 @@ public class ResourceLoadTrace {
                 arr.add(obj);
             }
             root.add("entries", arr);
-            file.getParentFile().mkdirs();
+            file.getParentFile()
+                .mkdirs();
             try (OutputStreamWriter w = new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8)) {
-                new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create().toJson(root, w);
+                new GsonBuilder().setPrettyPrinting()
+                    .disableHtmlEscaping()
+                    .create()
+                    .toJson(root, w);
             }
         } catch (Exception e) {
             com.github.wohaopa.MyCTMLib.MyCTMLib.LOG.warn("ResourceLoadTrace flush failed", e);

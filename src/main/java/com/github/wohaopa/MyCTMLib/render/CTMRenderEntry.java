@@ -3,7 +3,6 @@ package com.github.wohaopa.MyCTMLib.render;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import net.minecraft.block.Block;
 import net.minecraft.client.renderer.RenderBlocks;
@@ -19,6 +18,8 @@ import com.github.wohaopa.MyCTMLib.model.ModelFace;
 import com.github.wohaopa.MyCTMLib.model.ModelRegistry;
 import com.github.wohaopa.MyCTMLib.predicate.ConnectionPredicate;
 import com.github.wohaopa.MyCTMLib.predicate.PredicateRegistry;
+import com.github.wohaopa.MyCTMLib.render.context.RenderContext;
+import com.github.wohaopa.MyCTMLib.render.pipeline.RenderPipeline;
 import com.github.wohaopa.MyCTMLib.texture.BaseTextureData;
 import com.github.wohaopa.MyCTMLib.texture.ConnectingTextureData;
 import com.github.wohaopa.MyCTMLib.texture.RandomTextureData;
@@ -78,15 +79,16 @@ public final class CTMRenderEntry {
                             if (faceData == null) continue;
                             String textureKey = faceData.getTextureKey();
                             if (textureKey == null) continue;
-                            String texturePath = TextureKeyNormalizer.resolveTexturePath(textureKey, modelData.getTextures());
+                            String texturePath = TextureKeyNormalizer
+                                .resolveTexturePath(textureKey, modelData.getTextures());
                             if (texturePath == null) continue;
                             String textureLookupKey = TextureKeyNormalizer.toCanonicalTextureKey(domain, texturePath);
                             TextureTypeData data = getConnectingData(textureLookupKey);
-                            
+
                             IIcon drawIcon = TextureRegistry.getInstance()
                                 .getIcon(textureLookupKey);
                             if (drawIcon == null) drawIcon = icon;
-                            
+
                             float[] f = el.getFrom(), t = el.getTo();
                             double relMinX = Math.min(f[0], t[0]) / 16.0;
                             double relMaxX = Math.max(f[0], t[0]) / 16.0;
@@ -94,7 +96,7 @@ public final class CTMRenderEntry {
                             double relMaxY = Math.max(f[1], t[1]) / 16.0;
                             double relMinZ = Math.min(f[2], t[2]) / 16.0;
                             double relMaxZ = Math.max(f[2], t[2]) / 16.0;
-                            
+
                             // 处理 BaseTextureData
                             if (data instanceof BaseTextureData baseData) {
                                 FaceRenderer.drawFace(
@@ -130,8 +132,8 @@ public final class CTMRenderEntry {
                                 if (blockAccess instanceof net.minecraft.world.World) {
                                     worldSeed = ((net.minecraft.world.World) blockAccess).getSeed();
                                 }
-                                int randomIndex = com.github.wohaopa.MyCTMLib.FastRandom.getRandomIndex(
-                                    worldSeed, (int) x, (int) y, (int) z, randomData.getCount());
+                                int randomIndex = com.github.wohaopa.MyCTMLib.FastRandom
+                                    .getRandomIndex(worldSeed, (int) x, (int) y, (int) z, randomData.getCount());
                                 int tileX = randomIndex % randomData.getColumns();
                                 int tileY = randomIndex / randomData.getColumns();
 
@@ -167,7 +169,7 @@ public final class CTMRenderEntry {
                             ConnectingLayout layout = texData.getLayout();
                             LayoutHandler handler = LayoutHandlers.get(layout);
                             int[] pos = handler.getTilePosition(mask);
-                            
+
                             FaceRenderer.drawFace(
                                 renderBlocks,
                                 x,
@@ -201,8 +203,10 @@ public final class CTMRenderEntry {
 
         // 回退到 TextureRegistry(iconName)：用 TexReg 查到的 sprite 绘制，无则用 block icon
         TextureTypeData data = getConnectingData(iconName);
-        if (!(data instanceof ConnectingTextureData) && !(data instanceof RandomTextureData) && !(data instanceof BaseTextureData)) return false;
-        IIcon drawIcon = TextureRegistry.getInstance().getIcon(iconName);
+        if (!(data instanceof ConnectingTextureData) && !(data instanceof RandomTextureData)
+            && !(data instanceof BaseTextureData)) return false;
+        IIcon drawIcon = TextureRegistry.getInstance()
+            .getIcon(iconName);
         if (drawIcon == null) drawIcon = icon;
         int brightness = block.getMixedBrightnessForBlock(blockAccess, (int) x, (int) y, (int) z);
 
@@ -249,8 +253,8 @@ public final class CTMRenderEntry {
             if (blockAccess instanceof net.minecraft.world.World) {
                 worldSeed = ((net.minecraft.world.World) blockAccess).getSeed();
             }
-            int randomIndex = com.github.wohaopa.MyCTMLib.FastRandom.getRandomIndex(
-                worldSeed, (int) x, (int) y, (int) z, randomData.getCount());
+            int randomIndex = com.github.wohaopa.MyCTMLib.FastRandom
+                .getRandomIndex(worldSeed, (int) x, (int) y, (int) z, randomData.getCount());
             tileX = randomIndex % randomData.getColumns();
             tileY = randomIndex / randomData.getColumns();
 
@@ -364,7 +368,12 @@ public final class CTMRenderEntry {
             String modelId = BlockStateRegistry.getInstance()
                 .getModelId(blockId, meta);
             if (out != null) {
-                out.addStep("3. BlockStateRegistry(" + blockId + "," + meta + ") -> " + (modelId != null ? "modelId=" + modelId : "no modelId"));
+                out.addStep(
+                    "3. BlockStateRegistry(" + blockId
+                        + ","
+                        + meta
+                        + ") -> "
+                        + (modelId != null ? "modelId=" + modelId : "no modelId"));
             }
             if (modelId == null) {
                 skipDetail = "BlockStateRegistry(blockId,meta) -> no modelId";
@@ -373,7 +382,10 @@ public final class CTMRenderEntry {
                 ModelData modelData = ModelRegistry.getInstance()
                     .get(modelId);
                 if (out != null) {
-                    out.addStep("4. ModelRegistry.get(" + modelId + ") -> " + (modelData != null ? "modelData found" : "no modelData"));
+                    out.addStep(
+                        "4. ModelRegistry.get(" + modelId
+                            + ") -> "
+                            + (modelData != null ? "modelData found" : "no modelData"));
                 }
                 if (modelData == null) {
                     skipModelId = modelId;
@@ -397,7 +409,8 @@ public final class CTMRenderEntry {
                                 .getPredicate(connectionKey, modelData.getConnections());
                             if (p != null) predicate = p;
                         }
-                        if (out != null) out.setPredicateUsed(PredicateRegistry.getPredicateDebugName(predicate, connectionKey));
+                        if (out != null)
+                            out.setPredicateUsed(PredicateRegistry.getPredicateDebugName(predicate, connectionKey));
 
                         int mask = ConnectionState.computeMask(blockAccess, x, y, z, face, block, meta, predicate);
                         String domain = modelId.indexOf(':') >= 0 ? modelId.substring(0, modelId.indexOf(':'))
@@ -407,15 +420,22 @@ public final class CTMRenderEntry {
                             if (faceData == null) continue;
                             String textureKey = faceData.getTextureKey();
                             if (textureKey == null) continue;
-                            String texturePath = TextureKeyNormalizer.resolveTexturePath(textureKey, modelData.getTextures());
+                            String texturePath = TextureKeyNormalizer
+                                .resolveTexturePath(textureKey, modelData.getTextures());
                             if (texturePath == null) continue;
                             String textureLookupKey = TextureKeyNormalizer.toCanonicalTextureKey(domain, texturePath);
                             skipModelId = modelId;
                             skipTexKey = textureLookupKey;
                             TextureTypeData data = getConnectingData(textureLookupKey);
                             if (out != null) {
-                                String dataTypeName = data != null ? data.getClass().getSimpleName() : "null";
-                                out.addStep("6. element texKey " + textureKey + " -> lookup " + textureLookupKey + " -> " + dataTypeName);
+                                String dataTypeName = data != null ? data.getClass()
+                                    .getSimpleName() : "null";
+                                out.addStep(
+                                    "6. element texKey " + textureKey
+                                        + " -> lookup "
+                                        + textureLookupKey
+                                        + " -> "
+                                        + dataTypeName);
                             }
                             // 处理 RandomTextureData
                             if (data instanceof RandomTextureData randomData) {
@@ -423,22 +443,31 @@ public final class CTMRenderEntry {
                                     .getIcon(textureLookupKey);
                                 if (out != null) {
                                     if (modelIcon == null) {
-                                        out.addStep("7. TexReg.getIcon(" + textureLookupKey + ") -> null (TexReg/TexMap OUT OF SYNC, fallback to block icon)");
+                                        out.addStep(
+                                            "7. TexReg.getIcon(" + textureLookupKey
+                                                + ") -> null (TexReg/TexMap OUT OF SYNC, fallback to block icon)");
                                         out.setTexRegTexMapSync(false, textureLookupKey);
                                     } else {
-                                        out.addStep("7. TexReg.getIcon(" + textureLookupKey + ") -> HIT (TexReg/TexMap synced)");
+                                        out.addStep(
+                                            "7. TexReg.getIcon(" + textureLookupKey
+                                                + ") -> HIT (TexReg/TexMap synced)");
                                         out.setTexRegTexMapSync(true, textureLookupKey);
-                                        out.setDrawSpriteInfo(modelIcon.getIconName(), modelIcon.getIconWidth(), modelIcon.getIconHeight());
+                                        out.setDrawSpriteInfo(
+                                            modelIcon.getIconName(),
+                                            modelIcon.getIconWidth(),
+                                            modelIcon.getIconHeight());
                                     }
                                 }
                                 long worldSeed = 0;
                                 if (blockAccess instanceof net.minecraft.world.World) {
                                     worldSeed = ((net.minecraft.world.World) blockAccess).getSeed();
                                 }
-                                int randomIndex = com.github.wohaopa.MyCTMLib.FastRandom.getRandomIndex(
-                                    worldSeed, x, y, z, randomData.getCount());
+                                int randomIndex = com.github.wohaopa.MyCTMLib.FastRandom
+                                    .getRandomIndex(worldSeed, x, y, z, randomData.getCount());
                                 if (out != null) {
-                                    out.setTilePos(randomIndex % randomData.getColumns(), randomIndex / randomData.getColumns());
+                                    out.setTilePos(
+                                        randomIndex % randomData.getColumns(),
+                                        randomIndex / randomData.getColumns());
                                 }
                                 return PipelineInfo.modelRandom(textureLookupKey, modelId, textureKey, randomIndex);
                             }
@@ -448,12 +477,19 @@ public final class CTMRenderEntry {
                                     .getIcon(textureLookupKey);
                                 if (out != null) {
                                     if (modelIcon == null) {
-                                        out.addStep("7. TexReg.getIcon(" + textureLookupKey + ") -> null (TexReg/TexMap OUT OF SYNC, fallback to block icon)");
+                                        out.addStep(
+                                            "7. TexReg.getIcon(" + textureLookupKey
+                                                + ") -> null (TexReg/TexMap OUT OF SYNC, fallback to block icon)");
                                         out.setTexRegTexMapSync(false, textureLookupKey);
                                     } else {
-                                        out.addStep("7. TexReg.getIcon(" + textureLookupKey + ") -> HIT (TexReg/TexMap synced)");
+                                        out.addStep(
+                                            "7. TexReg.getIcon(" + textureLookupKey
+                                                + ") -> HIT (TexReg/TexMap synced)");
                                         out.setTexRegTexMapSync(true, textureLookupKey);
-                                        out.setDrawSpriteInfo(modelIcon.getIconName(), modelIcon.getIconWidth(), modelIcon.getIconHeight());
+                                        out.setDrawSpriteInfo(
+                                            modelIcon.getIconName(),
+                                            modelIcon.getIconWidth(),
+                                            modelIcon.getIconHeight());
                                     }
                                 }
                                 ConnectingLayout layout = texData.getLayout();
@@ -468,7 +504,11 @@ public final class CTMRenderEntry {
                             failedTexKeys.add(textureLookupKey);
                         }
                         if (out != null) {
-                            out.setDegradationReason("model texKeys " + failedTexKeys + " not in TexReg; icon=" + iconName + " not in TexReg/Legacy");
+                            out.setDegradationReason(
+                                "model texKeys " + failedTexKeys
+                                    + " not in TexReg; icon="
+                                    + iconName
+                                    + " not in TexReg/Legacy");
                         }
                         // fall-through：不 return，继续检查 TextureRegistry 与 Legacy
                     }
@@ -482,7 +522,8 @@ public final class CTMRenderEntry {
         TextureTypeData data = getConnectingData(iconName);
         List<String> texRegCandidates = TextureKeyNormalizer.getLookupCandidates(iconName);
         if (out != null) {
-            String dataTypeName = data != null ? data.getClass().getSimpleName() : "null";
+            String dataTypeName = data != null ? data.getClass()
+                .getSimpleName() : "null";
             out.addStep("8. TexReg(iconName) candidates " + texRegCandidates + " -> " + dataTypeName);
         }
         // 处理 RandomTextureData
@@ -491,11 +532,12 @@ public final class CTMRenderEntry {
             if (blockAccess instanceof net.minecraft.world.World) {
                 worldSeed = ((net.minecraft.world.World) blockAccess).getSeed();
             }
-            int randomIndex = com.github.wohaopa.MyCTMLib.FastRandom.getRandomIndex(
-                worldSeed, x, y, z, randomData.getCount());
+            int randomIndex = com.github.wohaopa.MyCTMLib.FastRandom
+                .getRandomIndex(worldSeed, x, y, z, randomData.getCount());
             if (out != null) {
                 out.setTilePos(randomIndex % randomData.getColumns(), randomIndex / randomData.getColumns());
-                IIcon regIcon = TextureRegistry.getInstance().getIcon(iconName);
+                IIcon regIcon = TextureRegistry.getInstance()
+                    .getIcon(iconName);
                 if (regIcon != null) {
                     out.setDrawSpriteInfo(regIcon.getIconName(), regIcon.getIconWidth(), regIcon.getIconHeight());
                 } else {
@@ -509,11 +551,13 @@ public final class CTMRenderEntry {
             ConnectionPredicate predicate = PredicateRegistry.defaultPredicate();
             int mask = ConnectionState.computeMask(blockAccess, x, y, z, face, block, meta, predicate);
             if (out != null) {
-                int[] pos = LayoutHandlers.get(ctd.getLayout()).getTilePosition(mask);
+                int[] pos = LayoutHandlers.get(ctd.getLayout())
+                    .getTilePosition(mask);
                 out.setPredicateUsed(PredicateRegistry.getPredicateDebugName(predicate, null));
                 out.setTilePos(pos[0], pos[1]);
                 out.setConnectionBits(mask);
-                IIcon regIcon = TextureRegistry.getInstance().getIcon(iconName);
+                IIcon regIcon = TextureRegistry.getInstance()
+                    .getIcon(iconName);
                 if (regIcon != null) {
                     out.setDrawSpriteInfo(regIcon.getIconName(), regIcon.getIconWidth(), regIcon.getIconHeight());
                 } else {
@@ -631,6 +675,66 @@ public final class CTMRenderEntry {
             0,
             0);
         return true;
+    }
+
+    // ========== 新管线：RenderPipeline 状态机版本 ==========
+
+    private static final RenderPipeline PIPELINE = new RenderPipeline();
+
+    public static boolean renderPipeline(RenderBlocks renderBlocks, IBlockAccess blockAccess, Block block, double x,
+        double y, double z, IIcon icon, ForgeDirection face) {
+        if (blockAccess == null || icon == null) return false;
+
+        RenderContext context = buildContext(renderBlocks, blockAccess, block, x, y, z, icon, face);
+
+        return PIPELINE.execute(context);
+    }
+
+    private static RenderContext buildContext(RenderBlocks renderBlocks, IBlockAccess blockAccess, Block block,
+        double x, double y, double z, IIcon icon, ForgeDirection face) {
+
+        RenderContext.RenderContextBuilder builder = RenderContext.builder();
+
+        String iconName = TextureKeyNormalizer.normalizeIconName(icon.getIconName());
+        int meta = blockAccess.getBlockMetadata((int) x, (int) y, (int) z);
+        String blockId = getBlockId(block);
+        int brightness = block.getMixedBrightnessForBlock(blockAccess, (int) x, (int) y, (int) z);
+
+        ModelData modelData = null;
+        List<ModelElement> elements = null;
+
+        if (blockId != null) {
+            String modelId = BlockStateRegistry.getInstance()
+                .getModelId(blockId, meta);
+            if (modelId != null) {
+                modelData = ModelRegistry.getInstance()
+                    .get(modelId);
+                if (modelData != null) {
+                    elements = getElementsWithFace(modelData, face);
+                }
+            }
+        }
+
+        builder.renderBlocks(renderBlocks)
+            .blockAccess(blockAccess)
+            .block(block)
+            .x(x)
+            .y(y)
+            .z(z)
+            .meta(meta)
+            .face(face)
+            .originalIcon(icon)
+            .modelData(modelData)
+            .elements(elements)
+            .brightness(brightness)
+            .relMinX(renderBlocks.renderMinX)
+            .relMaxX(renderBlocks.renderMaxX)
+            .relMinY(renderBlocks.renderMinY)
+            .relMaxY(renderBlocks.renderMaxY)
+            .relMinZ(renderBlocks.renderMinZ)
+            .relMaxZ(renderBlocks.renderMaxZ);
+
+        return builder.build();
     }
 
 }

@@ -41,7 +41,14 @@ public class CTMLibClientCommand extends CommandBase {
     @Override
     public List<String> addTabCompletionOptions(ICommandSender sender, String[] args) {
         if (args.length == 1) {
-            return getListOfStringsMatchingLastWord(args, "debug", "dump_registry", "dump_registered_sprites", "dump_textures", "dump_debug_errors", "dump_debug_load");
+            return getListOfStringsMatchingLastWord(
+                args,
+                "debug",
+                "dump_registry",
+                "dump_registered_sprites",
+                "dump_textures",
+                "dump_debug_errors",
+                "dump_debug_load");
         }
         return Collections.emptyList();
     }

@@ -1,20 +1,35 @@
 package com.github.wohaopa.MyCTMLib.render.pipeline;
 
+import net.minecraftforge.common.util.ForgeDirection;
+
+import com.github.wohaopa.MyCTMLib.MyCTMLib;
 import com.github.wohaopa.MyCTMLib.Textures;
+import com.github.wohaopa.MyCTMLib.render.PipelineDebugTrace;
 import com.github.wohaopa.MyCTMLib.render.context.RenderContext;
 import com.github.wohaopa.MyCTMLib.render.debug.PipelineDebugListener;
+import com.github.wohaopa.MyCTMLib.render.debug.RenderPipelineDebugCache;
 import com.github.wohaopa.MyCTMLib.render.phases.CompletionPhase;
 import com.github.wohaopa.MyCTMLib.render.phases.LegacyRenderPhase;
 import com.github.wohaopa.MyCTMLib.render.phases.ModelRenderLoopPhase;
 import com.github.wohaopa.MyCTMLib.render.phases.TextureRegRenderPhase;
 
 public class RenderPipeline {
+
     private final ModelRenderLoopPhase modelRenderLoopPhase = new ModelRenderLoopPhase();
     private final TextureRegRenderPhase textureRegRenderPhase = new TextureRegRenderPhase();
     private final LegacyRenderPhase legacyRenderPhase = new LegacyRenderPhase();
     private final CompletionPhase completionPhase = new CompletionPhase();
 
     public boolean execute(RenderContext context) {
+        PipelineDebugTrace trace = null;
+
+        if (MyCTMLib.debugMode) {
+            trace = new PipelineDebugTrace();
+            if (context.getDebugListener() == null) {
+                context.setDebugListener(trace);
+            }
+        }
+
         context.setMainState(MainRenderState.INITIAL);
         context.setSubState(SubRenderState.NONE);
 
@@ -82,6 +97,15 @@ public class RenderPipeline {
 
             notifyStateEnd(mainState, subState, context);
         }
+
+        if (MyCTMLib.debugMode && trace != null) {
+            int x = (int) context.getX();
+            int y = (int) context.getY();
+            int z = (int) context.getZ();
+            ForgeDirection face = context.getFace();
+            RenderPipelineDebugCache.record(x, y, z, face, trace);
+        }
+
         return true;
     }
 

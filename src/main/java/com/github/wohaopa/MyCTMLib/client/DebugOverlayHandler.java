@@ -16,6 +16,7 @@ import com.github.wohaopa.MyCTMLib.MyCTMLib;
 import com.github.wohaopa.MyCTMLib.render.CTMRenderEntry;
 import com.github.wohaopa.MyCTMLib.render.PipelineDebugTrace;
 import com.github.wohaopa.MyCTMLib.render.PipelineInfo;
+import com.github.wohaopa.MyCTMLib.render.debug.RenderPipelineDebugCache;
 
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.relauncher.Side;
@@ -52,7 +53,9 @@ public class DebugOverlayHandler {
         lines.add(
             "block: " + (blockId != null ? blockId
                 : block.getClass()
-                    .getSimpleName()) + " meta: " + meta);
+                    .getSimpleName())
+                + " meta: "
+                + meta);
 
         int hitSide = Math.min(mop.sideHit, 5);
         ForgeDirection hitFace = ForgeDirection.getOrientation(hitSide);
@@ -81,7 +84,8 @@ public class DebugOverlayHandler {
                 if (trace.getTexRegGetIconLookupKey() != null) {
                     Boolean synced = trace.getTexRegTexMapSynced();
                     lines.add(
-                        "TexReg/TexMap: " + (Boolean.TRUE.equals(synced) ? "synced" : "OUT OF SYNC (getIcon null, fallback to block icon)"));
+                        "TexReg/TexMap: " + (Boolean.TRUE.equals(synced) ? "synced"
+                            : "OUT OF SYNC (getIcon null, fallback to block icon)"));
                 }
                 addDrawSpriteLine(lines, trace);
                 addLayoutMaskLine(lines, hitInfo);
@@ -110,6 +114,15 @@ public class DebugOverlayHandler {
         }
         addDecisionSteps(lines, trace);
 
+        if (MyCTMLib.debugMode) {
+            PipelineDebugTrace newPipelineTrace = RenderPipelineDebugCache.get(x, y, z, hitFace);
+            if (newPipelineTrace != null && !newPipelineTrace.getSteps()
+                .isEmpty()) {
+                lines.add("=== NEW PIPELINE ===");
+                addDecisionSteps(lines, newPipelineTrace);
+            }
+        }
+
         int lineHeight = mc.fontRenderer.FONT_HEIGHT;
         int xPos = 4;
         int yPos = 4;
@@ -127,7 +140,10 @@ public class DebugOverlayHandler {
             if (loaded.contains("0x0")) suffix = " (unloaded?)";
             else if ("16x16".equals(loaded)) suffix = " (16x16?)";
         }
-        lines.add("drawSprite: " + trace.getDrawSpriteName() + (loaded != null && !loaded.isEmpty() ? " " + loaded : "") + suffix);
+        lines.add(
+            "drawSprite: " + trace.getDrawSpriteName()
+                + (loaded != null && !loaded.isEmpty() ? " " + loaded : "")
+                + suffix);
     }
 
     private static void addLayoutMaskLine(List<String> lines, PipelineInfo hitInfo) {
@@ -145,10 +161,15 @@ public class DebugOverlayHandler {
         int[] bits = trace.getConnectionBits();
         if (pred == null && tile == null && bits == null) return;
         StringBuilder sb = new StringBuilder();
-        if (pred != null) sb.append("pred: ").append(pred);
+        if (pred != null) sb.append("pred: ")
+            .append(pred);
         if (tile != null) {
             if (sb.length() > 0) sb.append(" ");
-            sb.append("tile:(").append(tile[0]).append(",").append(tile[1]).append(")");
+            sb.append("tile:(")
+                .append(tile[0])
+                .append(",")
+                .append(tile[1])
+                .append(")");
         }
         if (bits != null) {
             if (sb.length() > 0) sb.append(" ");
@@ -161,9 +182,8 @@ public class DebugOverlayHandler {
         if (sb.length() > 0) lines.add(sb.toString());
     }
 
-    private static final String[] DECISION_KEYWORDS = {
-        "getIcon", "HIT", "null", "miss", "degrade", "OUT OF SYNC", "不同步"
-    };
+    private static final String[] DECISION_KEYWORDS = { "getIcon", "HIT", "null", "miss", "degrade", "OUT OF SYNC",
+        "不同步" };
 
     private static void addDecisionSteps(List<String> lines, PipelineDebugTrace trace) {
         List<String> steps = trace.getSteps();

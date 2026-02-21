@@ -27,7 +27,8 @@ public final class BiomeTintingHelper {
     /**
      * 获取指定位置的生物群系着色。blockAccess 需为 World 才能正确获取，否则返回默认色。
      */
-    public static int getBiomeColor(BaseTextureData.QuadTinting tinting, IBlockAccess blockAccess, int x, int y, int z) {
+    public static int getBiomeColor(BaseTextureData.QuadTinting tinting, IBlockAccess blockAccess, int x, int y,
+        int z) {
         if (tinting == null || blockAccess == null || !(blockAccess instanceof World)) {
             return getDefaultColor(tinting);
         }

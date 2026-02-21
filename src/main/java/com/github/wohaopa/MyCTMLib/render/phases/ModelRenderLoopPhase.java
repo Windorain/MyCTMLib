@@ -6,6 +6,7 @@ import com.github.wohaopa.MyCTMLib.render.pipeline.PipelinePhase;
 import com.github.wohaopa.MyCTMLib.texture.TextureTypeData;
 
 public class ModelRenderLoopPhase implements PipelinePhase {
+
     @Override
     public void process(RenderContext context) {
         context.resetElementIndex();
@@ -21,6 +22,5 @@ public class ModelRenderLoopPhase implements PipelinePhase {
         return null;
     }
 
-    private void renderElement(ModelElement element, RenderContext context) {
-    }
+    private void renderElement(ModelElement element, RenderContext context) {}
 }

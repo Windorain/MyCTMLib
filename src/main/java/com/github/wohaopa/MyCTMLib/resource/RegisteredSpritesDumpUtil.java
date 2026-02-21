@@ -34,7 +34,8 @@ public class RegisteredSpritesDumpUtil {
 
     private static void appendSprites(JsonArray out, Map<String, TextureAtlasSprite> sprites, String category) {
         String basePath = TextureKeyNormalizer.getBasePath(
-            "blocks".equals(category) ? TextureKeyNormalizer.TextureCategory.BLOCKS : TextureKeyNormalizer.TextureCategory.ITEMS);
+            "blocks".equals(category) ? TextureKeyNormalizer.TextureCategory.BLOCKS
+                : TextureKeyNormalizer.TextureCategory.ITEMS);
         for (Map.Entry<String, TextureAtlasSprite> e : sprites.entrySet()) {
             TextureAtlasSprite sprite = e.getValue();
             String mapKey = e.getKey();
@@ -85,8 +86,11 @@ public class RegisteredSpritesDumpUtil {
                     .create()
                     .toJson(root, w);
             }
-            MyCTMLib.LOG.info("[CTMLibFusion] RegisteredSprites dump written to {} (blocks={} items={})",
-                outputFile, blocksArr.size(), itemsArr.size());
+            MyCTMLib.LOG.info(
+                "[CTMLibFusion] RegisteredSprites dump written to {} (blocks={} items={})",
+                outputFile,
+                blocksArr.size(),
+                itemsArr.size());
         } catch (Exception e) {
             MyCTMLib.LOG.warn("[CTMLibFusion] RegisteredSprites dump failed", e);
         }

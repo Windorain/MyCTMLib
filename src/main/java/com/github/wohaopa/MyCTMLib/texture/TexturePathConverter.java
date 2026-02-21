@@ -8,27 +8,29 @@ import net.minecraft.util.ResourceLocation;
  * 提供类型安全的路径转换方法，明确定义来源和去处，避免字符串格式混淆。
  *
  * <h2>使用示例</h2>
- * <pre>{@code
- * // 从模型 JSON textures 转换为 ResourceLocation（用于 ResourceManager）
- * String modelTexturePath = "block/stone";
- * ResourceLocation resLoc = TexturePathConverter.convert(
- *     TexturePathSource.MODEL_TEXTURES,
- *     TexturePathDestination.RESOURCE_MANAGER,
- *     modelTexturePath,
- *     "minecraft"
- * );
- * // 结果：ResourceLocation("minecraft", "textures/blocks/stone.png")
+ * 
+ * <pre>
+ * 
+ * {
+ *     &#64;code
+ *     // 从模型 JSON textures 转换为 ResourceLocation（用于 ResourceManager）
+ *     String modelTexturePath = "block/stone";
+ *     ResourceLocation resLoc = TexturePathConverter.convert(
+ *         TexturePathSource.MODEL_TEXTURES,
+ *         TexturePathDestination.RESOURCE_MANAGER,
+ *         modelTexturePath,
+ *         "minecraft");
+ *     // 结果：ResourceLocation("minecraft", "textures/blocks/stone.png")
  *
- * // 从 registerIcon 参数转换为 TextureRegistry 键
- * String registerIconPath = "gregtech:iconsets/MACHINE_CASING_LASER";
- * String registryKey = TexturePathConverter.convert(
- *     TexturePathSource.REGISTER_ICON,
- *     TexturePathDestination.TEXTURE_REGISTRY_KEY,
- *     registerIconPath,
- *     null  // domain 已包含在路径中
- * );
- * // 结果："gregtech:iconsets/MACHINE_CASING_LASER"
- * }</pre>
+ *     // 从 registerIcon 参数转换为 TextureRegistry 键
+ *     String registerIconPath = "gregtech:iconsets/MACHINE_CASING_LASER";
+ *     String registryKey = TexturePathConverter
+ *         .convert(TexturePathSource.REGISTER_ICON, TexturePathDestination.TEXTURE_REGISTRY_KEY, registerIconPath, null // domain
+ *                                                                                                                       // 已包含在路径中
+ *         );
+ *     // 结果："gregtech:iconsets/MACHINE_CASING_LASER"
+ * }
+ * </pre>
  */
 public final class TexturePathConverter {
 
@@ -44,12 +46,8 @@ public final class TexturePathConverter {
      * @return 转换后的路径字符串或 ResourceLocation
      * @throws IllegalArgumentException 如果转换不支持
      */
-    public static Object convert(
-        TexturePathSource source,
-        TexturePathDestination destination,
-        String path,
-        String domain
-    ) {
+    public static Object convert(TexturePathSource source, TexturePathDestination destination, String path,
+        String domain) {
         if (path == null || path.isEmpty()) {
             throw new IllegalArgumentException("Path cannot be null or empty");
         }
@@ -94,8 +92,7 @@ public final class TexturePathConverter {
             case MODEL_TEXTURE_REF:
                 // #key 引用，需要解析
                 throw new IllegalArgumentException(
-                    "MODEL_TEXTURE_REF requires texture map for resolution, use resolveModelTextureRef() instead"
-                );
+                    "MODEL_TEXTURE_REF requires texture map for resolution, use resolveModelTextureRef() instead");
 
             default:
                 throw new IllegalArgumentException("Unknown source type: " + source);
@@ -141,8 +138,7 @@ public final class TexturePathConverter {
      */
     private static String cleanConfigPath(String path) {
         // 移除可能的前缀和后缀
-        String cleaned = path
-            .replace("minecraft:", "")
+        String cleaned = path.replace("minecraft:", "")
             .replace("textures/blocks/", "")
             .replace("textures/items/", "")
             .replace(".png", "");
@@ -195,16 +191,17 @@ public final class TexturePathConverter {
     /**
      * 解析模型纹理引用（#key 形式）。
      *
-     * @param textureRef   纹理引用，如 "#all"
-     * @param textureMap   模型的 textures 对象
+     * @param textureRef 纹理引用，如 "#all"
+     * @param textureMap 模型的 textures 对象
      * @return 解析后的路径（MODEL_TEXTURES 格式）
      */
     public static String resolveModelTextureRef(String textureRef, java.util.Map<String, String> textureMap) {
         if (textureRef == null || !textureRef.startsWith("#")) {
-            return textureRef;  // 不是引用，直接返回
+            return textureRef; // 不是引用，直接返回
         }
 
-        String key = textureRef.substring(1).trim();
+        String key = textureRef.substring(1)
+            .trim();
         String resolved = textureMap.get(key);
 
         if (resolved == null) {
@@ -236,8 +233,7 @@ public final class TexturePathConverter {
             TexturePathSource.MODEL_TEXTURES,
             TexturePathDestination.RESOURCE_MANAGER,
             modelTexturePath,
-            domain
-        );
+            domain);
     }
 
     /**
@@ -248,8 +244,7 @@ public final class TexturePathConverter {
             TexturePathSource.REGISTER_ICON,
             TexturePathDestination.TEXTURE_REGISTRY_KEY,
             registerIconPath,
-            null
-        );
+            null);
     }
 
     /**
@@ -260,8 +255,7 @@ public final class TexturePathConverter {
             TexturePathSource.REGISTER_ICON,
             TexturePathDestination.RESOURCE_MANAGER,
             registerIconPath,
-            null
-        );
+            null);
     }
 
     /**
@@ -269,10 +263,9 @@ public final class TexturePathConverter {
      */
     public static String toFileSystemPath(String canonicalKey) {
         return (String) convert(
-            TexturePathSource.REGISTER_ICON,  // canonical 键与 registerIcon 格式相同
+            TexturePathSource.REGISTER_ICON, // canonical 键与 registerIcon 格式相同
             TexturePathDestination.FILE_SYSTEM,
             canonicalKey,
-            null
-        );
+            null);
     }
 }

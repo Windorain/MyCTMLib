@@ -14,9 +14,9 @@ public enum TexturePathSource {
      * <p>
      * 示例：
      * <ul>
-     *   <li>{@code "block/stone"} - Minecraft 原生方块</li>
-     *   <li>{@code "ic2:block/blockAlloyGlass"} - IC2 方块</li>
-     *   <li>{@code "item/diamond"} - Minecraft 原生物品</li>
+     * <li>{@code "block/stone"} - Minecraft 原生方块</li>
+     * <li>{@code "ic2:block/blockAlloyGlass"} - IC2 方块</li>
+     * <li>{@code "item/diamond"} - Minecraft 原生物品</li>
      * </ul>
      * <p>
      * 特点：必须有 {@code block/} 或 {@code item/} 前缀（Minecraft 官方规范）
@@ -30,10 +30,10 @@ public enum TexturePathSource {
      * <p>
      * 示例：
      * <ul>
-     *   <li>{@code "gregtech:iconsets/MACHINE_CASING_LASER"} - GregTech</li>
-     *   <li>{@code "gregtech:materialicons/SHINY/wire"} - GregTech</li>
-     *   <li>{@code "ic2:blockAlloyGlass&5"} - IC2</li>
-     *   <li>{@code "stone"} - Minecraft 原生</li>
+     * <li>{@code "gregtech:iconsets/MACHINE_CASING_LASER"} - GregTech</li>
+     * <li>{@code "gregtech:materialicons/SHINY/wire"} - GregTech</li>
+     * <li>{@code "ic2:blockAlloyGlass&5"} - IC2</li>
+     * <li>{@code "stone"} - Minecraft 原生</li>
      * </ul>
      * <p>
      * 特点：不包含 {@code textures/blocks/} 前缀，由 TextureMap.completeResourceLocation() 拼接
@@ -47,8 +47,8 @@ public enum TexturePathSource {
      * <p>
      * 示例：
      * <ul>
-     *   <li>{@code "iconsets/MACHINE_CASING_LASER"} - 原始路径（来自 registerIcon）</li>
-     *   <li>{@code "textures/blocks/iconsets/xxx"} - 完整路径（来自 completeResourceLocation）</li>
+     * <li>{@code "iconsets/MACHINE_CASING_LASER"} - 原始路径（来自 registerIcon）</li>
+     * <li>{@code "textures/blocks/iconsets/xxx"} - 完整路径（来自 completeResourceLocation）</li>
      * </ul>
      * <p>
      * 特点：需要区分是原始的还是完整的
@@ -62,8 +62,8 @@ public enum TexturePathSource {
      * <p>
      * 示例：
      * <ul>
-     *   <li>{@code "minecraft:textures/blocks/stone.png"} - 完整路径</li>
-     *   <li>{@code "gregtech:iconsets/xxx"} - 简化路径</li>
+     * <li>{@code "minecraft:textures/blocks/stone.png"} - 完整路径</li>
+     * <li>{@code "gregtech:iconsets/xxx"} - 简化路径</li>
      * </ul>
      */
     CONFIG_FILE,
@@ -75,8 +75,8 @@ public enum TexturePathSource {
      * <p>
      * 示例：
      * <ul>
-     *   <li>{@code "minecraft:textures/blocks/stone.png"} - 完整路径</li>
-     *   <li>{@code "gregtech:iconsets/MACHINE_CASING_FUSION"} - 简化路径</li>
+     * <li>{@code "minecraft:textures/blocks/stone.png"} - 完整路径</li>
+     * <li>{@code "gregtech:iconsets/MACHINE_CASING_FUSION"} - 简化路径</li>
      * </ul>
      */
     IC2_CONFIG,
@@ -88,8 +88,8 @@ public enum TexturePathSource {
      * <p>
      * 示例：
      * <ul>
-     *   <li>{@code "#all"} - 引用 textures 中的 "all" 键</li>
-     *   <li>{@code "#particle"} - 引用 textures 中的 "particle" 键</li>
+     * <li>{@code "#all"} - 引用 textures 中的 "all" 键</li>
+     * <li>{@code "#particle"} - 引用 textures 中的 "particle" 键</li>
      * </ul>
      */
     MODEL_TEXTURE_REF

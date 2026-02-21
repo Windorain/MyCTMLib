@@ -69,8 +69,7 @@ public abstract class MixinTextureMap extends AbstractTexture implements ITickab
     private String basePath;
 
     private TextureKeyNormalizer.TextureCategory getAtlasCategory() {
-        return (basePath != null && (basePath.contains("items")))
-            ? TextureKeyNormalizer.TextureCategory.ITEMS
+        return (basePath != null && (basePath.contains("items"))) ? TextureKeyNormalizer.TextureCategory.ITEMS
             : TextureKeyNormalizer.TextureCategory.BLOCKS;
     }
 

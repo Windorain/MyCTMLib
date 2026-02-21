@@ -6,10 +6,10 @@ import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
+import com.github.wohaopa.MyCTMLib.MyCTMLib;
 import com.github.wohaopa.MyCTMLib.blockstate.BlockStateRegistry;
 import com.github.wohaopa.MyCTMLib.model.ModelData;
 import com.github.wohaopa.MyCTMLib.model.ModelRegistry;
-import com.github.wohaopa.MyCTMLib.MyCTMLib;
 import com.github.wohaopa.MyCTMLib.texture.ConnectingTextureData;
 import com.github.wohaopa.MyCTMLib.texture.TextureRegistry;
 import com.github.wohaopa.MyCTMLib.texture.TextureTypeData;
@@ -61,16 +61,20 @@ public class RegistryDumpUtil {
                 ModelData data = e.getValue();
                 if (data != null) {
                     entry.addProperty("type", data.getType());
-                    entry.addProperty("elementsCount", data.getElements()
-                        .size());
+                    entry.addProperty(
+                        "elementsCount",
+                        data.getElements()
+                            .size());
                     JsonObject textures = new JsonObject();
                     for (Map.Entry<String, String> t : data.getTextures()
                         .entrySet()) {
                         textures.addProperty(t.getKey(), t.getValue());
                     }
                     entry.add("textures", textures);
-                    entry.add("connections", new GsonBuilder().create()
-                        .toJsonTree(data.getConnections()));
+                    entry.add(
+                        "connections",
+                        new GsonBuilder().create()
+                            .toJsonTree(data.getConnections()));
                 }
                 modelEntries.add(entry);
             }
@@ -89,8 +93,10 @@ public class RegistryDumpUtil {
                 if (data != null) {
                     entry.addProperty("type", data.getType());
                     if (data instanceof ConnectingTextureData ctd) {
-                        entry.addProperty("layout", ctd.getLayout()
-                            .name());
+                        entry.addProperty(
+                            "layout",
+                            ctd.getLayout()
+                                .name());
                         entry.addProperty("random", ctd.isRandom());
                     }
                 }
@@ -109,7 +115,8 @@ public class RegistryDumpUtil {
                     .create()
                     .toJson(root, w);
             }
-            MyCTMLib.LOG.info("[CTMLibFusion] RegistryDump written to {} (blockState={} model={} texture={})",
+            MyCTMLib.LOG.info(
+                "[CTMLibFusion] RegistryDump written to {} (blockState={} model={} texture={})",
                 outputFile,
                 bsEntries.size(),
                 modelEntries.size(),

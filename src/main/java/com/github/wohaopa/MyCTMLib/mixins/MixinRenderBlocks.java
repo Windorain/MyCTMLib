@@ -56,6 +56,12 @@ public abstract class MixinRenderBlocks {
         String iconName = TextureKeyNormalizer.normalizeIconName(iIcon.getIconName());
 
         if (CTMRenderEntry
+            .renderPipeline((RenderBlocks) (Object) this, blockAccess, block, x, y, z, iIcon, ForgeDirection.DOWN)) {
+            ci.cancel();
+            return;
+        }
+
+        if (CTMRenderEntry
             .tryRender((RenderBlocks) (Object) this, blockAccess, block, x, y, z, iIcon, ForgeDirection.DOWN)) {
             ci.cancel();
             return;
@@ -93,6 +99,12 @@ public abstract class MixinRenderBlocks {
         String iconName = TextureKeyNormalizer.normalizeIconName(iIcon.getIconName());
 
         if (CTMRenderEntry
+            .renderPipeline((RenderBlocks) (Object) this, blockAccess, block, x, y, z, iIcon, ForgeDirection.UP)) {
+            ci.cancel();
+            return;
+        }
+
+        if (CTMRenderEntry
             .tryRender((RenderBlocks) (Object) this, blockAccess, block, x, y, z, iIcon, ForgeDirection.UP)) {
             ci.cancel();
             return;
@@ -121,6 +133,12 @@ public abstract class MixinRenderBlocks {
         }
 
         String iconName = TextureKeyNormalizer.normalizeIconName(iIcon.getIconName());
+
+        if (CTMRenderEntry
+            .renderPipeline((RenderBlocks) (Object) this, blockAccess, block, x, y, z, iIcon, ForgeDirection.NORTH)) {
+            ci.cancel();
+            return;
+        }
 
         if (CTMRenderEntry
             .tryRender((RenderBlocks) (Object) this, blockAccess, block, x, y, z, iIcon, ForgeDirection.NORTH)) {
@@ -160,6 +178,12 @@ public abstract class MixinRenderBlocks {
         String iconName = TextureKeyNormalizer.normalizeIconName(iIcon.getIconName());
 
         if (CTMRenderEntry
+            .renderPipeline((RenderBlocks) (Object) this, blockAccess, block, x, y, z, iIcon, ForgeDirection.SOUTH)) {
+            ci.cancel();
+            return;
+        }
+
+        if (CTMRenderEntry
             .tryRender((RenderBlocks) (Object) this, blockAccess, block, x, y, z, iIcon, ForgeDirection.SOUTH)) {
             ci.cancel();
             return;
@@ -197,6 +221,12 @@ public abstract class MixinRenderBlocks {
         String iconName = TextureKeyNormalizer.normalizeIconName(iIcon.getIconName());
 
         if (CTMRenderEntry
+            .renderPipeline((RenderBlocks) (Object) this, blockAccess, block, x, y, z, iIcon, ForgeDirection.WEST)) {
+            ci.cancel();
+            return;
+        }
+
+        if (CTMRenderEntry
             .tryRender((RenderBlocks) (Object) this, blockAccess, block, x, y, z, iIcon, ForgeDirection.WEST)) {
             ci.cancel();
             return;
@@ -232,6 +262,12 @@ public abstract class MixinRenderBlocks {
         }
 
         String iconName = TextureKeyNormalizer.normalizeIconName(iIcon.getIconName());
+
+        if (CTMRenderEntry
+            .renderPipeline((RenderBlocks) (Object) this, blockAccess, block, x, y, z, iIcon, ForgeDirection.EAST)) {
+            ci.cancel();
+            return;
+        }
 
         if (CTMRenderEntry
             .tryRender((RenderBlocks) (Object) this, blockAccess, block, x, y, z, iIcon, ForgeDirection.EAST)) {

@@ -14,9 +14,9 @@ public enum TexturePathDestination {
      * <p>
      * 示例：
      * <ul>
-     *   <li>{@code "gregtech:blocks/iconsets/MACHINE_CASING_LASER"} - 纹理注册名</li>
-     *   <li>{@code "minecraft:blocks/stone"} - Minecraft 原生</li>
-     *   <li>{@code "ic2:blocks/blockAlloyGlass&5"} - IC2</li>
+     * <li>{@code "gregtech:blocks/iconsets/MACHINE_CASING_LASER"} - 纹理注册名</li>
+     * <li>{@code "minecraft:blocks/stone"} - Minecraft 原生</li>
+     * <li>{@code "ic2:blocks/blockAlloyGlass&5"} - IC2</li>
      * </ul>
      * <p>
      * 用途：在 TextureRegistry 中查找 ConnectingTextureData
@@ -30,8 +30,8 @@ public enum TexturePathDestination {
      * <p>
      * 示例：
      * <ul>
-     *   <li>{@code new ResourceLocation("gregtech", "iconsets/MACHINE_CASING_LASER")} - 原始路径</li>
-     *   <li>{@code new ResourceLocation("minecraft", "textures/blocks/stone.png")} - 完整路径（用于 ResourceManager）</li>
+     * <li>{@code new ResourceLocation("gregtech", "iconsets/MACHINE_CASING_LASER")} - 原始路径</li>
+     * <li>{@code new ResourceLocation("minecraft", "textures/blocks/stone.png")} - 完整路径（用于 ResourceManager）</li>
      * </ul>
      * <p>
      * 用途：创建 ResourceLocation 对象
@@ -45,8 +45,8 @@ public enum TexturePathDestination {
      * <p>
      * 示例：
      * <ul>
-     *   <li>{@code new ResourceLocation("gregtech", "textures/blocks/iconsets/xxx.png")}</li>
-     *   <li>{@code new ResourceLocation("minecraft", "textures/blocks/stone.png")}</li>
+     * <li>{@code new ResourceLocation("gregtech", "textures/blocks/iconsets/xxx.png")}</li>
+     * <li>{@code new ResourceLocation("minecraft", "textures/blocks/stone.png")}</li>
      * </ul>
      * <p>
      * 用途：从 ResourceManager 加载实际资源文件
@@ -60,8 +60,8 @@ public enum TexturePathDestination {
      * <p>
      * 示例：
      * <ul>
-     *   <li>{@code "gregtech:iconsets/MACHINE_CASING_LASER"}</li>
-     *   <li>{@code "stone"}</li>
+     * <li>{@code "gregtech:iconsets/MACHINE_CASING_LASER"}</li>
+     * <li>{@code "stone"}</li>
      * </ul>
      * <p>
      * 用途：在 TextureMap 中查找已注册的 TextureAtlasSprite
@@ -75,8 +75,8 @@ public enum TexturePathDestination {
      * <p>
      * 示例：
      * <ul>
-     *   <li>{@code "assets/gregtech/textures/blocks/iconsets/MACHINE_CASING_LASER.png"}</li>
-     *   <li>{@code "assets/minecraft/textures/blocks/stone.png"}</li>
+     * <li>{@code "assets/gregtech/textures/blocks/iconsets/MACHINE_CASING_LASER.png"}</li>
+     * <li>{@code "assets/minecraft/textures/blocks/stone.png"}</li>
      * </ul>
      * <p>
      * 用途：日志、dump 文件、调试信息
@@ -90,8 +90,8 @@ public enum TexturePathDestination {
      * <p>
      * 示例：
      * <ul>
-     *   <li>{@code "gregtech:iconsets/MACHINE_CASING_LASER"}</li>
-     *   <li>{@code "16x16"}</li>
+     * <li>{@code "gregtech:iconsets/MACHINE_CASING_LASER"}</li>
+     * <li>{@code "16x16"}</li>
      * </ul>
      * <p>
      * 用途：DebugOverlayHandler 显示

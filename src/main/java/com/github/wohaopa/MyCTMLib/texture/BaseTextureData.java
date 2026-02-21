@@ -18,6 +18,7 @@ public class BaseTextureData implements TextureTypeData {
      * 渲染类型：不透明、镂空、半透明。
      */
     public enum RenderType {
+
         OPAQUE("opaque"),
         CUTOUT("cutout"),
         TRANSLUCENT("translucent");
@@ -74,6 +75,7 @@ public class BaseTextureData implements TextureTypeData {
     }
 
     public static class Builder {
+
         private RenderType renderType = RenderType.OPAQUE;
         private boolean emissive = false;
         private QuadTinting tinting = null;

@@ -31,8 +31,7 @@ public class BlockStateRegistry {
      */
     public void put(String blockId, Map<String, String> variantToModel) {
         if (variantToModel == null || variantToModel.isEmpty()) return;
-        blockToVariants.put(TextureKeyNormalizer.normalizeDomain(blockId),
-            Collections.unmodifiableMap(variantToModel));
+        blockToVariants.put(TextureKeyNormalizer.normalizeDomain(blockId), Collections.unmodifiableMap(variantToModel));
     }
 
     /**

@@ -81,8 +81,8 @@ public final class PredicateRegistry {
             if (block == null) {
                 String norm = TextureKeyNormalizer.normalizeDomain(blockId);
                 for (Object k : Block.blockRegistry.getKeys()) {
-                    if (k instanceof String
-                        && TextureKeyNormalizer.normalizeDomain((String) k).equals(norm)) {
+                    if (k instanceof String && TextureKeyNormalizer.normalizeDomain((String) k)
+                        .equals(norm)) {
                         block = (Block) Block.blockRegistry.getObject((String) k);
                         break;
                     }
@@ -107,7 +107,7 @@ public final class PredicateRegistry {
      * 获取谓词的可读调试名。用于 Debug HUD。
      *
      * @param predicate     谓词实例
-     * @param connectionKey  Model 中的 connectionKey，可为 null 表示 default
+     * @param connectionKey Model 中的 connectionKey，可为 null 表示 default
      * @return 如 "default (is_same_texture)" 或 "blue (is_same_block)"
      */
     public static String getPredicateDebugName(ConnectionPredicate predicate, String connectionKey) {

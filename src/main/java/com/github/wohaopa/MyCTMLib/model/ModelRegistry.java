@@ -35,14 +35,13 @@ public class ModelRegistry {
 
     public void putTextureFallback(String texturePath, String modelId, int faceOrdinal) {
         TextureModelEntry e = new TextureModelEntry(modelId, faceOrdinal);
-        textureToModel.computeIfAbsent(TextureKeyNormalizer.normalizeDomain(texturePath),
-            k -> new java.util.ArrayList<>())
+        textureToModel
+            .computeIfAbsent(TextureKeyNormalizer.normalizeDomain(texturePath), k -> new java.util.ArrayList<>())
             .add(e);
     }
 
     public List<TextureModelEntry> getModelsForTexture(String texturePath) {
-        List<TextureModelEntry> list = textureToModel
-            .get(TextureKeyNormalizer.normalizeDomain(texturePath));
+        List<TextureModelEntry> list = textureToModel.get(TextureKeyNormalizer.normalizeDomain(texturePath));
         return list != null ? Collections.unmodifiableList(list) : Collections.emptyList();
     }
 

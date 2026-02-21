@@ -33,13 +33,14 @@ public class TextureStitchEventHandler {
         boolean isItems = (textureType == 1);
         if (!isBlocks && !isItems) return;
 
-        CTMLibResourceLoader.ensureLoaded(Minecraft.getMinecraft().getResourceManager());
+        CTMLibResourceLoader.ensureLoaded(
+            Minecraft.getMinecraft()
+                .getResourceManager());
 
         Map<String, TextureTypeData> pathToData = TextureRegistry.getInstance()
             .getPathToDataForDump();
         for (Map.Entry<String, TextureTypeData> e : pathToData.entrySet()) {
-            if (!(e.getValue() instanceof ConnectingTextureData)
-                && !(e.getValue() instanceof RandomTextureData)
+            if (!(e.getValue() instanceof ConnectingTextureData) && !(e.getValue() instanceof RandomTextureData)
                 && !(e.getValue() instanceof BaseTextureData)) continue;
             String key = e.getKey();
             TextureKeyNormalizer.TextureCategory cat = TextureKeyNormalizer.getTextureCategory(key);
@@ -49,8 +50,8 @@ public class TextureStitchEventHandler {
             try {
                 map.registerIcon(toRegisterIconName(key, isBlocks, isItems));
             } catch (Exception ex) {
-                com.github.wohaopa.MyCTMLib.MyCTMLib.LOG.warn(
-                    "[CTMLib] TextureStitchEvent.Pre registerIcon failed key={}", key, ex);
+                com.github.wohaopa.MyCTMLib.MyCTMLib.LOG
+                    .warn("[CTMLib] TextureStitchEvent.Pre registerIcon failed key={}", key, ex);
             }
         }
     }

@@ -37,10 +37,10 @@ public class DebugErrorCollector {
     /**
      * 收集预载阶段异常。
      *
-     * @param stage              阶段：blockstate / model / texture_prefill
-     * @param location           逻辑位置（如 blockId、modelId、lookupKey）
+     * @param stage                 阶段：blockstate / model / texture_prefill
+     * @param location              逻辑位置（如 blockId、modelId、lookupKey）
      * @param attemptedResourcePath 尝试加载的资源路径，如 assets/domain/path（文件未找到时必填）
-     * @param t                  异常
+     * @param t                     异常
      */
     public synchronized void add(String stage, String location, String attemptedResourcePath, Throwable t) {
         if (t == null) return;
@@ -54,8 +54,10 @@ public class DebugErrorCollector {
         if (attemptedResourcePath != null && !attemptedResourcePath.isEmpty()) {
             obj.addProperty("attemptedPath", attemptedResourcePath);
         }
-        obj.addProperty("exceptionClass", t.getClass()
-            .getName());
+        obj.addProperty(
+            "exceptionClass",
+            t.getClass()
+                .getName());
         obj.addProperty("message", t.getMessage() != null ? t.getMessage() : "");
         obj.add("stackTrace", stackTrace);
         entries.add(obj);
@@ -69,8 +71,10 @@ public class DebugErrorCollector {
         if (entries.isEmpty()) return;
         try {
             JsonObject root = new JsonObject();
-            root.addProperty("timestamp", Instant.now()
-                .toString());
+            root.addProperty(
+                "timestamp",
+                Instant.now()
+                    .toString());
             JsonArray arr = new JsonArray();
             for (JsonObject e : entries) {
                 arr.add(e);

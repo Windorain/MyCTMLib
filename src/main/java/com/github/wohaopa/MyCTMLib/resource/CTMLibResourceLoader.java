@@ -11,10 +11,10 @@ import java.util.Set;
 
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.resources.data.IMetadataSection;
 import net.minecraft.client.resources.IReloadableResourceManager;
 import net.minecraft.client.resources.IResource;
 import net.minecraft.client.resources.IResourceManager;
+import net.minecraft.client.resources.data.IMetadataSection;
 import net.minecraft.util.ResourceLocation;
 
 import com.github.wohaopa.MyCTMLib.MyCTMLib;
@@ -62,7 +62,6 @@ public class CTMLibResourceLoader implements net.minecraft.client.resources.IRes
         doLoad(resourceManager);
         loaded = true;
     }
-
 
     @Override
     public void onResourceManagerReload(IResourceManager resourceManager) {
@@ -116,11 +115,14 @@ public class CTMLibResourceLoader implements net.minecraft.client.resources.IRes
                 if (!(key instanceof String)) continue;
                 String blockId = (String) key;
                 int colon = blockId.indexOf(':');
-                String domain = colon >= 0 ? blockId.substring(0, colon).toLowerCase(Locale.ROOT) : "minecraft";
+                String domain = colon >= 0 ? blockId.substring(0, colon)
+                    .toLowerCase(Locale.ROOT) : "minecraft";
                 String path = colon >= 0 ? blockId.substring(colon + 1) : blockId;
                 String blockstatePath = "blockstates/" + path + ".json";
                 ResourceLocation blockstateLoc = new ResourceLocation(domain, blockstatePath);
-                String attemptedPath = "assets/" + blockstateLoc.getResourceDomain() + "/" + blockstateLoc.getResourcePath();
+                String attemptedPath = "assets/" + blockstateLoc.getResourceDomain()
+                    + "/"
+                    + blockstateLoc.getResourcePath();
                 try {
                     IResource res = resourceManager.getResource(blockstateLoc);
                     try (InputStream in = res.getInputStream()) {
@@ -183,10 +185,10 @@ public class CTMLibResourceLoader implements net.minecraft.client.resources.IRes
      */
     public void loadModel(IResourceManager resourceManager, String modelId) {
         int colon = modelId.indexOf(':');
-        String domain = colon >= 0 ? modelId.substring(0, colon).toLowerCase(Locale.ROOT) : "minecraft";
+        String domain = colon >= 0 ? modelId.substring(0, colon)
+            .toLowerCase(Locale.ROOT) : "minecraft";
         String path = colon >= 0 ? modelId.substring(colon + 1) : modelId;
-        String resourcePath = (path.startsWith("block/") || path.startsWith("item/"))
-            ? "models/" + path + ".json"
+        String resourcePath = (path.startsWith("block/") || path.startsWith("item/")) ? "models/" + path + ".json"
             : "models/block/" + path + ".json";
         ResourceLocation modelLoc = new ResourceLocation(domain, resourcePath);
         String attemptedPath = "assets/" + modelLoc.getResourceDomain() + "/" + modelLoc.getResourcePath();
@@ -216,9 +218,12 @@ public class CTMLibResourceLoader implements net.minecraft.client.resources.IRes
             ModelData data = modelParser.parse(root);
             ModelRegistry.getInstance()
                 .put(TextureKeyNormalizer.normalizeDomain(modelId), data);
-            if (MyCTMLib.debugMode && data.getTextures() != null && !data.getTextures()
-                .isEmpty()) {
-                MyCTMLib.LOG.info("[CTMLibFusion] prefillTextureRegistry ENTRY modelId={} textures={}", modelId,
+            if (MyCTMLib.debugMode && data.getTextures() != null
+                && !data.getTextures()
+                    .isEmpty()) {
+                MyCTMLib.LOG.info(
+                    "[CTMLibFusion] prefillTextureRegistry ENTRY modelId={} textures={}",
+                    modelId,
                     data.getTextures());
             }
             prefillTextureRegistryForModel(resourceManager, domain, data);
@@ -229,8 +234,7 @@ public class CTMLibResourceLoader implements net.minecraft.client.resources.IRes
      * 根据模型引用的纹理路径预填充 TextureRegistry。
      * 若已存在则跳过；若不存在则尝试加载纹理资源，有 ctmlib mcmeta 则注册；纹理不存在则静默跳过。
      */
-    private void prefillTextureRegistryForModel(IResourceManager resourceManager, String modelDomain,
-        ModelData data) {
+    private void prefillTextureRegistryForModel(IResourceManager resourceManager, String modelDomain, ModelData data) {
         Map<String, String> textures = data.getTextures();
         if (textures == null || textures.isEmpty()) return;
         Set<String> resolvedPaths = new HashSet<>();
@@ -242,7 +246,9 @@ public class CTMLibResourceLoader implements net.minecraft.client.resources.IRes
             }
         }
         if (MyCTMLib.debugMode && !resolvedPaths.isEmpty()) {
-            MyCTMLib.LOG.info("[CTMLibFusion] prefillTextureRegistry modelDomain={} resolvedPaths={}", modelDomain,
+            MyCTMLib.LOG.info(
+                "[CTMLibFusion] prefillTextureRegistry modelDomain={} resolvedPaths={}",
+                modelDomain,
                 resolvedPaths);
         }
         TextureRegistry texReg = TextureRegistry.getInstance();
@@ -250,8 +256,10 @@ public class CTMLibResourceLoader implements net.minecraft.client.resources.IRes
             String lookupKey = TextureKeyNormalizer.toCanonicalTextureKey(modelDomain, texturePath);
             if (lookupKey == null) {
                 if (MyCTMLib.debugMode) {
-                    MyCTMLib.LOG.warn("[CTMLibFusion] prefillTextureRegistry lookupKey=null modelDomain={} texturePath={}",
-                        modelDomain, texturePath);
+                    MyCTMLib.LOG.warn(
+                        "[CTMLibFusion] prefillTextureRegistry lookupKey=null modelDomain={} texturePath={}",
+                        modelDomain,
+                        texturePath);
                 }
                 continue;
             }
@@ -268,21 +276,27 @@ public class CTMLibResourceLoader implements net.minecraft.client.resources.IRes
                 ResourceLoadTrace.getInstance()
                     .add("texture_prefill", lookupKey, null, false);
                 if (MyCTMLib.debugMode) {
-                    MyCTMLib.LOG.warn("[CTMLibFusion] prefillTextureRegistry texRes=null modelDomain={} texturePath={} lookupKey={}",
-                        modelDomain, texturePath, lookupKey);
+                    MyCTMLib.LOG.warn(
+                        "[CTMLibFusion] prefillTextureRegistry texRes=null modelDomain={} texturePath={} lookupKey={}",
+                        modelDomain,
+                        texturePath,
+                        lookupKey);
                 }
                 continue;
             }
             String fullPath = "assets/" + texRes.getResourceDomain() + "/" + texRes.getResourcePath();
             if (MyCTMLib.debugMode) {
-                MyCTMLib.LOG.info("[CTMLibFusion] prefillTextureRegistry try resource domain={} path={} full={}",
-                    texRes.getResourceDomain(), texRes.getResourcePath(),
+                MyCTMLib.LOG.info(
+                    "[CTMLibFusion] prefillTextureRegistry try resource domain={} path={} full={}",
+                    texRes.getResourceDomain(),
+                    texRes.getResourcePath(),
                     "assets/" + texRes.getResourceDomain() + "/" + texRes.getResourcePath());
             }
             try {
                 IResource resource = resourceManager.getResource(texRes);
                 if (MyCTMLib.debugMode) {
-                    MyCTMLib.LOG.info("[CTMLibFusion] prefillTextureRegistry resource found for lookupKey={}", lookupKey);
+                    MyCTMLib.LOG
+                        .info("[CTMLibFusion] prefillTextureRegistry resource found for lookupKey={}", lookupKey);
                 }
                 IMetadataSection sec;
                 try {
@@ -290,8 +304,11 @@ public class CTMLibResourceLoader implements net.minecraft.client.resources.IRes
                 } catch (Exception deserEx) {
                     ResourceLoadTrace.getInstance()
                         .add("texture_prefill", lookupKey, fullPath, false, null, deserEx);
-                    MyCTMLib.LOG.warn("[CTMLibFusion] prefillTextureRegistry ctmlib deserialize failed lookupKey={} path={}",
-                        lookupKey, fullPath, deserEx);
+                    MyCTMLib.LOG.warn(
+                        "[CTMLibFusion] prefillTextureRegistry ctmlib deserialize failed lookupKey={} path={}",
+                        lookupKey,
+                        fullPath,
+                        deserEx);
                     DebugErrorCollector.getInstance()
                         .add("texture_prefill_deserialize", lookupKey, fullPath, deserEx);
                     continue;
@@ -307,8 +324,10 @@ public class CTMLibResourceLoader implements net.minecraft.client.resources.IRes
                     ResourceLoadTrace.getInstance()
                         .add("texture_prefill_skip", lookupKey, fullPath, true);
                     if (MyCTMLib.debugMode) {
-                        MyCTMLib.LOG.debug("[CTMLibFusion] prefillTextureRegistry no ctmlib metadata lookupKey={} sec={}",
-                            lookupKey, sec != null ? sec.getClass()
+                        MyCTMLib.LOG.debug(
+                            "[CTMLibFusion] prefillTextureRegistry no ctmlib metadata lookupKey={} sec={}",
+                            lookupKey,
+                            sec != null ? sec.getClass()
                                 .getName() : "null");
                     }
                 }
@@ -316,16 +335,21 @@ public class CTMLibResourceLoader implements net.minecraft.client.resources.IRes
                 ResourceLoadTrace.getInstance()
                     .add("texture_prefill", lookupKey, fullPath, false, null, e);
                 if (MyCTMLib.debugMode) {
-                    MyCTMLib.LOG.warn("[CTMLibFusion] prefillTextureRegistry resource not found lookupKey={} path={}",
-                        lookupKey, fullPath);
+                    MyCTMLib.LOG.warn(
+                        "[CTMLibFusion] prefillTextureRegistry resource not found lookupKey={} path={}",
+                        lookupKey,
+                        fullPath);
                 }
                 DebugErrorCollector.getInstance()
                     .add("texture_prefill", lookupKey, fullPath, e);
             } catch (Exception e) {
                 ResourceLoadTrace.getInstance()
                     .add("texture_prefill", lookupKey, fullPath, false, null, e);
-                MyCTMLib.LOG.warn("[CTMLibFusion] prefillTextureRegistry unexpected lookupKey={} path={}", lookupKey,
-                    fullPath, e);
+                MyCTMLib.LOG.warn(
+                    "[CTMLibFusion] prefillTextureRegistry unexpected lookupKey={} path={}",
+                    lookupKey,
+                    fullPath,
+                    e);
                 DebugErrorCollector.getInstance()
                     .add("texture_prefill", lookupKey, fullPath, e);
             }
@@ -339,7 +363,9 @@ public class CTMLibResourceLoader implements net.minecraft.client.resources.IRes
      * <p>
      * 根据 Minecraft 官方模型系统规范，模型 JSON 中的纹理引用格式为：
      * </p>
-     * <pre>{@code
+     * 
+     * <pre>
+     * {@code
      * {
      *   "textures": {
      *     "all": "block/stone",           // Minecraft 原生：block/ 前缀
@@ -347,10 +373,12 @@ public class CTMLibResourceLoader implements net.minecraft.client.resources.IRes
      *     "default": "ic2:block/xxx"      // Mod 纹理：modid:block/ 前缀
      *   }
      * }
-     * }</pre>
+     * }
+     * </pre>
      * <p>
      * 纹理实际文件路径为：
      * </p>
+     * 
      * <pre>
      * assets/&lt;namespace&gt;/textures/&lt;path&gt;.png
      *                             ^^^^^^
@@ -360,8 +388,8 @@ public class CTMLibResourceLoader implements net.minecraft.client.resources.IRes
      * 例如：
      * </p>
      * <ul>
-     *   <li>{@code "block/stone"} → {@code assets/minecraft/textures/block/stone.png}</li>
-     *   <li>{@code "ic2:block/xxx"} → {@code assets/ic2/textures/block/xxx.png}</li>
+     * <li>{@code "block/stone"} → {@code assets/minecraft/textures/block/stone.png}</li>
+     * <li>{@code "ic2:block/xxx"} → {@code assets/ic2/textures/block/xxx.png}</li>
      * </ul>
      *
      * <h2>CTMLib 的规范化处理</h2>
@@ -369,11 +397,12 @@ public class CTMLibResourceLoader implements net.minecraft.client.resources.IRes
      * {@link TextureKeyNormalizer#toCanonicalTextureKey(String, String)} 会将路径规范化为：
      * </p>
      * <ul>
-     *   <li>{@code "block/xxx"} → {@code "blocks/xxx"} (单数 → 复数)</li>
-     *   <li>{@code "item/xxx"} → {@code "items/xxx"} (单数 → 复数)</li>
+     * <li>{@code "block/xxx"} → {@code "blocks/xxx"} (单数 → 复数)</li>
+     * <li>{@code "item/xxx"} → {@code "items/xxx"} (单数 → 复数)</li>
      * </ul>
      *
      * <h2>转换示例</h2>
+     * 
      * <pre>
      * 输入：modelDomain = "ic2", texturePath = "ic2:block/blockAlloyGlass"
      * ↓
@@ -387,8 +416,8 @@ public class CTMLibResourceLoader implements net.minecraft.client.resources.IRes
      * 返回：ResourceLocation("ic2", "textures/blocks/blockAlloyGlass.png")
      * </pre>
      *
-     * @param modelDomain   模型所在的 domain（如 "minecraft", "ic2", "gregtech"）
-     * @param texturePath   模型 textures 对象中的值（如 "block/stone", "ic2:block/xxx"）
+     * @param modelDomain 模型所在的 domain（如 "minecraft", "ic2", "gregtech"）
+     * @param texturePath 模型 textures 对象中的值（如 "block/stone", "ic2:block/xxx"）
      * @return 用于 ResourceManager 查找纹理的 ResourceLocation
      * @see TextureKeyNormalizer#toCanonicalTextureKey(String, String)
      */
