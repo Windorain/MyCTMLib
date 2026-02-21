@@ -40,3 +40,5 @@ layout.json
 .qwen/
 /refs
 .qwenignore
+.ignore
+.opencode

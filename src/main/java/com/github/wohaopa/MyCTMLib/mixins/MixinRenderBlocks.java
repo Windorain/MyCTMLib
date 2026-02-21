@@ -14,6 +14,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import com.github.wohaopa.MyCTMLib.Textures;
 import com.github.wohaopa.MyCTMLib.render.CTMRenderEntry;
+import com.github.wohaopa.MyCTMLib.render.context.RenderInvocationContext;
+import com.github.wohaopa.MyCTMLib.render.context.RenderInvocationContextHolder;
+import com.github.wohaopa.MyCTMLib.render.context.RenderMethod;
+import com.github.wohaopa.MyCTMLib.render.context.RenderType;
 import com.github.wohaopa.MyCTMLib.texture.TextureKeyNormalizer;
 
 /**
@@ -285,6 +289,247 @@ public abstract class MixinRenderBlocks {
             iIcon,
             ForgeDirection.EAST)) {
             ci.cancel();
+        }
+    }
+
+    @Inject(method = "renderStandardBlockWithAmbientOcclusion", at = @At("HEAD"))
+    private void onRenderStandardBlockAOStart(Block block, IBlockAccess blockAccess, int x, int y, int z, CallbackInfo ci) {
+        RenderInvocationContext ctx = RenderInvocationContextHolder.get();
+        ctx.pushMethod(RenderMethod.RENDER_STANDARD_BLOCK_WITH_AO);
+        ctx.setRenderType(RenderType.BLOCK);
+        ctx.setRenderBlocks((RenderBlocks) (Object) this);
+        ctx.setBlockAccess(blockAccess);
+        ctx.setBlock(block);
+        ctx.setX(x);
+        ctx.setY(y);
+        ctx.setZ(z);
+        ctx.setMeta(blockAccess.getBlockMetadata(x, y, z));
+    }
+
+    @Inject(method = "renderStandardBlockWithAmbientOcclusion", at = @At("RETURN"))
+    private void onRenderStandardBlockAOEnd(CallbackInfo ci) {
+        RenderInvocationContext ctx = RenderInvocationContextHolder.getIfAvailable();
+        if (ctx == null) return;
+
+        ctx.popMethod();
+        ctx.setRenderBlocks(null);
+        ctx.setBlockAccess(null);
+        ctx.setBlock(null);
+        ctx.setX(0);
+        ctx.setY(0);
+        ctx.setZ(0);
+        ctx.setMeta(0);
+
+        if (ctx.isOutermostMethod()) {
+            RenderInvocationContextHolder.clear();
+        }
+    }
+
+    @Inject(method = "renderStandardBlock", at = @At("HEAD"))
+    private void onRenderStandardBlockStart(Block block, IBlockAccess blockAccess, int x, int y, int z, CallbackInfo ci) {
+        RenderInvocationContext ctx = RenderInvocationContextHolder.get();
+        ctx.pushMethod(RenderMethod.RENDER_STANDARD_BLOCK);
+        ctx.setRenderType(RenderType.BLOCK);
+        ctx.setRenderBlocks((RenderBlocks) (Object) this);
+        ctx.setBlockAccess(blockAccess);
+        ctx.setBlock(block);
+        ctx.setX(x);
+        ctx.setY(y);
+        ctx.setZ(z);
+        ctx.setMeta(blockAccess.getBlockMetadata(x, y, z));
+    }
+
+    @Inject(method = "renderStandardBlock", at = @At("RETURN"))
+    private void onRenderStandardBlockEnd(CallbackInfo ci) {
+        RenderInvocationContext ctx = RenderInvocationContextHolder.getIfAvailable();
+        if (ctx == null) return;
+
+        ctx.popMethod();
+        ctx.setRenderBlocks(null);
+        ctx.setBlockAccess(null);
+        ctx.setBlock(null);
+        ctx.setX(0);
+        ctx.setY(0);
+        ctx.setZ(0);
+        ctx.setMeta(0);
+
+        if (ctx.isOutermostMethod()) {
+            RenderInvocationContextHolder.clear();
+        }
+    }
+
+    @Inject(method = "renderBlockAsItem", at = @At("HEAD"))
+    private void onRenderBlockAsItemStart(Block block, int metadata, int color, CallbackInfo ci) {
+        RenderInvocationContext ctx = RenderInvocationContextHolder.get();
+        ctx.pushMethod(RenderMethod.RENDER_BLOCK_AS_ITEM);
+        ctx.setRenderType(RenderType.BLOCK_AS_ITEM);
+        ctx.setRenderBlocks((RenderBlocks) (Object) this);
+        ctx.setBlock(block);
+        ctx.setMeta(metadata);
+    }
+
+    @Inject(method = "renderBlockAsItem", at = @At("RETURN"))
+    private void onRenderBlockAsItemEnd(CallbackInfo ci) {
+        RenderInvocationContext ctx = RenderInvocationContextHolder.getIfAvailable();
+        if (ctx == null) return;
+
+        ctx.popMethod();
+        ctx.setRenderBlocks(null);
+        ctx.setBlock(null);
+        ctx.setMeta(0);
+
+        if (ctx.isOutermostMethod()) {
+            RenderInvocationContextHolder.clear();
+        }
+    }
+
+    @Inject(method = "renderFaceYPos", at = @At("HEAD"))
+    private void onRenderFaceYPosStart(Block block, double x, double y, double z, IIcon icon, CallbackInfo ci) {
+        RenderInvocationContext ctx = RenderInvocationContextHolder.getIfAvailable();
+        if (ctx != null) {
+            ctx.pushMethod(RenderMethod.RENDER_FACE_Y_POS);
+            ctx.setCurrentFace(ForgeDirection.UP);
+            ctx.setCurrentIcon(icon);
+            ctx.incrementFaceRenderCount(ForgeDirection.UP);
+        }
+    }
+
+    @Inject(method = "renderFaceYPos", at = @At("RETURN"))
+    private void onRenderFaceYPosEnd(CallbackInfo ci) {
+        RenderInvocationContext ctx = RenderInvocationContextHolder.getIfAvailable();
+        if (ctx == null) return;
+
+        ctx.setCurrentFace(null);
+        ctx.setCurrentIcon(null);
+        ctx.popMethod();
+
+        if (ctx.isOutermostMethod()) {
+            RenderInvocationContextHolder.clear();
+        }
+    }
+
+    @Inject(method = "renderFaceYNeg", at = @At("HEAD"))
+    private void onRenderFaceYNegStart(Block block, double x, double y, double z, IIcon icon, CallbackInfo ci) {
+        RenderInvocationContext ctx = RenderInvocationContextHolder.getIfAvailable();
+        if (ctx != null) {
+            ctx.pushMethod(RenderMethod.RENDER_FACE_Y_NEG);
+            ctx.setCurrentFace(ForgeDirection.DOWN);
+            ctx.setCurrentIcon(icon);
+            ctx.incrementFaceRenderCount(ForgeDirection.DOWN);
+        }
+    }
+
+    @Inject(method = "renderFaceYNeg", at = @At("RETURN"))
+    private void onRenderFaceYNegEnd(CallbackInfo ci) {
+        RenderInvocationContext ctx = RenderInvocationContextHolder.getIfAvailable();
+        if (ctx == null) return;
+
+        ctx.setCurrentFace(null);
+        ctx.setCurrentIcon(null);
+        ctx.popMethod();
+
+        if (ctx.isOutermostMethod()) {
+            RenderInvocationContextHolder.clear();
+        }
+    }
+
+    @Inject(method = "renderFaceXPos", at = @At("HEAD"))
+    private void onRenderFaceXPosStart(Block block, double x, double y, double z, IIcon icon, CallbackInfo ci) {
+        RenderInvocationContext ctx = RenderInvocationContextHolder.getIfAvailable();
+        if (ctx != null) {
+            ctx.pushMethod(RenderMethod.RENDER_FACE_X_POS);
+            ctx.setCurrentFace(ForgeDirection.EAST);
+            ctx.setCurrentIcon(icon);
+            ctx.incrementFaceRenderCount(ForgeDirection.EAST);
+        }
+    }
+
+    @Inject(method = "renderFaceXPos", at = @At("RETURN"))
+    private void onRenderFaceXPosEnd(CallbackInfo ci) {
+        RenderInvocationContext ctx = RenderInvocationContextHolder.getIfAvailable();
+        if (ctx == null) return;
+
+        ctx.setCurrentFace(null);
+        ctx.setCurrentIcon(null);
+        ctx.popMethod();
+
+        if (ctx.isOutermostMethod()) {
+            RenderInvocationContextHolder.clear();
+        }
+    }
+
+    @Inject(method = "renderFaceXNeg", at = @At("HEAD"))
+    private void onRenderFaceXNegStart(Block block, double x, double y, double z, IIcon icon, CallbackInfo ci) {
+        RenderInvocationContext ctx = RenderInvocationContextHolder.getIfAvailable();
+        if (ctx != null) {
+            ctx.pushMethod(RenderMethod.RENDER_FACE_X_NEG);
+            ctx.setCurrentFace(ForgeDirection.WEST);
+            ctx.setCurrentIcon(icon);
+            ctx.incrementFaceRenderCount(ForgeDirection.WEST);
+        }
+    }
+
+    @Inject(method = "renderFaceXNeg", at = @At("RETURN"))
+    private void onRenderFaceXNegEnd(CallbackInfo ci) {
+        RenderInvocationContext ctx = RenderInvocationContextHolder.getIfAvailable();
+        if (ctx == null) return;
+
+        ctx.setCurrentFace(null);
+        ctx.setCurrentIcon(null);
+        ctx.popMethod();
+
+        if (ctx.isOutermostMethod()) {
+            RenderInvocationContextHolder.clear();
+        }
+    }
+
+    @Inject(method = "renderFaceZPos", at = @At("HEAD"))
+    private void onRenderFaceZPosStart(Block block, double x, double y, double z, IIcon icon, CallbackInfo ci) {
+        RenderInvocationContext ctx = RenderInvocationContextHolder.getIfAvailable();
+        if (ctx != null) {
+            ctx.pushMethod(RenderMethod.RENDER_FACE_Z_POS);
+            ctx.setCurrentFace(ForgeDirection.SOUTH);
+            ctx.setCurrentIcon(icon);
+            ctx.incrementFaceRenderCount(ForgeDirection.SOUTH);
+        }
+    }
+
+    @Inject(method = "renderFaceZPos", at = @At("RETURN"))
+    private void onRenderFaceZPosEnd(CallbackInfo ci) {
+        RenderInvocationContext ctx = RenderInvocationContextHolder.getIfAvailable();
+        if (ctx == null) return;
+
+        ctx.setCurrentFace(null);
+        ctx.setCurrentIcon(null);
+        ctx.popMethod();
+
+        if (ctx.isOutermostMethod()) {
+            RenderInvocationContextHolder.clear();
+        }
+    }
+
+    @Inject(method = "renderFaceZNeg", at = @At("HEAD"))
+    private void onRenderFaceZNegStart(Block block, double x, double y, double z, IIcon icon, CallbackInfo ci) {
+        RenderInvocationContext ctx = RenderInvocationContextHolder.getIfAvailable();
+        if (ctx != null) {
+            ctx.pushMethod(RenderMethod.RENDER_FACE_Z_NEG);
+            ctx.setCurrentFace(ForgeDirection.NORTH);
+            ctx.setCurrentIcon(icon);
+            ctx.incrementFaceRenderCount(ForgeDirection.NORTH);
+        }
+    }
+
+    @Inject(method = "renderFaceZNeg", at = @At("RETURN"))
+    private void onRenderFaceZNegEnd(CallbackInfo ci) {
+        RenderInvocationContext ctx = RenderInvocationContextHolder.getIfAvailable();
+        if (ctx == null) return;
+
+        ctx.setCurrentFace(null);
+        ctx.setCurrentIcon(null);
+        ctx.popMethod();
+
+        if (ctx.isOutermostMethod()) {
+            RenderInvocationContextHolder.clear();
         }
     }
 

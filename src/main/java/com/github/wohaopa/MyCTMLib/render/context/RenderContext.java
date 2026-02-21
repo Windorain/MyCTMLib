@@ -321,6 +321,10 @@ public class RenderContext {
         return null;
     }
 
+    public RenderInvocationContext getInvocationContext() {
+        return RenderInvocationContextHolder.getIfAvailable();
+    }
+
     public static class RenderContextBuilder {
 
         private RenderBlocks renderBlocks;
