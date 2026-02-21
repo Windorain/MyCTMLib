@@ -12,6 +12,7 @@ import net.minecraft.client.resources.IResource;
 import net.minecraft.client.resources.IResourceManager;
 import net.minecraft.util.ResourceLocation;
 
+import com.github.wohaopa.MyCTMLib.texture.BaseTextureData;
 import com.github.wohaopa.MyCTMLib.texture.ConnectingTextureData;
 import com.github.wohaopa.MyCTMLib.texture.RandomTextureData;
 import com.github.wohaopa.MyCTMLib.texture.TextureRegistry;
@@ -27,8 +28,18 @@ import cpw.mods.fml.relauncher.SideOnly;
 @SideOnly(Side.CLIENT)
 public class NewTextureAtlasSprite extends TextureAtlasSprite {
 
+    private BaseTextureData data;
+
     public NewTextureAtlasSprite(String name) {
         super(name);
+    }
+
+    public void setData(BaseTextureData data) {
+        this.data = data;
+    }
+
+    public BaseTextureData getData() {
+        return data;
     }
 
     /**

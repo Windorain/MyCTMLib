@@ -19,6 +19,7 @@ import com.github.wohaopa.MyCTMLib.model.ModelFace;
 import com.github.wohaopa.MyCTMLib.model.ModelRegistry;
 import com.github.wohaopa.MyCTMLib.predicate.ConnectionPredicate;
 import com.github.wohaopa.MyCTMLib.predicate.PredicateRegistry;
+import com.github.wohaopa.MyCTMLib.texture.BaseTextureData;
 import com.github.wohaopa.MyCTMLib.texture.ConnectingTextureData;
 import com.github.wohaopa.MyCTMLib.texture.RandomTextureData;
 import com.github.wohaopa.MyCTMLib.texture.TextureKeyNormalizer;
@@ -94,6 +95,35 @@ public final class CTMRenderEntry {
                             double relMinZ = Math.min(f[2], t[2]) / 16.0;
                             double relMaxZ = Math.max(f[2], t[2]) / 16.0;
                             
+                            // 处理 BaseTextureData
+                            if (data instanceof BaseTextureData baseData) {
+                                FaceRenderer.drawFace(
+                                    renderBlocks,
+                                    x,
+                                    y,
+                                    z,
+                                    face,
+                                    drawIcon,
+                                    0,
+                                    0,
+                                    1,
+                                    1,
+                                    brightness,
+                                    relMinX,
+                                    relMaxX,
+                                    relMinY,
+                                    relMaxY,
+                                    relMinZ,
+                                    relMaxZ,
+                                    baseData,
+                                    blockAccess,
+                                    (int) x,
+                                    (int) y,
+                                    (int) z);
+                                drewAny = true;
+                                continue;
+                            }
+
                             // 处理 RandomTextureData
                             if (data instanceof RandomTextureData randomData) {
                                 long worldSeed = 0;
@@ -104,7 +134,7 @@ public final class CTMRenderEntry {
                                     worldSeed, (int) x, (int) y, (int) z, randomData.getCount());
                                 int tileX = randomIndex % randomData.getColumns();
                                 int tileY = randomIndex / randomData.getColumns();
-                                
+
                                 FaceRenderer.drawFace(
                                     renderBlocks,
                                     x,
@@ -122,11 +152,16 @@ public final class CTMRenderEntry {
                                     relMinY,
                                     relMaxY,
                                     relMinZ,
-                                    relMaxZ);
+                                    relMaxZ,
+                                    null,
+                                    blockAccess,
+                                    (int) x,
+                                    (int) y,
+                                    (int) z);
                                 drewAny = true;
                                 continue;
                             }
-                            
+
                             // 处理 ConnectingTextureData
                             if (!(data instanceof ConnectingTextureData texData)) continue;
                             ConnectingLayout layout = texData.getLayout();
@@ -150,7 +185,12 @@ public final class CTMRenderEntry {
                                 relMinY,
                                 relMaxY,
                                 relMinZ,
-                                relMaxZ);
+                                relMaxZ,
+                                null,
+                                blockAccess,
+                                (int) x,
+                                (int) y,
+                                (int) z);
                             drewAny = true;
                         }
                         if (drewAny) return true;
@@ -161,7 +201,7 @@ public final class CTMRenderEntry {
 
         // 回退到 TextureRegistry(iconName)：用 TexReg 查到的 sprite 绘制，无则用 block icon
         TextureTypeData data = getConnectingData(iconName);
-        if (!(data instanceof ConnectingTextureData) && !(data instanceof RandomTextureData)) return false;
+        if (!(data instanceof ConnectingTextureData) && !(data instanceof RandomTextureData) && !(data instanceof BaseTextureData)) return false;
         IIcon drawIcon = TextureRegistry.getInstance().getIcon(iconName);
         if (drawIcon == null) drawIcon = icon;
         int brightness = block.getMixedBrightnessForBlock(blockAccess, (int) x, (int) y, (int) z);
@@ -173,6 +213,34 @@ public final class CTMRenderEntry {
         double relMaxY = renderBlocks.renderMaxY;
         double relMinZ = renderBlocks.renderMinZ;
         double relMaxZ = renderBlocks.renderMaxZ;
+
+        // 处理 BaseTextureData
+        if (data instanceof BaseTextureData baseData) {
+            FaceRenderer.drawFace(
+                renderBlocks,
+                x,
+                y,
+                z,
+                face,
+                drawIcon,
+                0,
+                0,
+                1,
+                1,
+                brightness,
+                relMinX,
+                relMaxX,
+                relMinY,
+                relMaxY,
+                relMinZ,
+                relMaxZ,
+                baseData,
+                blockAccess,
+                (int) x,
+                (int) y,
+                (int) z);
+            return true;
+        }
 
         // 处理 RandomTextureData
         if (data instanceof RandomTextureData randomData) {
@@ -203,7 +271,12 @@ public final class CTMRenderEntry {
                 relMinY,
                 relMaxY,
                 relMinZ,
-                relMaxZ);
+                relMaxZ,
+                null,
+                blockAccess,
+                (int) x,
+                (int) y,
+                (int) z);
             return true;
         }
 
@@ -232,7 +305,12 @@ public final class CTMRenderEntry {
             relMinY,
             relMaxY,
             relMinZ,
-            relMaxZ);
+            relMaxZ,
+            null,
+            blockAccess,
+            (int) x,
+            (int) y,
+            (int) z);
         return true;
     }
 
@@ -546,7 +624,12 @@ public final class CTMRenderEntry {
             relMinY,
             relMaxY,
             relMinZ,
-            relMaxZ);
+            relMaxZ,
+            null,
+            null,
+            0,
+            0,
+            0);
         return true;
     }
 

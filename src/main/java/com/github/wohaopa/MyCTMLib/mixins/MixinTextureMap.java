@@ -45,6 +45,7 @@ import com.github.wohaopa.MyCTMLib.blockstate.BlockStateRegistry;
 import com.github.wohaopa.MyCTMLib.model.ModelRegistry;
 import com.github.wohaopa.MyCTMLib.resource.BlockTextureDumpUtil;
 import com.github.wohaopa.MyCTMLib.resource.DebugErrorCollector;
+import com.github.wohaopa.MyCTMLib.texture.BaseTextureData;
 import com.github.wohaopa.MyCTMLib.texture.TextureKeyNormalizer;
 import com.github.wohaopa.MyCTMLib.texture.TextureMetadataSection;
 import com.github.wohaopa.MyCTMLib.texture.TextureRegistry;
@@ -117,7 +118,14 @@ public abstract class MixinTextureMap extends AbstractTexture implements ITickab
 
             if (!(resource instanceof SimpleResource simple)) {
                 if (hadCtmlib) {
+                    IMetadataSection ctmlibSec = resource.getMetadata("ctmlib");
                     TextureAtlasSprite sprite = new NewTextureAtlasSprite(textureName);
+                    if (ctmlibSec instanceof TextureMetadataSection tms) {
+                        com.github.wohaopa.MyCTMLib.texture.TextureTypeData ttd = tms.getData();
+                        if (ttd instanceof BaseTextureData baseData && sprite instanceof NewTextureAtlasSprite ntas) {
+                            ntas.setData(baseData);
+                        }
+                    }
                     mapRegisteredSprites.put(textureName, sprite);
                     registerCanonicalToMapKey(textureName);
                     cir.setReturnValue(sprite);
@@ -133,7 +141,14 @@ public abstract class MixinTextureMap extends AbstractTexture implements ITickab
 
             if (ctmObj == null) {
                 if (hadCtmlib) {
+                    IMetadataSection ctmlibSec = resource.getMetadata("ctmlib");
                     TextureAtlasSprite sprite = new NewTextureAtlasSprite(textureName);
+                    if (ctmlibSec instanceof TextureMetadataSection tms) {
+                        com.github.wohaopa.MyCTMLib.texture.TextureTypeData ttd = tms.getData();
+                        if (ttd instanceof BaseTextureData baseData && sprite instanceof NewTextureAtlasSprite ntas) {
+                            ntas.setData(baseData);
+                        }
+                    }
                     mapRegisteredSprites.put(textureName, sprite);
                     registerCanonicalToMapKey(textureName);
                     cir.setReturnValue(sprite);
@@ -147,6 +162,13 @@ public abstract class MixinTextureMap extends AbstractTexture implements ITickab
 
             currentBase = useInterpolation(simple) ? new InterpolatedIcon(textureName)
                 : new NewTextureAtlasSprite(textureName);
+            if (hadCtmlib && currentBase instanceof NewTextureAtlasSprite ntas) {
+                com.github.wohaopa.MyCTMLib.texture.TextureTypeData ttd = TextureRegistry.getInstance()
+                    .get(TextureKeyNormalizer.toCanonicalTextureKey(textureName));
+                if (ttd instanceof BaseTextureData baseData) {
+                    ntas.setData(baseData);
+                }
+            }
             builder.setIconSmall(currentBase);
             mapRegisteredSprites.put(textureName, currentBase);
             registerCanonicalToMapKey(textureName);
