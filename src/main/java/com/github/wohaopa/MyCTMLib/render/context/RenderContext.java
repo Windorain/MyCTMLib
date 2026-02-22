@@ -26,7 +26,7 @@ public class RenderContext {
     private PipelineDebugListener debugListener;
 
     private RenderPipelineBranch branch;
-    private BlockRenderSubBranch blockSubBranch;
+    private BlockRenderMode blockSubBranch;
 
     private ModelData modelData;
     private List<ModelElement> elements;
@@ -222,11 +222,11 @@ public class RenderContext {
         this.branch = branch;
     }
 
-    public BlockRenderSubBranch getBlockSubBranch() {
+    public BlockRenderMode getBlockSubBranch() {
         return blockSubBranch;
     }
 
-    public void setBlockSubBranch(BlockRenderSubBranch blockSubBranch) {
+    public void setBlockSubBranch(BlockRenderMode blockSubBranch) {
         this.blockSubBranch = blockSubBranch;
     }
 

@@ -1,6 +1,6 @@
 package com.github.wohaopa.MyCTMLib.render.context;
 
-public enum BlockRenderSubBranch {
+public enum BlockRenderMode {
     MODEL,
     TEXTURE_RELOC,
     LEGACY

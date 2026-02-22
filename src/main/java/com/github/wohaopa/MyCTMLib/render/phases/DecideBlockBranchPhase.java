@@ -1,7 +1,7 @@
 package com.github.wohaopa.MyCTMLib.render.phases;
 
 import com.github.wohaopa.MyCTMLib.Textures;
-import com.github.wohaopa.MyCTMLib.render.context.BlockRenderSubBranch;
+import com.github.wohaopa.MyCTMLib.render.context.BlockRenderMode;
 import com.github.wohaopa.MyCTMLib.render.context.RenderContext;
 import com.github.wohaopa.MyCTMLib.render.pipeline.PhaseResult;
 import com.github.wohaopa.MyCTMLib.render.pipeline.PipelinePhase;
@@ -12,13 +12,13 @@ public class DecideBlockBranchPhase implements PipelinePhase {
     @Override
     public PhaseResult process(RenderContext context) {
         if (context.hasElements()) {
-            context.setBlockSubBranch(BlockRenderSubBranch.MODEL);
+            context.setBlockSubBranch(BlockRenderMode.MODEL);
             context.pushState(RenderState.PREPARE_MODEL_DATA);
         } else if (shouldUseLegacy(context)) {
-            context.setBlockSubBranch(BlockRenderSubBranch.LEGACY);
+            context.setBlockSubBranch(BlockRenderMode.LEGACY);
             context.pushState(RenderState.PREPARE_LEGACY_DATA);
         } else {
-            context.setBlockSubBranch(BlockRenderSubBranch.TEXTURE_RELOC);
+            context.setBlockSubBranch(BlockRenderMode.TEXTURE_RELOC);
             context.pushState(RenderState.PREPARE_TEXTURE_ICON);
         }
         return PhaseResult.CONTINUE;

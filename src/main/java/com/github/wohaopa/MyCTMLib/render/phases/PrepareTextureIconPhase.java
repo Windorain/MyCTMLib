@@ -1,7 +1,7 @@
 package com.github.wohaopa.MyCTMLib.render.phases;
 
 import com.github.wohaopa.MyCTMLib.render.context.RenderContext;
-import com.github.wohaopa.MyCTMLib.render.context.BlockRenderSubBranch;
+import com.github.wohaopa.MyCTMLib.render.context.BlockRenderMode;
 import com.github.wohaopa.MyCTMLib.render.pipeline.PhaseResult;
 import com.github.wohaopa.MyCTMLib.render.pipeline.PipelinePhase;
 import com.github.wohaopa.MyCTMLib.render.pipeline.RenderState;
@@ -21,7 +21,7 @@ public class PrepareTextureIconPhase implements PipelinePhase {
             }
         }
         
-        if (context.getBlockSubBranch() == BlockRenderSubBranch.MODEL) {
+        if (context.getBlockSubBranch() == BlockRenderMode.MODEL) {
             context.pushState(RenderState.ELEMENT_LOOP_CONTROL);
         } else {
             context.pushState(RenderState.PREPARE_TEXTURE_DATA);
