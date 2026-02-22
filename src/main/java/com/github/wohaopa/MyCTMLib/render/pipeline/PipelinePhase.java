@@ -4,5 +4,5 @@ import com.github.wohaopa.MyCTMLib.render.context.RenderContext;
 
 public interface PipelinePhase {
 
-    void process(RenderContext context);
+    PhaseResult process(RenderContext context) throws RenderPipelineException;
 }
