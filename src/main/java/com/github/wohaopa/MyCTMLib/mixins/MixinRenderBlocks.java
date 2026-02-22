@@ -357,8 +357,7 @@ public abstract class MixinRenderBlocks {
     }
 
     @Inject(method = "renderStandardBlock", at = @At("HEAD"))
-    private void onRenderStandardBlockStart(Block block, int x, int y, int z,
-        CallbackInfoReturnable<Boolean> cir) {
+    private void onRenderStandardBlockStart(Block block, int x, int y, int z, CallbackInfoReturnable<Boolean> cir) {
         RenderInvocationContext ctx = RenderInvocationContextHolder.get();
         ctx.pushMethod(RenderMethod.RENDER_STANDARD_BLOCK);
         ctx.setRenderType(RenderType.BLOCK);

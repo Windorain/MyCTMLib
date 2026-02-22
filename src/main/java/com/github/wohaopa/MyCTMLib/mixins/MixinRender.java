@@ -16,7 +16,8 @@ import com.github.wohaopa.MyCTMLib.render.context.RenderMethod;
 public abstract class MixinRender {
 
     @Inject(method = "doRender", at = @At("HEAD"))
-    private void onDoRenderStart(Entity entity, double x, double y, double z, float yaw, float partialTickTime, CallbackInfo ci) {
+    private void onDoRenderStart(Entity entity, double x, double y, double z, float yaw, float partialTickTime,
+        CallbackInfo ci) {
         RenderInvocationContext ctx = RenderInvocationContextHolder.getIfAvailable();
         if (ctx != null) {
             ctx.pushMethod(RenderMethod.DO_RENDER);

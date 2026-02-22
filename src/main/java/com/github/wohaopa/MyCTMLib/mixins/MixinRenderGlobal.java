@@ -18,7 +18,8 @@ import com.github.wohaopa.MyCTMLib.render.context.RenderType;
 public abstract class MixinRenderGlobal {
 
     @Inject(method = "renderEntities", at = @At("HEAD"))
-    private void onRenderEntitiesStart(EntityLivingBase player, ICamera camera, float partialTickTime, CallbackInfo ci) {
+    private void onRenderEntitiesStart(EntityLivingBase player, ICamera camera, float partialTickTime,
+        CallbackInfo ci) {
         RenderInvocationContext ctx = RenderInvocationContextHolder.get();
         ctx.pushMethod(RenderMethod.RENDER_ENTITIES);
         ctx.setRenderType(RenderType.ENTITY);

@@ -16,7 +16,8 @@ import com.github.wohaopa.MyCTMLib.render.context.RenderMethod;
 public abstract class MixinRenderManager {
 
     @Inject(method = "renderEntityStatic", at = @At("HEAD"))
-    private void onRenderEntityStaticStart(Entity entity, float partialTickTime, boolean flag, CallbackInfoReturnable<Boolean> cir) {
+    private void onRenderEntityStaticStart(Entity entity, float partialTickTime, boolean flag,
+        CallbackInfoReturnable<Boolean> cir) {
         RenderInvocationContext ctx = RenderInvocationContextHolder.get();
         ctx.pushMethod(RenderMethod.RENDER_ENTITY_STATIC);
         ctx.setEntity(entity);
