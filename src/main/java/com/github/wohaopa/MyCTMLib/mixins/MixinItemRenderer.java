@@ -1,6 +1,6 @@
 package com.github.wohaopa.MyCTMLib.mixins;
 
-import net.minecraft.client.renderer.entity.RenderItem;
+import net.minecraft.client.renderer.ItemRenderer;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.item.ItemStack;
 
@@ -14,7 +14,7 @@ import com.github.wohaopa.MyCTMLib.render.context.RenderInvocationContextHolder;
 import com.github.wohaopa.MyCTMLib.render.context.RenderMethod;
 import com.github.wohaopa.MyCTMLib.render.context.RenderType;
 
-@Mixin(RenderItem.class)
+@Mixin(ItemRenderer.class)
 public abstract class MixinItemRenderer {
 
     @Inject(method = "renderItem", at = @At("HEAD"))
