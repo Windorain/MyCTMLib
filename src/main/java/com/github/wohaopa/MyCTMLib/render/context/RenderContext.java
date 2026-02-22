@@ -10,7 +10,10 @@ import net.minecraftforge.common.util.ForgeDirection;
 
 import com.github.wohaopa.MyCTMLib.model.ModelData;
 import com.github.wohaopa.MyCTMLib.model.ModelElement;
+import com.github.wohaopa.MyCTMLib.model.ModelFace;
 import com.github.wohaopa.MyCTMLib.predicate.ConnectionPredicate;
+import com.github.wohaopa.MyCTMLib.predicate.PredicateRegistry;
+import com.github.wohaopa.MyCTMLib.render.CTMRenderEntry;
 import com.github.wohaopa.MyCTMLib.render.debug.PipelineDebugListener;
 import com.github.wohaopa.MyCTMLib.render.pipeline.RenderState;
 import com.github.wohaopa.MyCTMLib.texture.BaseTextureData;
@@ -31,7 +34,7 @@ public class RenderContext {
 
     private ModelData modelData;
     private List<ModelElement> elements;
-    private ConnectionPredicate connectionPredicate;
+    private boolean modelDataLoaded = false;
 
     private IIcon drawIcon;
     private TextureTypeData textureData;
@@ -57,7 +60,7 @@ public class RenderContext {
         this.modelId = null;
         this.modelData = null;
         this.elements = null;
-        this.connectionPredicate = null;
+        this.modelDataLoaded = false;
         this.drawIcon = null;
         this.textureData = null;
         this.connectionMask = null;
@@ -190,32 +193,70 @@ public class RenderContext {
         this.modelId = modelId;
     }
 
+    public boolean hasElements() {
+        ensureModelDataLoaded();
+        return elements != null && !elements.isEmpty();
+    }
+
+    public ConnectionPredicate getConnectionPredicate() {
+        ensureModelDataLoaded();
+        if (modelData == null) {
+            return PredicateRegistry.defaultPredicate();
+        }
+        
+        ModelFace firstFace = getFirstElementFace();
+        if (firstFace != null && firstFace.getConnectionKey() != null) {
+            ConnectionPredicate p = PredicateRegistry.getPredicate(
+                firstFace.getConnectionKey(), modelData.getConnections());
+            if (p != null) return p;
+        }
+        return PredicateRegistry.defaultPredicate();
+    }
+    
+    private ModelFace getFirstElementFace() {
+        if (elements == null || elements.isEmpty()) return null;
+        ModelElement first = elements.get(0);
+        if (first == null) return null;
+        return first.getFace(getFace());
+    }
+    
+    public void ensureModelDataLoaded() {
+        if (modelDataLoaded) return;
+        
+        String blockId = CTMRenderEntry.getBlockId(getBlock());
+        if (blockId != null) {
+            int meta = getMeta();
+            String modelId = com.github.wohaopa.MyCTMLib.blockstate.BlockStateRegistry.getInstance()
+                .getModelId(blockId, meta);
+            if (modelId != null) {
+                this.modelId = modelId;
+                this.modelData = com.github.wohaopa.MyCTMLib.model.ModelRegistry.getInstance().get(modelId);
+                if (this.modelData != null) {
+                    this.elements = CTMRenderEntry.getElementsWithFace(this.modelData, getFace());
+                }
+            }
+        }
+        modelDataLoaded = true;
+    }
+
     public ModelData getModelData() {
+        ensureModelDataLoaded();
         return modelData;
     }
 
     public void setModelData(ModelData modelData) {
         this.modelData = modelData;
+        this.modelDataLoaded = true;
     }
 
     public List<ModelElement> getElements() {
+        ensureModelDataLoaded();
         return elements;
     }
 
     public void setElements(List<ModelElement> elements) {
         this.elements = elements;
-    }
-
-    public boolean hasElements() {
-        return elements != null && !elements.isEmpty();
-    }
-
-    public ConnectionPredicate getConnectionPredicate() {
-        return connectionPredicate;
-    }
-
-    public void setConnectionPredicate(ConnectionPredicate connectionPredicate) {
-        this.connectionPredicate = connectionPredicate;
+        this.modelDataLoaded = true;
     }
 
     public ModelElement getCurrentElement() {

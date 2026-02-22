@@ -9,8 +9,11 @@ public class PrepareModelDataPhase implements PipelinePhase {
 
     @Override
     public PhaseResult process(RenderContext context) {
+        // 触发模型数据懒加载（MODEL 分支专用）
+        context.ensureModelDataLoaded();
+        
         context.popState();
-        context.pushState(RenderState.PREPARE_TEXTURE_ICON);
+        context.pushState(RenderState.ELEMENT_LOOP_CONTROL);
         return PhaseResult.CONTINUE;
     }
 }
