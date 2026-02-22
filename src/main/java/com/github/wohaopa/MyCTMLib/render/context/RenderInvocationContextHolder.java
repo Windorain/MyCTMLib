@@ -10,10 +10,17 @@ public class RenderInvocationContextHolder {
     public static RenderInvocationContext get() {
         RenderInvocationContext ctx = HOLDER.get();
 
-        if (ctx.getStackTop() >= 0) {
-            throw new IllegalStateException(
-                "RenderInvocationContext re-entry detected! " + "Current stack: "
-                    + Arrays.toString(ctx.getMethodStack()));
+        RenderMethod[] methodStack = ctx.getMethodStack();
+        int stackTop = ctx.getStackTop();
+        
+        for (int i = 0; i <= stackTop; i++) {
+            for (int j = i + 1; j <= stackTop; j++) {
+                if (methodStack[i] == methodStack[j] && methodStack[i] != null) {
+                    throw new IllegalStateException(
+                        "RenderInvocationContext re-entry detected! Duplicate method: " + methodStack[i]
+                            + ", Current stack: " + Arrays.toString(methodStack));
+                }
+            }
         }
 
         return ctx;
