@@ -323,10 +323,6 @@ public abstract class MixinRenderBlocks {
         ctx.setY(0);
         ctx.setZ(0);
         ctx.setMeta(0);
-
-        if (ctx.isOutermostMethod()) {
-            RenderInvocationContextHolder.clear();
-        }
     }
 
     @Inject(method = "renderStandardBlock", at = @At("HEAD"))
@@ -359,10 +355,6 @@ public abstract class MixinRenderBlocks {
         ctx.setY(0);
         ctx.setZ(0);
         ctx.setMeta(0);
-
-        if (ctx.isOutermostMethod()) {
-            RenderInvocationContextHolder.clear();
-        }
     }
 
     @Inject(method = "renderBlockAsItem", at = @At("HEAD"))
@@ -384,10 +376,6 @@ public abstract class MixinRenderBlocks {
         ctx.setRenderBlocks(null);
         ctx.setBlock(null);
         ctx.setMeta(0);
-
-        if (ctx.isOutermostMethod()) {
-            RenderInvocationContextHolder.clear();
-        }
     }
 
     @Inject(method = "renderFaceYPos", at = @At("HEAD"))
@@ -409,10 +397,6 @@ public abstract class MixinRenderBlocks {
         ctx.setCurrentFace(null);
         ctx.setCurrentIcon(null);
         ctx.popMethod();
-
-        if (ctx.isOutermostMethod()) {
-            RenderInvocationContextHolder.clear();
-        }
     }
 
     @Inject(method = "renderFaceYNeg", at = @At("HEAD"))
@@ -434,10 +418,6 @@ public abstract class MixinRenderBlocks {
         ctx.setCurrentFace(null);
         ctx.setCurrentIcon(null);
         ctx.popMethod();
-
-        if (ctx.isOutermostMethod()) {
-            RenderInvocationContextHolder.clear();
-        }
     }
 
     @Inject(method = "renderFaceXPos", at = @At("HEAD"))
@@ -459,10 +439,6 @@ public abstract class MixinRenderBlocks {
         ctx.setCurrentFace(null);
         ctx.setCurrentIcon(null);
         ctx.popMethod();
-
-        if (ctx.isOutermostMethod()) {
-            RenderInvocationContextHolder.clear();
-        }
     }
 
     @Inject(method = "renderFaceXNeg", at = @At("HEAD"))
@@ -484,10 +460,6 @@ public abstract class MixinRenderBlocks {
         ctx.setCurrentFace(null);
         ctx.setCurrentIcon(null);
         ctx.popMethod();
-
-        if (ctx.isOutermostMethod()) {
-            RenderInvocationContextHolder.clear();
-        }
     }
 
     @Inject(method = "renderFaceZPos", at = @At("HEAD"))
@@ -509,10 +481,6 @@ public abstract class MixinRenderBlocks {
         ctx.setCurrentFace(null);
         ctx.setCurrentIcon(null);
         ctx.popMethod();
-
-        if (ctx.isOutermostMethod()) {
-            RenderInvocationContextHolder.clear();
-        }
     }
 
     @Inject(method = "renderFaceZNeg", at = @At("HEAD"))
@@ -534,10 +502,6 @@ public abstract class MixinRenderBlocks {
         ctx.setCurrentFace(null);
         ctx.setCurrentIcon(null);
         ctx.popMethod();
-
-        if (ctx.isOutermostMethod()) {
-            RenderInvocationContextHolder.clear();
-        }
     }
 
 }

@@ -102,10 +102,6 @@ public class RenderInvocationContext {
         return sb.toString();
     }
 
-    public boolean isOutermostMethod() {
-        return stackTop == 0;
-    }
-
     public int getStackTop() {
         return stackTop;
     }
