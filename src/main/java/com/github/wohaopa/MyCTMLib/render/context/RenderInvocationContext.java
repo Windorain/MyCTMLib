@@ -4,6 +4,8 @@ import java.util.Arrays;
 
 import net.minecraft.block.Block;
 import net.minecraft.client.renderer.RenderBlocks;
+import net.minecraft.entity.Entity;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.IIcon;
 import net.minecraft.world.IBlockAccess;
 import net.minecraftforge.common.util.ForgeDirection;
@@ -32,6 +34,11 @@ public class RenderInvocationContext {
     private ForgeDirection currentFace;
     private IIcon currentIcon;
 
+    private Entity entity;
+    private ItemStack itemStack;
+    private double renderX, renderY, renderZ;
+    private float entityYaw;
+
     public void reset() {
         Arrays.fill(methodStack, null);
         stackTop = -1;
@@ -45,6 +52,10 @@ public class RenderInvocationContext {
         meta = 0;
         currentFace = null;
         currentIcon = null;
+        entity = null;
+        itemStack = null;
+        renderX = renderY = renderZ = 0;
+        entityYaw = 0;
         // 不清空 debug 日志索引和标志，保留跨 reset() 调用的历史记录
     }
 
@@ -204,5 +215,47 @@ public class RenderInvocationContext {
 
     public void setFaceRendered(ForgeDirection face, boolean rendered) {
         faceRendered[face.ordinal()] = rendered;
+    }
+
+    public Entity getEntity() {
+        return entity;
+    }
+
+    public void setEntity(Entity entity) {
+        this.entity = entity;
+    }
+
+    public ItemStack getItemStack() {
+        return itemStack;
+    }
+
+    public void setItemStack(ItemStack itemStack) {
+        this.itemStack = itemStack;
+    }
+
+    public double getRenderX() {
+        return renderX;
+    }
+
+    public double getRenderY() {
+        return renderY;
+    }
+
+    public double getRenderZ() {
+        return renderZ;
+    }
+
+    public void setRenderPos(double x, double y, double z) {
+        this.renderX = x;
+        this.renderY = y;
+        this.renderZ = z;
+    }
+
+    public float getEntityYaw() {
+        return entityYaw;
+    }
+
+    public void setEntityYaw(float entityYaw) {
+        this.entityYaw = entityYaw;
     }
 }

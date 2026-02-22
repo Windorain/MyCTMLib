@@ -293,6 +293,37 @@ public abstract class MixinRenderBlocks {
         }
     }
 
+    @Inject(method = "renderBlockByRenderType", at = @At("HEAD"))
+    private void onRenderBlockByRenderTypeStart(Block block, int x, int y, int z, CallbackInfoReturnable<Boolean> cir) {
+        RenderInvocationContext ctx = RenderInvocationContextHolder.get();
+        ctx.pushMethod(RenderMethod.RENDER_BLOCK_BY_RENDER_TYPE);
+        ctx.setRenderType(RenderType.BLOCK);
+        ctx.setRenderBlocks((RenderBlocks) (Object) this);
+        ctx.setBlockAccess(this.blockAccess);
+        ctx.setBlock(block);
+        ctx.setX(x);
+        ctx.setY(y);
+        ctx.setZ(z);
+        if (this.blockAccess != null) {
+            ctx.setMeta(this.blockAccess.getBlockMetadata(x, y, z));
+        }
+    }
+
+    @Inject(method = "renderBlockByRenderType", at = @At("RETURN"))
+    private void onRenderBlockByRenderTypeEnd(CallbackInfoReturnable<Boolean> cir) {
+        RenderInvocationContext ctx = RenderInvocationContextHolder.getIfAvailable();
+        if (ctx == null) return;
+
+        ctx.popMethod();
+        ctx.setRenderBlocks(null);
+        ctx.setBlockAccess(null);
+        ctx.setBlock(null);
+        ctx.setX(0);
+        ctx.setY(0);
+        ctx.setZ(0);
+        ctx.setMeta(0);
+    }
+
     @Inject(method = "renderStandardBlockWithAmbientOcclusion", at = @At("HEAD"))
     private void onRenderStandardBlockAOStart(Block block, int x, int y, int z, float f1, float f2, float f3,
         CallbackInfoReturnable<Boolean> cir) {
