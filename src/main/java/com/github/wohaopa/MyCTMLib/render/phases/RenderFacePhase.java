@@ -74,12 +74,6 @@ public class RenderFacePhase implements PipelinePhase {
         
         context.setDrewAny(true);
         
-        if (context.getBlockSubBranch() == BlockRenderSubBranch.MODEL) {
-            context.setCurrentElementIndex(context.getCurrentElementIndex() + 1);
-        } else {
-            context.pushState(RenderState.COMPLETE);
-        }
-        
         return PhaseResult.CONTINUE;
     }
 }

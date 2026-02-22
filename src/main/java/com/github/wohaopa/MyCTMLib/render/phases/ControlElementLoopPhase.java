@@ -25,6 +25,8 @@ public class ControlElementLoopPhase implements PipelinePhase {
         context.pushState(RenderState.PREPARE_TEXTURE_DATA);
         context.pushState(RenderState.PREPARE_ELEMENT_DATA);
         
+        context.setCurrentElementIndex(context.getCurrentElementIndex() + 1);
+        
         return PhaseResult.CONTINUE;
     }
 }
