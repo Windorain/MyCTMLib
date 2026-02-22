@@ -12,13 +12,38 @@ import com.github.wohaopa.MyCTMLib.model.ModelData;
 import com.github.wohaopa.MyCTMLib.model.ModelElement;
 import com.github.wohaopa.MyCTMLib.predicate.ConnectionPredicate;
 import com.github.wohaopa.MyCTMLib.render.debug.PipelineDebugListener;
-import com.github.wohaopa.MyCTMLib.render.pipeline.MainRenderState;
-import com.github.wohaopa.MyCTMLib.render.pipeline.SubRenderState;
-import com.github.wohaopa.MyCTMLib.texture.TextureKeyNormalizer;
-import com.github.wohaopa.MyCTMLib.texture.TextureRegistry;
+import com.github.wohaopa.MyCTMLib.render.pipeline.RenderState;
+import com.github.wohaopa.MyCTMLib.texture.BaseTextureData;
 import com.github.wohaopa.MyCTMLib.texture.TextureTypeData;
 
 public class RenderContext {
+
+    private RenderInvocationContext invocationContext;
+
+    private final RenderState[] stateStack = new RenderState[32];
+    private int stateStackTop = -1;
+
+    private PipelineDebugListener debugListener;
+
+    private RenderPipelineBranch branch;
+    private BlockRenderSubBranch blockSubBranch;
+
+    private ModelData modelData;
+    private List<ModelElement> elements;
+    private IIcon drawIcon;
+    private TextureTypeData textureData;
+
+    private Integer connectionMask;
+    private Integer randomIndex;
+    private int[] tilePosition;
+    private double minU, maxU, minV, maxV;
+    private double relMinX, relMaxX, relMinY, relMaxY, relMinZ, relMaxZ;
+    private BaseTextureData baseData;
+
+    private int currentElementIndex;
+    private ModelElement currentElement;
+
+    private boolean drewAny;
 
     private final RenderBlocks renderBlocks;
     private final IBlockAccess blockAccess;
@@ -28,30 +53,39 @@ public class RenderContext {
     private final ForgeDirection face;
     private final IIcon originalIcon;
     private final String iconName;
-    private PipelineDebugListener debugListener;
-    private final ModelData modelData;
-    private final List<ModelElement> elements;
     private final boolean isItemRender;
     private final String modelId;
-
-    private MainRenderState mainState;
-    private SubRenderState subState;
-
-    private TextureTypeData textureData;
-    private Integer connectionMask;
-    private int[] tilePosition;
-    private Integer randomIndex;
-    private int currentElementIndex;
-    private TextureTypeData currentElementTextureData;
-    private RenderLayer renderLayer;
-
     private int brightness;
-    private boolean drewAny;
     private String domain;
     private ConnectionPredicate connectionPredicate;
-    private double relMinX, relMaxX, relMinY, relMaxY, relMinZ, relMaxZ;
 
     private RenderContext(RenderContextBuilder builder) {
+        this.invocationContext = RenderInvocationContextHolder.getIfAvailable();
+        this.stateStackTop = -1;
+        this.branch = null;
+        this.blockSubBranch = null;
+        this.modelData = builder.modelData;
+        this.elements = builder.elements;
+        this.drawIcon = null;
+        this.textureData = null;
+        this.connectionMask = null;
+        this.randomIndex = null;
+        this.tilePosition = null;
+        this.minU = 0;
+        this.maxU = 1;
+        this.minV = 0;
+        this.maxV = 1;
+        this.relMinX = builder.relMinX;
+        this.relMaxX = builder.relMaxX;
+        this.relMinY = builder.relMinY;
+        this.relMaxY = builder.relMaxY;
+        this.relMinZ = builder.relMinZ;
+        this.relMaxZ = builder.relMaxZ;
+        this.baseData = null;
+        this.currentElementIndex = 0;
+        this.currentElement = null;
+        this.drewAny = false;
+        this.debugListener = builder.debugListener;
         this.renderBlocks = builder.renderBlocks;
         this.blockAccess = builder.blockAccess;
         this.block = builder.block;
@@ -61,30 +95,43 @@ public class RenderContext {
         this.meta = builder.meta;
         this.face = builder.face;
         this.originalIcon = builder.originalIcon;
-        this.iconName = builder.originalIcon != null
-            ? TextureKeyNormalizer.normalizeIconName(builder.originalIcon.getIconName())
-            : null;
-        this.debugListener = builder.debugListener;
-        this.modelData = builder.modelData;
-        this.elements = builder.elements;
+        this.iconName = builder.iconName;
         this.isItemRender = builder.isItemRender;
         this.modelId = builder.modelId;
         this.brightness = builder.brightness;
         this.domain = builder.domain;
         this.connectionPredicate = builder.connectionPredicate;
-        this.relMinX = builder.relMinX;
-        this.relMaxX = builder.relMaxX;
-        this.relMinY = builder.relMinY;
-        this.relMaxY = builder.relMaxY;
-        this.relMinZ = builder.relMinZ;
-        this.relMaxZ = builder.relMaxZ;
-        this.mainState = MainRenderState.INITIAL;
-        this.subState = SubRenderState.NONE;
-        this.currentElementIndex = 0;
     }
 
     public static RenderContextBuilder builder() {
         return new RenderContextBuilder();
+    }
+
+    public void pushState(RenderState state) {
+        stateStackTop++;
+        stateStack[stateStackTop] = state;
+    }
+
+    public RenderState popState() {
+        RenderState state = stateStack[stateStackTop];
+        stateStack[stateStackTop] = null;
+        stateStackTop--;
+        return state;
+    }
+
+    public RenderState getCurrentState() {
+        if (stateStackTop < 0) {
+            return null;
+        }
+        return stateStack[stateStackTop];
+    }
+
+    public RenderInvocationContext getInvocationContext() {
+        return invocationContext;
+    }
+
+    public void setInvocationContext(RenderInvocationContext invocationContext) {
+        this.invocationContext = invocationContext;
     }
 
     public RenderBlocks getRenderBlocks() {
@@ -127,110 +174,12 @@ public class RenderContext {
         return iconName;
     }
 
-    public PipelineDebugListener getDebugListener() {
-        return debugListener;
-    }
-
-    public void setDebugListener(PipelineDebugListener listener) {
-        this.debugListener = listener;
-    }
-
-    public ModelData getModelData() {
-        return modelData;
-    }
-
-    public String getModelId() {
-        return modelId;
-    }
-
-    public List<ModelElement> getElements() {
-        return elements;
-    }
-
     public boolean isItemRender() {
         return isItemRender;
     }
 
-    public MainRenderState getMainState() {
-        return mainState;
-    }
-
-    public void setMainState(MainRenderState state) {
-        this.mainState = state;
-    }
-
-    public SubRenderState getSubState() {
-        return subState;
-    }
-
-    public void setSubState(SubRenderState state) {
-        this.subState = state;
-    }
-
-    public TextureTypeData getTextureData() {
-        if (textureData == null) textureData = computeTextureData();
-        return textureData;
-    }
-
-    public void setTextureData(TextureTypeData data) {
-        this.textureData = data;
-    }
-
-    public Integer getConnectionMask() {
-        return connectionMask;
-    }
-
-    public void setConnectionMask(Integer mask) {
-        this.connectionMask = mask;
-    }
-
-    public int[] getTilePosition() {
-        return tilePosition;
-    }
-
-    public void setTilePosition(int[] pos) {
-        this.tilePosition = pos;
-    }
-
-    public Integer getRandomIndex() {
-        return randomIndex;
-    }
-
-    public void setRandomIndex(Integer index) {
-        this.randomIndex = index;
-    }
-
-    public boolean hasElements() {
-        return elements != null && !elements.isEmpty();
-    }
-
-    public ModelElement getCurrentElement() {
-        return elements.get(currentElementIndex);
-    }
-
-    public boolean moveToNextElement() {
-        currentElementIndex++;
-        return currentElementIndex < elements.size();
-    }
-
-    public void resetElementIndex() {
-        currentElementIndex = 0;
-    }
-
-    public TextureTypeData getCurrentElementTextureData() {
-        return currentElementTextureData;
-    }
-
-    public void setCurrentElementTextureData(TextureTypeData data) {
-        this.currentElementTextureData = data;
-    }
-
-    public RenderLayer getRenderLayer() {
-        return renderLayer;
-    }
-
-    public void setRenderLayer(RenderLayer layer) {
-        this.renderLayer = layer;
+    public String getModelId() {
+        return modelId;
     }
 
     public int getBrightness() {
@@ -253,8 +202,137 @@ public class RenderContext {
         return connectionPredicate;
     }
 
-    public void setConnectionPredicate(ConnectionPredicate predicate) {
-        this.connectionPredicate = predicate;
+    public void setConnectionPredicate(ConnectionPredicate connectionPredicate) {
+        this.connectionPredicate = connectionPredicate;
+    }
+
+    public PipelineDebugListener getDebugListener() {
+        return debugListener;
+    }
+
+    public void setDebugListener(PipelineDebugListener debugListener) {
+        this.debugListener = debugListener;
+    }
+
+    public RenderPipelineBranch getBranch() {
+        return branch;
+    }
+
+    public void setBranch(RenderPipelineBranch branch) {
+        this.branch = branch;
+    }
+
+    public BlockRenderSubBranch getBlockSubBranch() {
+        return blockSubBranch;
+    }
+
+    public void setBlockSubBranch(BlockRenderSubBranch blockSubBranch) {
+        this.blockSubBranch = blockSubBranch;
+    }
+
+    public ModelData getModelData() {
+        return modelData;
+    }
+
+    public void setModelData(ModelData modelData) {
+        this.modelData = modelData;
+    }
+
+    public List<ModelElement> getElements() {
+        return elements;
+    }
+
+    public void setElements(List<ModelElement> elements) {
+        this.elements = elements;
+    }
+
+    public boolean hasElements() {
+        return elements != null && !elements.isEmpty();
+    }
+
+    public ModelElement getCurrentElement() {
+        return elements.get(currentElementIndex);
+    }
+
+    public boolean moveToNextElement() {
+        currentElementIndex++;
+        return currentElementIndex < elements.size();
+    }
+
+    public void resetElementIndex() {
+        currentElementIndex = 0;
+    }
+
+    public IIcon getDrawIcon() {
+        return drawIcon;
+    }
+
+    public void setDrawIcon(IIcon drawIcon) {
+        this.drawIcon = drawIcon;
+    }
+
+    public TextureTypeData getTextureData() {
+        return textureData;
+    }
+
+    public void setTextureData(TextureTypeData textureData) {
+        this.textureData = textureData;
+    }
+
+    public Integer getConnectionMask() {
+        return connectionMask;
+    }
+
+    public void setConnectionMask(Integer connectionMask) {
+        this.connectionMask = connectionMask;
+    }
+
+    public Integer getRandomIndex() {
+        return randomIndex;
+    }
+
+    public void setRandomIndex(Integer randomIndex) {
+        this.randomIndex = randomIndex;
+    }
+
+    public int[] getTilePosition() {
+        return tilePosition;
+    }
+
+    public void setTilePosition(int[] tilePosition) {
+        this.tilePosition = tilePosition;
+    }
+
+    public double getMinU() {
+        return minU;
+    }
+
+    public void setMinU(double minU) {
+        this.minU = minU;
+    }
+
+    public double getMaxU() {
+        return maxU;
+    }
+
+    public void setMaxU(double maxU) {
+        this.maxU = maxU;
+    }
+
+    public double getMinV() {
+        return minV;
+    }
+
+    public void setMinV(double minV) {
+        this.minV = minV;
+    }
+
+    public double getMaxV() {
+        return maxV;
+    }
+
+    public void setMaxV(double maxV) {
+        this.maxV = maxV;
     }
 
     public double getRelMinX() {
@@ -305,24 +383,32 @@ public class RenderContext {
         this.relMaxZ = relMaxZ;
     }
 
+    public BaseTextureData getBaseData() {
+        return baseData;
+    }
+
+    public void setBaseData(BaseTextureData baseData) {
+        this.baseData = baseData;
+    }
+
+    public int getCurrentElementIndex() {
+        return currentElementIndex;
+    }
+
+    public void setCurrentElementIndex(int currentElementIndex) {
+        this.currentElementIndex = currentElementIndex;
+    }
+
+    public void setCurrentElement(ModelElement currentElement) {
+        this.currentElement = currentElement;
+    }
+
     public boolean isDrewAny() {
         return drewAny;
     }
 
     public void setDrewAny(boolean drewAny) {
         this.drewAny = drewAny;
-    }
-
-    private TextureTypeData computeTextureData() {
-        if (iconName != null) {
-            return TextureRegistry.getInstance()
-                .get(iconName);
-        }
-        return null;
-    }
-
-    public RenderInvocationContext getInvocationContext() {
-        return RenderInvocationContextHolder.getIfAvailable();
     }
 
     public static class RenderContextBuilder {
@@ -334,6 +420,7 @@ public class RenderContext {
         private int meta;
         private ForgeDirection face;
         private IIcon originalIcon;
+        private String iconName;
         private PipelineDebugListener debugListener;
         private ModelData modelData;
         private List<ModelElement> elements;
@@ -389,6 +476,11 @@ public class RenderContext {
             return this;
         }
 
+        public RenderContextBuilder iconName(String iconName) {
+            this.iconName = iconName;
+            return this;
+        }
+
         public RenderContextBuilder debugListener(PipelineDebugListener debugListener) {
             this.debugListener = debugListener;
             return this;
@@ -424,8 +516,8 @@ public class RenderContext {
             return this;
         }
 
-        public RenderContextBuilder connectionPredicate(ConnectionPredicate predicate) {
-            this.connectionPredicate = predicate;
+        public RenderContextBuilder connectionPredicate(ConnectionPredicate connectionPredicate) {
+            this.connectionPredicate = connectionPredicate;
             return this;
         }
 

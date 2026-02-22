@@ -1,25 +1,53 @@
 package com.github.wohaopa.MyCTMLib.render.pipeline;
 
-import net.minecraftforge.common.util.ForgeDirection;
+import java.util.HashMap;
+import java.util.Map;
 
 import com.github.wohaopa.MyCTMLib.MyCTMLib;
-import com.github.wohaopa.MyCTMLib.Textures;
 import com.github.wohaopa.MyCTMLib.render.CTMRenderEntry;
 import com.github.wohaopa.MyCTMLib.render.PipelineDebugTrace;
 import com.github.wohaopa.MyCTMLib.render.context.RenderContext;
 import com.github.wohaopa.MyCTMLib.render.debug.PipelineDebugListener;
 import com.github.wohaopa.MyCTMLib.render.debug.RenderPipelineDebugCache;
-import com.github.wohaopa.MyCTMLib.render.phases.CompletionPhase;
-import com.github.wohaopa.MyCTMLib.render.phases.LegacyRenderPhase;
-import com.github.wohaopa.MyCTMLib.render.phases.ModelRenderLoopPhase;
-import com.github.wohaopa.MyCTMLib.render.phases.TextureRegRenderPhase;
+import com.github.wohaopa.MyCTMLib.render.phases.CalculateElementBoundsPhase;
+import com.github.wohaopa.MyCTMLib.render.phases.CalculateTexturePhase;
+import com.github.wohaopa.MyCTMLib.render.phases.CompletePhase;
+import com.github.wohaopa.MyCTMLib.render.phases.DecideBlockBranchPhase;
+import com.github.wohaopa.MyCTMLib.render.phases.DecideItemBranchPhase;
+import com.github.wohaopa.MyCTMLib.render.phases.DecideLegacyFallbackPhase;
+import com.github.wohaopa.MyCTMLib.render.phases.DecideRenderTypePhase;
+import com.github.wohaopa.MyCTMLib.render.phases.ElementLoopControlPhase;
+import com.github.wohaopa.MyCTMLib.render.phases.InitContextPhase;
+import com.github.wohaopa.MyCTMLib.render.phases.PrepareElementDataPhase;
+import com.github.wohaopa.MyCTMLib.render.phases.PrepareLegacyDataPhase;
+import com.github.wohaopa.MyCTMLib.render.phases.PrepareModelDataPhase;
+import com.github.wohaopa.MyCTMLib.render.phases.PrepareTextureDataPhase;
+import com.github.wohaopa.MyCTMLib.render.phases.PrepareTextureIconPhase;
+import com.github.wohaopa.MyCTMLib.render.phases.RenderFacePhase;
+import com.github.wohaopa.MyCTMLib.render.phases.RenderLegacyPhase;
 
 public class RenderPipeline {
 
-    private final ModelRenderLoopPhase modelRenderLoopPhase = new ModelRenderLoopPhase();
-    private final TextureRegRenderPhase textureRegRenderPhase = new TextureRegRenderPhase();
-    private final LegacyRenderPhase legacyRenderPhase = new LegacyRenderPhase();
-    private final CompletionPhase completionPhase = new CompletionPhase();
+    private final Map<RenderState, PipelinePhase> phaseMap = new HashMap<>();
+
+    public RenderPipeline() {
+        phaseMap.put(RenderState.INIT_CONTEXT, new InitContextPhase());
+        phaseMap.put(RenderState.DECIDE_RENDER_TYPE, new DecideRenderTypePhase());
+        phaseMap.put(RenderState.DECIDE_BLOCK_BRANCH, new DecideBlockBranchPhase());
+        phaseMap.put(RenderState.DECIDE_ITEM_BRANCH, new DecideItemBranchPhase());
+        phaseMap.put(RenderState.DECIDE_LEGACY_FALLBACK, new DecideLegacyFallbackPhase());
+        phaseMap.put(RenderState.PREPARE_MODEL_DATA, new PrepareModelDataPhase());
+        phaseMap.put(RenderState.PREPARE_TEXTURE_ICON, new PrepareTextureIconPhase());
+        phaseMap.put(RenderState.PREPARE_TEXTURE_DATA, new PrepareTextureDataPhase());
+        phaseMap.put(RenderState.PREPARE_ELEMENT_DATA, new PrepareElementDataPhase());
+        phaseMap.put(RenderState.PREPARE_LEGACY_DATA, new PrepareLegacyDataPhase());
+        phaseMap.put(RenderState.CALCULATE_TEXTURE, new CalculateTexturePhase());
+        phaseMap.put(RenderState.CALCULATE_ELEMENT_BOUNDS, new CalculateElementBoundsPhase());
+        phaseMap.put(RenderState.ELEMENT_LOOP_CONTROL, new ElementLoopControlPhase());
+        phaseMap.put(RenderState.RENDER_FACE, new RenderFacePhase());
+        phaseMap.put(RenderState.RENDER_LEGACY, new RenderLegacyPhase());
+        phaseMap.put(RenderState.COMPLETE, new CompletePhase());
+    }
 
     public boolean execute(RenderContext context) {
         PipelineDebugTrace trace = null;
@@ -32,75 +60,35 @@ public class RenderPipeline {
             trace.addStep("New pipeline started");
         }
 
-        context.setMainState(MainRenderState.INITIAL);
-        context.setSubState(SubRenderState.NONE);
+        context.pushState(RenderState.INIT_CONTEXT);
 
-        while (context.getMainState() != MainRenderState.DONE) {
-            MainRenderState mainState = context.getMainState();
-            SubRenderState subState = context.getSubState();
-
-            notifyStateStart(mainState, subState, context);
-
-            switch (mainState) {
-                case INITIAL:
-                    context.setMainState(MainRenderState.CONTEXT_READY);
-                    break;
-
-                case CONTEXT_READY:
-                    context.setMainState(MainRenderState.BRANCH_SELECTED);
-                    break;
-
-                case BRANCH_SELECTED:
-                    context.getTextureData();
-                    context.setMainState(MainRenderState.TEXTURE_RESOLVED);
-                    break;
-
-                case TEXTURE_RESOLVED:
-                    if (context.isItemRender()) {
-                        context.setSubState(SubRenderState.ITEM_RENDER);
-                    } else if (context.hasElements()) {
-                        if (trace != null) trace.addStep("Branch: MODEL_RENDER_LOOP");
-                        context.setSubState(SubRenderState.MODEL_RENDER_LOOP);
-                    } else if (shouldUseLegacy(context)) {
-                        if (trace != null) trace.addStep("Branch: LEGACY_RENDER");
-                        context.setSubState(SubRenderState.LEGACY_RENDER);
-                    } else {
-                        if (trace != null) trace.addStep("Branch: TEXTURE_REG_RENDER");
-                        context.setSubState(SubRenderState.TEXTURE_REG_RENDER);
-                    }
-                    context.setMainState(MainRenderState.RENDERING);
-                    break;
-
-                case RENDERING:
-                    switch (subState) {
-                        case MODEL_RENDER_LOOP:
-                            modelRenderLoopPhase.process(context);
-                            break;
-                        case TEXTURE_REG_RENDER:
-                            textureRegRenderPhase.process(context);
-                            break;
-                        case LEGACY_RENDER:
-                            legacyRenderPhase.process(context);
-                            break;
-                        case ITEM_RENDER:
-                            break;
-                        case NONE:
-                            break;
-                    }
-                    context.setMainState(MainRenderState.COMPLETION);
-                    context.setSubState(SubRenderState.NONE);
-                    break;
-
-                case COMPLETION:
-                    completionPhase.process(context);
-                    context.setMainState(MainRenderState.DONE);
-                    break;
-
-                case DONE:
-                    break;
+        while (context.getCurrentState() != RenderState.DONE) {
+            RenderState currentState = context.getCurrentState();
+            if (currentState == null) {
+                break;
             }
 
-            notifyStateEnd(mainState, subState, context);
+            notifyBeforePhase(currentState, context);
+
+            try {
+                PipelinePhase phase = phaseMap.get(currentState);
+                PhaseResult result = PhaseResult.CONTINUE;
+
+                if (phase != null) {
+                    result = phase.process(context);
+                }
+
+                notifyAfterPhase(currentState, context, result);
+                handlePhaseResult(result, context);
+
+            } catch (RenderPipelineException e) {
+                notifyOnPhaseError(currentState, context, e);
+                handleFallback(e.getFallback(), context);
+            }
+
+            if (context.getCurrentState() == currentState) {
+                context.popState();
+            }
         }
 
         boolean drewAny = context.isDrewAny();
@@ -130,8 +118,7 @@ public class RenderPipeline {
             int x = (int) context.getX();
             int y = (int) context.getY();
             int z = (int) context.getZ();
-            ForgeDirection face = context.getFace();
-            RenderPipelineDebugCache.record(x, y, z, face, trace);
+            RenderPipelineDebugCache.record(x, y, z, context.getFace(), trace);
         } else {
             if (!drewAny) {
                 drewAny = CTMRenderEntry.tryRender(
@@ -149,22 +136,59 @@ public class RenderPipeline {
         return drewAny;
     }
 
-    private boolean shouldUseLegacy(RenderContext context) {
-        String iconName = context.getIconName();
-        return iconName != null && Textures.contain(iconName);
-    }
-
-    private void notifyStateStart(MainRenderState main, SubRenderState sub, RenderContext context) {
-        PipelineDebugListener listener = context.getDebugListener();
-        if (listener != null) {
-            listener.onStateStart(main, sub, context);
+    private void handlePhaseResult(PhaseResult result, RenderContext context) {
+        switch (result) {
+            case CONTINUE:
+                break;
+            case SKIP_REMAINING:
+                context.pushState(RenderState.COMPLETE);
+                break;
+            case FALLBACK_TO_LEGACY:
+                context.pushState(RenderState.PREPARE_LEGACY_DATA);
+                break;
+            case FALLBACK_TO_VANILLA:
+                context.setDrewAny(false);
+                context.pushState(RenderState.DONE);
+                break;
+            case ERROR:
+                context.setDrewAny(false);
+                context.pushState(RenderState.DONE);
+                break;
         }
     }
 
-    private void notifyStateEnd(MainRenderState main, SubRenderState sub, RenderContext context) {
+    private void handleFallback(RenderPipelineException.FallbackStrategy fallback, RenderContext context) {
+        switch (fallback) {
+            case LEGACY:
+                context.pushState(RenderState.PREPARE_LEGACY_DATA);
+                break;
+            case VANILLA:
+            case NONE:
+            default:
+                context.setDrewAny(false);
+                context.pushState(RenderState.DONE);
+                break;
+        }
+    }
+
+    private void notifyBeforePhase(RenderState state, RenderContext context) {
         PipelineDebugListener listener = context.getDebugListener();
         if (listener != null) {
-            listener.onStateEnd(main, sub, context);
+            listener.beforePhase(state, context);
+        }
+    }
+
+    private void notifyAfterPhase(RenderState state, RenderContext context, PhaseResult result) {
+        PipelineDebugListener listener = context.getDebugListener();
+        if (listener != null) {
+            listener.afterPhase(state, context, result);
+        }
+    }
+
+    private void notifyOnPhaseError(RenderState state, RenderContext context, Exception e) {
+        PipelineDebugListener listener = context.getDebugListener();
+        if (listener != null) {
+            listener.onPhaseError(state, context, e);
         }
     }
 }

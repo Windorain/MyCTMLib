@@ -6,12 +6,9 @@ import java.util.List;
 
 import com.github.wohaopa.MyCTMLib.render.context.RenderContext;
 import com.github.wohaopa.MyCTMLib.render.debug.PipelineDebugListener;
-import com.github.wohaopa.MyCTMLib.render.pipeline.MainRenderState;
-import com.github.wohaopa.MyCTMLib.render.pipeline.SubRenderState;
+import com.github.wohaopa.MyCTMLib.render.pipeline.PhaseResult;
+import com.github.wohaopa.MyCTMLib.render.pipeline.RenderState;
 
-/**
- * 管线决策过程追踪。用于 Debug HUD 展示决策步骤、退化原因、谓词、连接状态、瓦片坐标等。
- */
 public final class PipelineDebugTrace implements PipelineDebugListener {
 
     private final List<String> steps = new ArrayList<>();
@@ -19,13 +16,9 @@ public final class PipelineDebugTrace implements PipelineDebugListener {
     private String predicateUsed;
     private int[] tilePos;
     private int[] connectionBits;
-    /** TexReg/TexMap 同步状态：null=不适用, true=同步, false=TexReg.getIcon 返回 null（不同步） */
     private Boolean texRegTexMapSynced;
-    /** TexReg.getIcon 的 lookupKey，用于 debug 展示 */
     private String texRegGetIconLookupKey;
-    /** 实际用于绘制的 sprite 的 getIconName()，用于排查紫黑块 */
     private String drawSpriteName;
-    /** sprite 是否已加载（宽高>0），"WxH" 或 "0x0(unloaded)" */
     private String drawSpriteLoaded;
 
     public PipelineDebugTrace() {}
@@ -68,7 +61,6 @@ public final class PipelineDebugTrace implements PipelineDebugListener {
         return texRegGetIconLookupKey;
     }
 
-    /** 设置实际用于绘制的 icon 的调试信息（名称与是否已加载），便于排查紫黑块。 */
     public void setDrawSpriteInfo(String iconName, int width, int height) {
         this.drawSpriteName = iconName;
         this.drawSpriteLoaded = (width > 0 && height > 0) ? (width + "x" + height) : "0x0(unloaded)";
@@ -103,12 +95,23 @@ public final class PipelineDebugTrace implements PipelineDebugListener {
     }
 
     @Override
-    public void onStateStart(MainRenderState mainState, SubRenderState subState, RenderContext context) {
-        addStep("State START: " + mainState + " / " + subState);
+    public void beforePhase(RenderState state, RenderContext context) {
+        addStep("Phase START: " + state);
     }
 
     @Override
-    public void onStateEnd(MainRenderState mainState, SubRenderState subState, RenderContext context) {
-        addStep("State END: " + mainState + " / " + subState);
+    public void afterPhase(RenderState state, RenderContext context, PhaseResult result) {
+        addStep("Phase END: " + state + " -> " + result);
+    }
+
+    @Override
+    public void onPhaseError(RenderState state, RenderContext context, Exception e) {
+        addStep("Phase ERROR: " + state + " - " + e.getMessage());
+    }
+
+    @Override
+    public boolean onFallback(FallbackStrategy strategy, RenderContext context) {
+        addStep("Fallback: " + strategy);
+        return true;
     }
 }
