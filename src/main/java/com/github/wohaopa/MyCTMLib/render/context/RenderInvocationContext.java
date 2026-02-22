@@ -33,6 +33,7 @@ public class RenderInvocationContext {
 
     private ForgeDirection currentFace;
     private IIcon currentIcon;
+    private String iconName;
 
     private Entity entity;
     private ItemStack itemStack;
@@ -52,6 +53,7 @@ public class RenderInvocationContext {
         meta = 0;
         currentFace = null;
         currentIcon = null;
+        iconName = null;
         entity = null;
         itemStack = null;
         renderX = renderY = renderZ = 0;
@@ -199,6 +201,14 @@ public class RenderInvocationContext {
 
     public void setCurrentIcon(IIcon currentIcon) {
         this.currentIcon = currentIcon;
+    }
+
+    public String getIconName() {
+        return iconName;
+    }
+
+    public void setIconName(String iconName) {
+        this.iconName = iconName;
     }
 
     public int getFaceRenderCount(ForgeDirection face) {

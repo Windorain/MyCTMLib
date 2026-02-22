@@ -39,12 +39,12 @@ public class PrepareElementDataPhase implements PipelinePhase {
                     }
                     
                     float[] f = element.getFrom(), t = element.getTo();
-                    context.setRelMinX(Math.min(f[0], t[0]) / 16.0);
-                    context.setRelMaxX(Math.max(f[0], t[0]) / 16.0);
-                    context.setRelMinY(Math.min(f[1], t[1]) / 16.0);
-                    context.setRelMaxY(Math.max(f[1], t[1]) / 16.0);
-                    context.setRelMinZ(Math.min(f[2], t[2]) / 16.0);
-                    context.setRelMaxZ(Math.max(f[2], t[2]) / 16.0);
+                    context.setDrawRelMinX(Math.min(f[0], t[0]) / 16.0);
+                    context.setDrawRelMaxX(Math.max(f[0], t[0]) / 16.0);
+                    context.setDrawRelMinY(Math.min(f[1], t[1]) / 16.0);
+                    context.setDrawRelMaxY(Math.max(f[1], t[1]) / 16.0);
+                    context.setDrawRelMinZ(Math.min(f[2], t[2]) / 16.0);
+                    context.setDrawRelMaxZ(Math.max(f[2], t[2]) / 16.0);
                 }
             }
         }

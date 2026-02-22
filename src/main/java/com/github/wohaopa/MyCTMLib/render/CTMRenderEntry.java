@@ -685,58 +685,9 @@ public final class CTMRenderEntry {
         double y, double z, IIcon icon, ForgeDirection face) {
         if (blockAccess == null || icon == null) return false;
 
-        RenderContext context = buildContext(renderBlocks, blockAccess, block, x, y, z, icon, face);
+        RenderContext context = RenderContext.create();
 
         return PIPELINE.execute(context);
-    }
-
-    private static RenderContext buildContext(RenderBlocks renderBlocks, IBlockAccess blockAccess, Block block,
-        double x, double y, double z, IIcon icon, ForgeDirection face) {
-
-        RenderContext.RenderContextBuilder builder = RenderContext.builder();
-
-        String iconName = TextureKeyNormalizer.normalizeIconName(icon.getIconName());
-        int meta = blockAccess.getBlockMetadata((int) x, (int) y, (int) z);
-        String blockId = getBlockId(block);
-        int brightness = block.getMixedBrightnessForBlock(blockAccess, (int) x, (int) y, (int) z);
-
-        ModelData modelData = null;
-        List<ModelElement> elements = null;
-
-        String modelId = null;
-        if (blockId != null) {
-            modelId = BlockStateRegistry.getInstance()
-                .getModelId(blockId, meta);
-            if (modelId != null) {
-                modelData = ModelRegistry.getInstance()
-                    .get(modelId);
-                if (modelData != null) {
-                    elements = getElementsWithFace(modelData, face);
-                }
-            }
-        }
-
-        builder.renderBlocks(renderBlocks)
-            .blockAccess(blockAccess)
-            .block(block)
-            .x(x)
-            .y(y)
-            .z(z)
-            .meta(meta)
-            .face(face)
-            .originalIcon(icon)
-            .modelData(modelData)
-            .elements(elements)
-            .modelId(modelId)
-            .brightness(brightness)
-            .relMinX(renderBlocks.renderMinX)
-            .relMaxX(renderBlocks.renderMaxX)
-            .relMinY(renderBlocks.renderMinY)
-            .relMaxY(renderBlocks.renderMaxY)
-            .relMinZ(renderBlocks.renderMinZ)
-            .relMaxZ(renderBlocks.renderMaxZ);
-
-        return builder.build();
     }
 
 }

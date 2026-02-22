@@ -415,6 +415,7 @@ public abstract class MixinRenderBlocks {
             ctx.pushMethod(RenderMethod.RENDER_FACE_Y_POS);
             ctx.setCurrentFace(ForgeDirection.UP);
             ctx.setCurrentIcon(icon);
+            ctx.setIconName(icon.getIconName());
             ctx.incrementFaceRenderCount(ForgeDirection.UP);
         }
     }
@@ -436,6 +437,7 @@ public abstract class MixinRenderBlocks {
             ctx.pushMethod(RenderMethod.RENDER_FACE_Y_NEG);
             ctx.setCurrentFace(ForgeDirection.DOWN);
             ctx.setCurrentIcon(icon);
+            ctx.setIconName(icon.getIconName());
             ctx.incrementFaceRenderCount(ForgeDirection.DOWN);
         }
     }
@@ -457,6 +459,7 @@ public abstract class MixinRenderBlocks {
             ctx.pushMethod(RenderMethod.RENDER_FACE_X_POS);
             ctx.setCurrentFace(ForgeDirection.EAST);
             ctx.setCurrentIcon(icon);
+            ctx.setIconName(icon.getIconName());
             ctx.incrementFaceRenderCount(ForgeDirection.EAST);
         }
     }
@@ -478,6 +481,7 @@ public abstract class MixinRenderBlocks {
             ctx.pushMethod(RenderMethod.RENDER_FACE_X_NEG);
             ctx.setCurrentFace(ForgeDirection.WEST);
             ctx.setCurrentIcon(icon);
+            ctx.setIconName(icon.getIconName());
             ctx.incrementFaceRenderCount(ForgeDirection.WEST);
         }
     }
@@ -499,6 +503,7 @@ public abstract class MixinRenderBlocks {
             ctx.pushMethod(RenderMethod.RENDER_FACE_Z_POS);
             ctx.setCurrentFace(ForgeDirection.SOUTH);
             ctx.setCurrentIcon(icon);
+            ctx.setIconName(icon.getIconName());
             ctx.incrementFaceRenderCount(ForgeDirection.SOUTH);
         }
     }
@@ -520,6 +525,7 @@ public abstract class MixinRenderBlocks {
             ctx.pushMethod(RenderMethod.RENDER_FACE_Z_NEG);
             ctx.setCurrentFace(ForgeDirection.NORTH);
             ctx.setCurrentIcon(icon);
+            ctx.setIconName(icon.getIconName());
             ctx.incrementFaceRenderCount(ForgeDirection.NORTH);
         }
     }

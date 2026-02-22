@@ -9,10 +9,10 @@ public class CalculateElementBoundsPhase implements PipelinePhase {
 
     @Override
     public PhaseResult process(RenderContext context) {
-        context.setMinU(0);
-        context.setMaxU(1);
-        context.setMinV(0);
-        context.setMaxV(1);
+        context.setDrawMinU(0);
+        context.setDrawMaxU(1);
+        context.setDrawMinV(0);
+        context.setDrawMaxV(1);
         
         context.popState();
         context.pushState(RenderState.RENDER_FACE);
