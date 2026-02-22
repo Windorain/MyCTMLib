@@ -4,10 +4,7 @@ public enum RenderState {
     
     INIT_CONTEXT(PhaseType.INIT),
     
-    DECIDE_RENDER_TYPE(PhaseType.DECIDE),
-    DECIDE_BLOCK_BRANCH(PhaseType.DECIDE),
-    DECIDE_ITEM_BRANCH(PhaseType.DECIDE),
-    DECIDE_LEGACY_FALLBACK(PhaseType.DECIDE),
+    DECIDE(PhaseType.DECIDE),
     
     PREPARE_MODEL_DATA(PhaseType.PREPARE),
     PREPARE_TEXTURE_ICON(PhaseType.PREPARE),

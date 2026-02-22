@@ -12,10 +12,7 @@ import com.github.wohaopa.MyCTMLib.render.debug.RenderPipelineDebugCache;
 import com.github.wohaopa.MyCTMLib.render.phases.CalculateElementBoundsPhase;
 import com.github.wohaopa.MyCTMLib.render.phases.CalculateTexturePhase;
 import com.github.wohaopa.MyCTMLib.render.phases.CompletePhase;
-import com.github.wohaopa.MyCTMLib.render.phases.DecideBlockBranchPhase;
-import com.github.wohaopa.MyCTMLib.render.phases.DecideItemBranchPhase;
-import com.github.wohaopa.MyCTMLib.render.phases.DecideLegacyFallbackPhase;
-import com.github.wohaopa.MyCTMLib.render.phases.DecideRenderTypePhase;
+import com.github.wohaopa.MyCTMLib.render.phases.DecidePhases;
 import com.github.wohaopa.MyCTMLib.render.phases.ControlElementLoopPhase;
 import com.github.wohaopa.MyCTMLib.render.phases.InitContextPhase;
 import com.github.wohaopa.MyCTMLib.render.phases.PrepareElementDataPhase;
@@ -31,11 +28,10 @@ public class RenderPipeline {
     private final Map<RenderState, PipelinePhase> phaseMap = new HashMap<>();
 
     public RenderPipeline() {
+        DecidePhases decidePhases = new DecidePhases();
+        
         phaseMap.put(RenderState.INIT_CONTEXT, new InitContextPhase());
-        phaseMap.put(RenderState.DECIDE_RENDER_TYPE, new DecideRenderTypePhase());
-        phaseMap.put(RenderState.DECIDE_BLOCK_BRANCH, new DecideBlockBranchPhase());
-        phaseMap.put(RenderState.DECIDE_ITEM_BRANCH, new DecideItemBranchPhase());
-        phaseMap.put(RenderState.DECIDE_LEGACY_FALLBACK, new DecideLegacyFallbackPhase());
+        phaseMap.put(RenderState.DECIDE, decidePhases);
         phaseMap.put(RenderState.PREPARE_MODEL_DATA, new PrepareModelDataPhase());
         phaseMap.put(RenderState.PREPARE_TEXTURE_ICON, new PrepareTextureIconPhase());
         phaseMap.put(RenderState.PREPARE_TEXTURE_DATA, new PrepareTextureDataPhase());
