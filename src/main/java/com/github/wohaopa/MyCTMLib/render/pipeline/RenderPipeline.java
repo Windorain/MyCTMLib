@@ -85,10 +85,6 @@ public class RenderPipeline {
                 notifyOnPhaseError(currentState, context, e);
                 handleFallback(e.getFallback(), context);
             }
-
-            if (context.getCurrentState() == currentState) {
-                context.popState();
-            }
         }
 
         boolean drewAny = context.isDrewAny();

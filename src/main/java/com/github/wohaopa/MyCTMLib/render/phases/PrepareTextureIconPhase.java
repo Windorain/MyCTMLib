@@ -22,8 +22,10 @@ public class PrepareTextureIconPhase implements PipelinePhase {
         }
         
         if (context.getBlockSubBranch() == BlockRenderMode.MODEL) {
+            context.popState();
             context.pushState(RenderState.ELEMENT_LOOP_CONTROL);
         } else {
+            context.popState();
             context.pushState(RenderState.PREPARE_TEXTURE_DATA);
         }
         return PhaseResult.CONTINUE;

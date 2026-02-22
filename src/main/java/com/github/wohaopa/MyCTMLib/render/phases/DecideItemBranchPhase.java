@@ -9,6 +9,7 @@ public class DecideItemBranchPhase implements PipelinePhase {
 
     @Override
     public PhaseResult process(RenderContext context) {
+        context.popState();
         context.pushState(RenderState.PREPARE_TEXTURE_ICON);
         return PhaseResult.CONTINUE;
     }

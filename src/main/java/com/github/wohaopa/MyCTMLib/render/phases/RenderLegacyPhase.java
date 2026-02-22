@@ -22,6 +22,8 @@ public class RenderLegacyPhase implements PipelinePhase {
         );
         
         context.setDrewAny(result);
+
+        context.popState();
         context.pushState(RenderState.COMPLETE);
         return PhaseResult.CONTINUE;
     }

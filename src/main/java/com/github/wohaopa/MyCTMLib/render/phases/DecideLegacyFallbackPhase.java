@@ -9,6 +9,7 @@ public class DecideLegacyFallbackPhase implements PipelinePhase {
 
     @Override
     public PhaseResult process(RenderContext context) {
+        context.popState();
         context.pushState(RenderState.COMPLETE);
         return PhaseResult.CONTINUE;
     }

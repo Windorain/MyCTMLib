@@ -49,6 +49,7 @@ public class PrepareElementDataPhase implements PipelinePhase {
             }
         }
         
+        context.popState();
         context.pushState(RenderState.CALCULATE_TEXTURE);
         return PhaseResult.CONTINUE;
     }

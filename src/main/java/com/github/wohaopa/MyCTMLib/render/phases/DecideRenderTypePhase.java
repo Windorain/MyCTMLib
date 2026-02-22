@@ -13,9 +13,11 @@ public class DecideRenderTypePhase implements PipelinePhase {
     public PhaseResult process(RenderContext context) {
         if (context.isItemRender()) {
             context.setBranch(RenderPipelineBranch.ITEM);
+            context.popState();
             context.pushState(RenderState.DECIDE_ITEM_BRANCH);
         } else {
             context.setBranch(RenderPipelineBranch.BLOCK);
+            context.popState();
             context.pushState(RenderState.DECIDE_BLOCK_BRANCH);
         }
         return PhaseResult.CONTINUE;

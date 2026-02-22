@@ -9,6 +9,7 @@ public class CompletePhase implements PipelinePhase {
 
     @Override
     public PhaseResult process(RenderContext context) {
+        context.popState();
         context.pushState(RenderState.DONE);
         return PhaseResult.CONTINUE;
     }

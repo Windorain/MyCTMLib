@@ -14,6 +14,7 @@ public class CalculateElementBoundsPhase implements PipelinePhase {
         context.setMinV(0);
         context.setMaxV(1);
         
+        context.popState();
         context.pushState(RenderState.RENDER_FACE);
         return PhaseResult.CONTINUE;
     }

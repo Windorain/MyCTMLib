@@ -59,6 +59,7 @@ public class CalculateTexturePhase implements PipelinePhase {
             context.setTilePosition(handler.getTilePosition(mask));
         }
         
+        context.popState();
         context.pushState(RenderState.CALCULATE_ELEMENT_BOUNDS);
         return PhaseResult.CONTINUE;
     }

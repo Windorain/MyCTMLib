@@ -13,12 +13,18 @@ public class DecideBlockBranchPhase implements PipelinePhase {
     public PhaseResult process(RenderContext context) {
         if (context.hasElements()) {
             context.setBlockSubBranch(BlockRenderMode.MODEL);
+
+            context.popState();
             context.pushState(RenderState.PREPARE_MODEL_DATA);
         } else if (shouldUseLegacy(context)) {
             context.setBlockSubBranch(BlockRenderMode.LEGACY);
+
+            context.popState();
             context.pushState(RenderState.PREPARE_LEGACY_DATA);
         } else {
             context.setBlockSubBranch(BlockRenderMode.TEXTURE_RELOC);
+            
+            context.popState();
             context.pushState(RenderState.PREPARE_TEXTURE_ICON);
         }
         return PhaseResult.CONTINUE;

@@ -9,6 +9,7 @@ public class PrepareLegacyDataPhase implements PipelinePhase {
 
     @Override
     public PhaseResult process(RenderContext context) {
+        context.popState();
         context.pushState(RenderState.RENDER_LEGACY);
         return PhaseResult.CONTINUE;
     }

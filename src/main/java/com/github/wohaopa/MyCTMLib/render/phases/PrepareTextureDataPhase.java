@@ -16,6 +16,7 @@ public class PrepareTextureDataPhase implements PipelinePhase {
             context.setTextureData(CTMRenderEntry.getConnectingData(iconName));
         }
         
+        context.popState();
         context.pushState(RenderState.CALCULATE_TEXTURE);
         return PhaseResult.CONTINUE;
     }

@@ -15,6 +15,7 @@ public class InitContextPhase implements PipelinePhase {
             context.setDebugListener(new PipelineDebugTrace());
         }
         context.setDrewAny(false);
+        context.popState();
         context.pushState(RenderState.DECIDE_RENDER_TYPE);
         return PhaseResult.CONTINUE;
     }

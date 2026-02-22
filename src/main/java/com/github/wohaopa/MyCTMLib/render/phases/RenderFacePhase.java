@@ -74,6 +74,8 @@ public class RenderFacePhase implements PipelinePhase {
         
         context.setDrewAny(true);
         
+        context.popState();
+        
         return PhaseResult.CONTINUE;
     }
 }
