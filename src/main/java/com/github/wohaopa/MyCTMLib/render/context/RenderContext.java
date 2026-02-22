@@ -152,6 +152,10 @@ public class RenderContext {
         return type == RenderType.ITEM || type == RenderType.BLOCK_AS_ITEM;
     }
 
+    public RenderType getRenderType() {
+        return invocationContext != null ? invocationContext.getRenderType() : null;
+    }
+
     // ========= 本地字段 getter/setter =========
 
     public PipelineDebugListener getDebugListener() {
