@@ -6,7 +6,7 @@ import com.github.wohaopa.MyCTMLib.render.pipeline.PhaseResult;
 import com.github.wohaopa.MyCTMLib.render.pipeline.PipelinePhase;
 import com.github.wohaopa.MyCTMLib.render.pipeline.RenderState;
 
-public class ElementLoopControlPhase implements PipelinePhase {
+public class ControlElementLoopPhase implements PipelinePhase {
 
     @Override
     public PhaseResult process(RenderContext context) {

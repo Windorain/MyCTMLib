@@ -6,6 +6,7 @@ import net.minecraft.util.IIcon;
 import net.minecraft.world.IBlockAccess;
 import net.minecraftforge.common.util.ForgeDirection;
 
+import com.github.wohaopa.MyCTMLib.GTNHIntegrationHelper;
 import com.github.wohaopa.MyCTMLib.texture.BaseTextureData;
 
 /**
@@ -72,8 +73,9 @@ public final class FaceRenderer {
                 bright = 0;
                 break;
         }
-        Tessellator.instance.setColorOpaque_F(r, g, b);
-        Tessellator.instance.setBrightness(bright);
+        Tessellator tes = GTNHIntegrationHelper.getGTNHLibTessellator();
+        tes.setColorOpaque_F(r, g, b);
+        tes.setBrightness(bright);
     }
 
     /**
@@ -83,6 +85,7 @@ public final class FaceRenderer {
         int biomeColor, int fallbackBrightness) {
         float r, g, b;
         int bright;
+        Tessellator tes = GTNHIntegrationHelper.getGTNHLibTessellator();
         if (baseData != null && baseData.getTinting() != null && biomeColor >= 0) {
             float bioR = (biomeColor >> 16 & 255) / 255.0F;
             float bioG = (biomeColor >> 8 & 255) / 255.0F;
@@ -134,8 +137,8 @@ public final class FaceRenderer {
             r = g = b = 1.0F;
             bright = fallbackBrightness;
         }
-        Tessellator.instance.setColorOpaque_F(r, g, b);
-        Tessellator.instance.setBrightness(bright);
+        tes.setColorOpaque_F(r, g, b);
+        tes.setBrightness(bright);
     }
 
     /**
@@ -279,7 +282,7 @@ public final class FaceRenderer {
         double minZ = z + relMinZ;
         double maxZ = z + relMaxZ;
 
-        Tessellator tes = Tessellator.instance;
+        Tessellator tes = GTNHIntegrationHelper.getGTNHLibTessellator();
         if (renderBlocks.renderFromInside) {
             double t;
             t = minU;

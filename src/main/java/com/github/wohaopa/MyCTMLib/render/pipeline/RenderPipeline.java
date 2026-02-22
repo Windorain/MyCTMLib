@@ -16,7 +16,7 @@ import com.github.wohaopa.MyCTMLib.render.phases.DecideBlockBranchPhase;
 import com.github.wohaopa.MyCTMLib.render.phases.DecideItemBranchPhase;
 import com.github.wohaopa.MyCTMLib.render.phases.DecideLegacyFallbackPhase;
 import com.github.wohaopa.MyCTMLib.render.phases.DecideRenderTypePhase;
-import com.github.wohaopa.MyCTMLib.render.phases.ElementLoopControlPhase;
+import com.github.wohaopa.MyCTMLib.render.phases.ControlElementLoopPhase;
 import com.github.wohaopa.MyCTMLib.render.phases.InitContextPhase;
 import com.github.wohaopa.MyCTMLib.render.phases.PrepareElementDataPhase;
 import com.github.wohaopa.MyCTMLib.render.phases.PrepareLegacyDataPhase;
@@ -43,7 +43,7 @@ public class RenderPipeline {
         phaseMap.put(RenderState.PREPARE_LEGACY_DATA, new PrepareLegacyDataPhase());
         phaseMap.put(RenderState.CALCULATE_TEXTURE, new CalculateTexturePhase());
         phaseMap.put(RenderState.CALCULATE_ELEMENT_BOUNDS, new CalculateElementBoundsPhase());
-        phaseMap.put(RenderState.ELEMENT_LOOP_CONTROL, new ElementLoopControlPhase());
+        phaseMap.put(RenderState.ELEMENT_LOOP_CONTROL, new ControlElementLoopPhase());
         phaseMap.put(RenderState.RENDER_FACE, new RenderFacePhase());
         phaseMap.put(RenderState.RENDER_LEGACY, new RenderLegacyPhase());
         phaseMap.put(RenderState.COMPLETE, new CompletePhase());
