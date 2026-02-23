@@ -32,6 +32,12 @@ public final class PipelineDebugTrace {
     private String texRegGetIconLookupKey;
     private String drawSpriteName;
     private String drawSpriteLoaded;
+    
+    // UV 调试信息
+    private String iconUV;       // icon 原始 UV: [minU,maxU,minV,maxV]
+    private String drawUV;       // 最终绘制 UV: [minU,maxU,minV,maxV]
+    private String gridInfo;     // grid 尺寸：WxH
+    private String textureKey;   // 纹理键
 
     public PipelineDebugTrace() {}
 
@@ -134,5 +140,26 @@ public final class PipelineDebugTrace {
     public int[] getConnectionBits() {
         return connectionBits;
     }
-
+    
+    // ========== UV 调试信息 ==========
+    public void setIconUV(double minU, double maxU, double minV, double maxV) {
+        this.iconUV = String.format("[%.6f,%.6f,%.6f,%.6f]", minU, maxU, minV, maxV);
+    }
+    
+    public void setDrawUV(double minU, double maxU, double minV, double maxV) {
+        this.drawUV = String.format("[%.6f,%.6f,%.6f,%.6f]", minU, maxU, minV, maxV);
+    }
+    
+    public void setGridInfo(int w, int h) {
+        this.gridInfo = w + "x" + h;
+    }
+    
+    public void setTextureKey(String key) {
+        this.textureKey = key;
+    }
+    
+    public String getIconUV() { return iconUV; }
+    public String getDrawUV() { return drawUV; }
+    public String getGridInfo() { return gridInfo; }
+    public String getTextureKey() { return textureKey; }
 }

@@ -696,6 +696,40 @@ public final class CTMRenderEntry {
         trace.addStep("Branch: " + context.getRenderBranch());
         trace.addStep("New pipeline drewAny: " + context.isDrewAny());
         
+        // 填充技术细节到 trace，供 HUD 显示
+        if (context.getConnectionMask() != null) {
+            trace.setConnectionBits(context.getConnectionMask());
+        }
+        if (context.getTileX() != null && context.getTileY() != null) {
+            trace.setTilePos(context.getTileX(), context.getTileY());
+        }
+        if (context.getDrawIcon() != null) {
+            trace.setDrawSpriteInfo(
+                context.getDrawIcon().getIconName(),
+                context.getDrawIcon().getIconWidth(),
+                context.getDrawIcon().getIconHeight()
+            );
+        }
+        if (context.getTextureKey() != null) {
+            trace.setTexRegTexMapSync(true, context.getTextureKey());
+            trace.setTextureKey(context.getTextureKey());
+        }
+        if (context.getIconMinU() != null && context.getIconMaxU() != null 
+            && context.getIconMinV() != null && context.getIconMaxV() != null) {
+            trace.setIconUV(
+                context.getIconMinU(), context.getIconMaxU(),
+                context.getIconMinV(), context.getIconMaxV()
+            );
+        }
+        // drawUV 总是有值（默认为 0.0-1.0），直接设置
+        trace.setDrawUV(
+            context.getDrawMinU(), context.getDrawMaxU(),
+            context.getDrawMinV(), context.getDrawMaxV()
+        );
+        if (context.getGridW() != null && context.getGridH() != null) {
+            trace.setGridInfo(context.getGridW(), context.getGridH());
+        }
+        
         ForgeDirection face = context.getFace();
         RenderPipelineDebugCache.record(
             (int)context.getX(), (int)context.getY(), (int)context.getZ(),

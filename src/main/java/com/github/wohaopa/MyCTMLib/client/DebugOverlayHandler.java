@@ -177,35 +177,59 @@ public class DebugOverlayHandler {
         String lookupKey = trace.getTexRegGetIconLookupKey();
         String spriteName = trace.getDrawSpriteName();
         String spriteLoaded = trace.getDrawSpriteLoaded();
+        
+        // 新增 UV 调试信息
+        String iconUV = trace.getIconUV();
+        String drawUV = trace.getDrawUV();
+        String gridInfo = trace.getGridInfo();
+        String textureKey = trace.getTextureKey();
 
         boolean hasDetails = pred != null || tile != null || bits != null || 
-                            synced != null || spriteName != null;
+                            synced != null || spriteName != null ||
+                            iconUV != null || drawUV != null || gridInfo != null || textureKey != null;
 
         if (!hasDetails) return;
 
         lines.add("§f§l--- Details ---");
-
-        if (pred != null) {
-            lines.add("§fpred: §7" + pred);
+        
+        // 第一行：纹理信息
+        if (textureKey != null) {
+            lines.add("§ftexKey: §7" + textureKey);
         }
+        if (spriteName != null) {
+            String loaded = spriteLoaded != null ? " §7" + spriteLoaded : "";
+            lines.add("§fdrawSprite: §r" + spriteName + loaded);
+        }
+        if (synced != null) {
+            String syncStatus = Boolean.TRUE.equals(synced) ? "§asynced" : "§4OUT OF SYNC";
+            lines.add("§fTexReg/TexMap: §r" + syncStatus + (lookupKey != null ? " (§7" + lookupKey + "§r)" : ""));
+        }
+        
+        // 第二行：UV 信息
+        if (iconUV != null) {
+            lines.add("§ficonUV:  §7" + iconUV);
+        }
+        if (drawUV != null) {
+            lines.add("§fdrawUV:  §7" + drawUV);
+        }
+        if (gridInfo != null) {
+            lines.add("§fgrid:    §7" + gridInfo);
+        }
+        
+        // 第三行：连接信息
         if (tile != null) {
-            lines.add("§ftile: §7(" + tile[0] + "," + tile[1] + ")");
+            lines.add("§ftile:    §7(" + tile[0] + "," + tile[1] + ")");
         }
         if (bits != null) {
-            StringBuilder sb = new StringBuilder("§fconn: §7");
+            StringBuilder sb = new StringBuilder("§fconn:    §7");
             for (int i = 0; i < 8; i++) {
                 if (i > 0) sb.append(" ");
                 sb.append(bits[i]);
             }
             lines.add(sb.toString());
         }
-        if (synced != null) {
-            String syncStatus = Boolean.TRUE.equals(synced) ? "§asynced" : "§4OUT OF SYNC";
-            lines.add("§fTexReg/TexMap: §r" + syncStatus + (lookupKey != null ? " (§7" + lookupKey + "§r)" : ""));
-        }
-        if (spriteName != null) {
-            String loaded = spriteLoaded != null ? " §7" + spriteLoaded : "";
-            lines.add("§fdrawSprite: §r" + spriteName + loaded);
+        if (pred != null) {
+            lines.add("§fpred:    §7" + pred);
         }
     }
 
