@@ -43,6 +43,7 @@ public class RenderContext {
     private ForgeDirection face;
     private IIcon originalIcon;
     private String iconName;
+    private String textureKey;
 
     // ========== 决策结果（RenderPipeline 设置） ==========
     private RenderBranch renderBranch;
@@ -83,9 +84,18 @@ public class RenderContext {
     private Double drawRelMinY, drawRelMaxY;
     private Double drawRelMinZ, drawRelMaxZ;
 
+    // 世界坐标（PositionDomain 输出）
+    private Double worldX, worldY, worldZ;
+
     // 着色相关
     private Integer drawBrightness;
     private Integer biomeColor;
+
+    // 颜色四角（ColorDomain 输出）
+    private Float colorTL_R, colorTL_G, colorTL_B;
+    private Float colorTR_R, colorTR_G, colorTR_B;
+    private Float colorBL_R, colorBL_G, colorBL_B;
+    private Float colorBR_R, colorBR_G, colorBR_B;
 
     // Debug
     private PipelineDebugTrace debugTrace;
@@ -130,9 +140,26 @@ public class RenderContext {
         this.drawRelMaxY = 1.0;
         this.drawRelMinZ = 0.0;
         this.drawRelMaxZ = 1.0;
+        // 世界坐标
+        this.worldX = null;
+        this.worldY = null;
+        this.worldZ = null;
         // 着色相关
         this.drawBrightness = 0;
         this.biomeColor = null;
+        // 颜色四角
+        this.colorTL_R = null;
+        this.colorTL_G = null;
+        this.colorTL_B = null;
+        this.colorTR_R = null;
+        this.colorTR_G = null;
+        this.colorTR_B = null;
+        this.colorBL_R = null;
+        this.colorBL_G = null;
+        this.colorBL_B = null;
+        this.colorBR_R = null;
+        this.colorBR_G = null;
+        this.colorBR_B = null;
         // Debug
         this.debugTrace = null;
         this.drewAny = false;
@@ -283,6 +310,14 @@ public class RenderContext {
         this.baseData = data;
     }
 
+    public String getTextureKey() {
+        return textureKey;
+    }
+
+    public void setTextureKey(String key) {
+        this.textureKey = key;
+    }
+
     // ========== 纹理坐标相关 Getter/Setter ==========
     public Integer getConnectionMask() {
         return connectionMask;
@@ -420,6 +455,31 @@ public class RenderContext {
         this.drawRelMaxZ = z;
     }
 
+    // ========== 世界坐标 Getter/Setter ==========
+    public double getWorldX() {
+        return worldX != null ? worldX : 0.0;
+    }
+
+    public void setWorldX(double x) {
+        this.worldX = x;
+    }
+
+    public double getWorldY() {
+        return worldY != null ? worldY : 0.0;
+    }
+
+    public void setWorldY(double y) {
+        this.worldY = y;
+    }
+
+    public double getWorldZ() {
+        return worldZ != null ? worldZ : 0.0;
+    }
+
+    public void setWorldZ(double z) {
+        this.worldZ = z;
+    }
+
     // ========== 着色相关 Getter/Setter ==========
     public Integer getDrawBrightness() {
         return drawBrightness;
@@ -440,6 +500,35 @@ public class RenderContext {
     public boolean needsBiomeTinting() {
         return baseData != null && baseData.getTinting() != null;
     }
+
+    // ========== 颜色四角 Getter/Setter ==========
+    public Float getColorTL_R() { return colorTL_R; }
+    public void setColorTL_R(float r) { this.colorTL_R = r; }
+    public Float getColorTL_G() { return colorTL_G; }
+    public void setColorTL_G(float g) { this.colorTL_G = g; }
+    public Float getColorTL_B() { return colorTL_B; }
+    public void setColorTL_B(float b) { this.colorTL_B = b; }
+
+    public Float getColorTR_R() { return colorTR_R; }
+    public void setColorTR_R(float r) { this.colorTR_R = r; }
+    public Float getColorTR_G() { return colorTR_G; }
+    public void setColorTR_G(float g) { this.colorTR_G = g; }
+    public Float getColorTR_B() { return colorTR_B; }
+    public void setColorTR_B(float b) { this.colorTR_B = b; }
+
+    public Float getColorBL_R() { return colorBL_R; }
+    public void setColorBL_R(float r) { this.colorBL_R = r; }
+    public Float getColorBL_G() { return colorBL_G; }
+    public void setColorBL_G(float g) { this.colorBL_G = g; }
+    public Float getColorBL_B() { return colorBL_B; }
+    public void setColorBL_B(float b) { this.colorBL_B = b; }
+
+    public Float getColorBR_R() { return colorBR_R; }
+    public void setColorBR_R(float r) { this.colorBR_R = r; }
+    public Float getColorBR_G() { return colorBR_G; }
+    public void setColorBR_G(float g) { this.colorBR_G = g; }
+    public Float getColorBR_B() { return colorBR_B; }
+    public void setColorBR_B(float b) { this.colorBR_B = b; }
 
     // ========== Debug ==========
     public PipelineDebugTrace getDebugTrace() {

@@ -7,35 +7,40 @@ import com.github.wohaopa.MyCTMLib.GTNHIntegrationHelper;
 import com.github.wohaopa.MyCTMLib.render.context.RenderContext;
 
 /**
- * 渲染输出组
+ * 渲染输出组（纯提交层，零计算）
  * 
- * <p>本组方法假设输入数据有效，由调用方（Pipeline 层）负责验证前置条件。</p>
+ * <p>本组方法假设所有输入数据已由上游 Domain 计算完毕。</p>
  */
 public final class RenderGroup {
 
-    private static final int FULL_BRIGHTNESS = 15728880;
     private static final int CORNER_TOP_LEFT = 0;
     private static final int CORNER_TOP_RIGHT = 1;
     private static final int CORNER_BOTTOM_LEFT = 2;
     private static final int CORNER_BOTTOM_RIGHT = 3;
 
+    private static final int[][] CORNER_ORDER_BY_FACE = {
+        { CORNER_TOP_LEFT, CORNER_BOTTOM_LEFT, CORNER_BOTTOM_RIGHT, CORNER_TOP_RIGHT }, // DOWN
+        { CORNER_TOP_LEFT, CORNER_BOTTOM_LEFT, CORNER_BOTTOM_RIGHT, CORNER_TOP_RIGHT }, // UP
+        { CORNER_TOP_LEFT, CORNER_BOTTOM_LEFT, CORNER_BOTTOM_RIGHT, CORNER_TOP_RIGHT }, // NORTH
+        { CORNER_TOP_LEFT, CORNER_BOTTOM_LEFT, CORNER_BOTTOM_RIGHT, CORNER_TOP_RIGHT }, // SOUTH
+        { CORNER_TOP_LEFT, CORNER_BOTTOM_LEFT, CORNER_BOTTOM_RIGHT, CORNER_TOP_RIGHT }, // WEST
+        { CORNER_TOP_LEFT, CORNER_BOTTOM_LEFT, CORNER_BOTTOM_RIGHT, CORNER_TOP_RIGHT }, // EAST
+    };
+
     private RenderGroup() {
-        // 工具类，禁止实例化
     }
 
     /**
-     * 渲染面
+     * 渲染面（纯提交，零计算）
      * 
      * <p>前置条件（由调用方保证）：</p>
      * <ul>
-     *   <li>{@code ctx.getRenderBlocks() != null}</li>
-     *   <li>{@code ctx.getDrawIcon() != null}</li>
-     *   <li>{@code ctx.getFace() != null}</li>
-     *   <li>{@code ctx.getDrawMinU/MaxU/MinV/MaxV() != null}</li>
-     *   <li>{@code ctx.getDrawRelMinX/MaxX/MinY/MaxY/MinZ/MaxZ() != null}</li>
+     *   <li>PositionDomain.calc() 已调用：worldX/Y/Z</li>
+     *   <li>GeometryDomain 已调用：relMinX/Y/Z, relMaxX/Y/Z</li>
+     *   <li>UVDomain.calc() 已调用：drawMinU/V, drawMaxU/V</li>
+     *   <li>BrightnessDomain 已调用：drawBrightness</li>
+     *   <li>ColorDomain 已调用：color 四角</li>
      * </ul>
-     * 
-     * @param ctx 渲染上下文
      */
     public static void renderFace(RenderContext ctx) {
         Tessellator tes = GTNHIntegrationHelper.getGTNHLibTessellator();
@@ -45,16 +50,23 @@ public final class RenderGroup {
         double minV = ctx.getDrawMinV();
         double maxV = ctx.getDrawMaxV();
 
-        double x = ctx.getX();
-        double y = ctx.getY();
-        double z = ctx.getZ();
-
-        double minX = x + ctx.getDrawRelMinX();
-        double maxX = x + ctx.getDrawRelMaxX();
-        double minY = y + ctx.getDrawRelMinY();
-        double maxY = y + ctx.getDrawRelMaxY();
-        double minZ = z + ctx.getDrawRelMinZ();
-        double maxZ = z + ctx.getDrawRelMaxZ();
+        double baseX = ctx.getWorldX();
+        double baseY = ctx.getWorldY();
+        double baseZ = ctx.getWorldZ();
+        
+        double relMinX = ctx.getDrawRelMinX();
+        double relMaxX = ctx.getDrawRelMaxX();
+        double relMinY = ctx.getDrawRelMinY();
+        double relMaxY = ctx.getDrawRelMaxY();
+        double relMinZ = ctx.getDrawRelMinZ();
+        double relMaxZ = ctx.getDrawRelMaxZ();
+        
+        double minX = baseX;
+        double maxX = baseX - relMinX + relMaxX;
+        double minY = baseY;
+        double maxY = baseY - relMinY + relMaxY;
+        double minZ = baseZ;
+        double maxZ = baseZ - relMinZ + relMaxZ;
 
         if (ctx.getRenderBlocks().renderFromInside) {
             double t = minU;
@@ -62,159 +74,115 @@ public final class RenderGroup {
             maxU = t;
         }
 
-        // 预计算 4 个顶点的颜色和亮度
-        float r0, g0, b0, r1, g1, b1, r2, g2, b2, r3, g3, b3;
-        int bright0, bright1, bright2, bright3;
+        int brightness = ctx.getDrawBrightness();
+        float rTL = ctx.getColorTL_R();
+        float gTL = ctx.getColorTL_G();
+        float bTL = ctx.getColorTL_B();
+        float rTR = ctx.getColorTR_R();
+        float gTR = ctx.getColorTR_G();
+        float bTR = ctx.getColorTR_B();
+        float rBL = ctx.getColorBL_R();
+        float gBL = ctx.getColorBL_G();
+        float bBL = ctx.getColorBL_B();
+        float rBR = ctx.getColorBR_R();
+        float gBR = ctx.getColorBR_G();
+        float bBR = ctx.getColorBR_B();
 
-        boolean useBiomeTint = ctx.needsBiomeTinting();
-        if (useBiomeTint && ctx.getBiomeColor() != null) {
-            // TODO: 支持群系着色
-            r0 = g0 = b0 = 1.0F;
-            r1 = g1 = b1 = 1.0F;
-            r2 = g2 = b2 = 1.0F;
-            r3 = g3 = b3 = 1.0F;
-            bright0 = bright1 = bright2 = bright3 = ctx.getDrawBrightness();
-        } else if (ctx.getRenderBlocks().enableAO) {
-            r0 = ctx.getRenderBlocks().colorRedTopLeft;
-            g0 = ctx.getRenderBlocks().colorGreenTopLeft;
-            b0 = ctx.getRenderBlocks().colorBlueTopLeft;
-            bright0 = ctx.getDrawBrightness();
-
-            r1 = ctx.getRenderBlocks().colorRedTopRight;
-            g1 = ctx.getRenderBlocks().colorGreenTopRight;
-            b1 = ctx.getRenderBlocks().colorBlueTopRight;
-            bright1 = ctx.getDrawBrightness();
-
-            r2 = ctx.getRenderBlocks().colorRedBottomLeft;
-            g2 = ctx.getRenderBlocks().colorGreenBottomLeft;
-            b2 = ctx.getRenderBlocks().colorBlueBottomLeft;
-            bright2 = ctx.getDrawBrightness();
-
-            r3 = ctx.getRenderBlocks().colorRedBottomRight;
-            g3 = ctx.getRenderBlocks().colorGreenBottomRight;
-            b3 = ctx.getRenderBlocks().colorBlueBottomRight;
-            bright3 = ctx.getDrawBrightness();
-        } else {
-            r0 = g0 = b0 = 1.0F;
-            r1 = g1 = b1 = 1.0F;
-            r2 = g2 = b2 = 1.0F;
-            r3 = g3 = b3 = 1.0F;
-            bright0 = bright1 = bright2 = bright3 = ctx.getDrawBrightness();
-        }
-
-        // 根据面方向输出顶点
         ForgeDirection face = ctx.getFace();
+        int[] corners = CORNER_ORDER_BY_FACE[face.ordinal()];
+
         switch (face) {
             case DOWN:
-                tes.setColorOpaque_F(r0, g0, b0);
-                tes.setBrightness(bright0);
+                setVertex(tes, corners[0], rTL, gTL, bTL, brightness);
                 tes.addVertexWithUV(minX, minY, maxZ, minU, minV);
 
-                tes.setColorOpaque_F(r1, g1, b1);
-                tes.setBrightness(bright1);
+                setVertex(tes, corners[1], rBL, gBL, bBL, brightness);
                 tes.addVertexWithUV(minX, minY, minZ, minU, maxV);
 
-                tes.setColorOpaque_F(r2, g2, b2);
-                tes.setBrightness(bright2);
+                setVertex(tes, corners[2], rBR, gBR, bBR, brightness);
                 tes.addVertexWithUV(maxX, minY, minZ, maxU, maxV);
 
-                tes.setColorOpaque_F(r3, g3, b3);
-                tes.setBrightness(bright3);
+                setVertex(tes, corners[3], rTR, gTR, bTR, brightness);
                 tes.addVertexWithUV(maxX, minY, maxZ, maxU, minV);
                 break;
 
             case UP:
-                tes.setColorOpaque_F(r0, g0, b0);
-                tes.setBrightness(bright0);
+                setVertex(tes, corners[0], rTL, gTL, bTL, brightness);
                 tes.addVertexWithUV(maxX, maxY, maxZ, maxU, maxV);
 
-                tes.setColorOpaque_F(r1, g1, b1);
-                tes.setBrightness(bright1);
+                setVertex(tes, corners[1], rBL, gBL, bBL, brightness);
                 tes.addVertexWithUV(maxX, maxY, minZ, maxU, minV);
 
-                tes.setColorOpaque_F(r2, g2, b2);
-                tes.setBrightness(bright2);
+                setVertex(tes, corners[2], rBR, gBR, bBR, brightness);
                 tes.addVertexWithUV(minX, maxY, minZ, minU, minV);
 
-                tes.setColorOpaque_F(r3, g3, b3);
-                tes.setBrightness(bright3);
+                setVertex(tes, corners[3], rTR, gTR, bTR, brightness);
                 tes.addVertexWithUV(minX, maxY, maxZ, minU, maxV);
                 break;
 
             case NORTH:
-                tes.setColorOpaque_F(r0, g0, b0);
-                tes.setBrightness(bright0);
+                setVertex(tes, corners[0], rTL, gTL, bTL, brightness);
                 tes.addVertexWithUV(minX, maxY, minZ, maxU, minV);
 
-                tes.setColorOpaque_F(r1, g1, b1);
-                tes.setBrightness(bright1);
+                setVertex(tes, corners[1], rBL, gBL, bBL, brightness);
                 tes.addVertexWithUV(maxX, maxY, minZ, minU, minV);
 
-                tes.setColorOpaque_F(r2, g2, b2);
-                tes.setBrightness(bright2);
+                setVertex(tes, corners[2], rBR, gBR, bBR, brightness);
                 tes.addVertexWithUV(maxX, minY, minZ, minU, maxV);
 
-                tes.setColorOpaque_F(r3, g3, b3);
-                tes.setBrightness(bright3);
+                setVertex(tes, corners[3], rTR, gTR, bTR, brightness);
                 tes.addVertexWithUV(minX, minY, minZ, maxU, maxV);
                 break;
 
             case SOUTH:
-                tes.setColorOpaque_F(r0, g0, b0);
-                tes.setBrightness(bright0);
+                setVertex(tes, corners[0], rTL, gTL, bTL, brightness);
                 tes.addVertexWithUV(minX, maxY, maxZ, minU, minV);
 
-                tes.setColorOpaque_F(r1, g1, b1);
-                tes.setBrightness(bright1);
+                setVertex(tes, corners[1], rBL, gBL, bBL, brightness);
                 tes.addVertexWithUV(minX, minY, maxZ, minU, maxV);
 
-                tes.setColorOpaque_F(r2, g2, b2);
-                tes.setBrightness(bright2);
+                setVertex(tes, corners[2], rBR, gBR, bBR, brightness);
                 tes.addVertexWithUV(maxX, minY, maxZ, maxU, maxV);
 
-                tes.setColorOpaque_F(r3, g3, b3);
-                tes.setBrightness(bright3);
+                setVertex(tes, corners[3], rTR, gTR, bTR, brightness);
                 tes.addVertexWithUV(maxX, maxY, maxZ, maxU, minV);
                 break;
 
             case WEST:
-                tes.setColorOpaque_F(r0, g0, b0);
-                tes.setBrightness(bright0);
+                setVertex(tes, corners[0], rTL, gTL, bTL, brightness);
                 tes.addVertexWithUV(minX, maxY, maxZ, maxU, minV);
 
-                tes.setColorOpaque_F(r1, g1, b1);
-                tes.setBrightness(bright1);
+                setVertex(tes, corners[1], rBL, gBL, bBL, brightness);
                 tes.addVertexWithUV(minX, maxY, minZ, minU, minV);
 
-                tes.setColorOpaque_F(r2, g2, b2);
-                tes.setBrightness(bright2);
+                setVertex(tes, corners[2], rBR, gBR, bBR, brightness);
                 tes.addVertexWithUV(minX, minY, minZ, minU, maxV);
 
-                tes.setColorOpaque_F(r3, g3, b3);
-                tes.setBrightness(bright3);
+                setVertex(tes, corners[3], rTR, gTR, bTR, brightness);
                 tes.addVertexWithUV(minX, minY, maxZ, maxU, maxV);
                 break;
 
             case EAST:
-                tes.setColorOpaque_F(r0, g0, b0);
-                tes.setBrightness(bright0);
+                setVertex(tes, corners[0], rTL, gTL, bTL, brightness);
                 tes.addVertexWithUV(maxX, minY, maxZ, minU, maxV);
 
-                tes.setColorOpaque_F(r1, g1, b1);
-                tes.setBrightness(bright1);
+                setVertex(tes, corners[1], rBL, gBL, bBL, brightness);
                 tes.addVertexWithUV(maxX, minY, minZ, maxU, maxV);
 
-                tes.setColorOpaque_F(r2, g2, b2);
-                tes.setBrightness(bright2);
+                setVertex(tes, corners[2], rBR, gBR, bBR, brightness);
                 tes.addVertexWithUV(maxX, maxY, minZ, maxU, minV);
 
-                tes.setColorOpaque_F(r3, g3, b3);
-                tes.setBrightness(bright3);
+                setVertex(tes, corners[3], rTR, gTR, bTR, brightness);
                 tes.addVertexWithUV(maxX, maxY, maxZ, minU, minV);
                 break;
 
             default:
                 break;
         }
+    }
+
+    private static void setVertex(Tessellator tes, int corner, float r, float g, float b, int brightness) {
+        tes.setColorOpaque_F(r, g, b);
+        tes.setBrightness(brightness);
     }
 }

@@ -4,11 +4,11 @@ import com.github.wohaopa.MyCTMLib.MyCTMLib;
 import com.github.wohaopa.MyCTMLib.Textures;
 import com.github.wohaopa.MyCTMLib.render.CTMRenderEntry;
 import com.github.wohaopa.MyCTMLib.render.context.RenderContext;
+import com.github.wohaopa.MyCTMLib.render.domain.GeometryDomain;
+import com.github.wohaopa.MyCTMLib.render.domain.IconDomain;
 import com.github.wohaopa.MyCTMLib.render.pipelines.BaseTilePipeline;
 import com.github.wohaopa.MyCTMLib.render.pipelines.ConnectingTilePipeline;
 import com.github.wohaopa.MyCTMLib.render.pipelines.RandomTilePipeline;
-import com.github.wohaopa.MyCTMLib.render.phasegroups.GeometryGroup;
-import com.github.wohaopa.MyCTMLib.render.phasegroups.IconResolveGroup;
 import com.github.wohaopa.MyCTMLib.model.ModelElement;
 import com.github.wohaopa.MyCTMLib.model.ModelFace;
 import com.github.wohaopa.MyCTMLib.texture.BaseTextureData;
@@ -24,18 +24,15 @@ import com.github.wohaopa.MyCTMLib.texture.TextureTypeData;
 public class RenderPipeline {
 
     public boolean execute(RenderContext ctx) {
-        // 阶段 1：初始化
         ctx.info("=== RenderPipeline Started ===");
         ctx.debug("INIT: Resetting context");
         ctx.resetPipelineFailed();
         ctx.setDrewAny(false);
 
-        // 阶段 2：决策
         RenderBranch branch = decideRenderBranch(ctx);
         ctx.setRenderBranch(branch);
         ctx.info("DECIDE: Using branch: " + branch);
 
-        // 阶段 3：渲染（根据 branch 执行）
         ctx.debug("RENDER: Starting render");
         switch (branch) {
             case MODEL_ELEMENTS -> executeModelBranch(ctx);
@@ -48,10 +45,8 @@ public class RenderPipeline {
             }
         }
 
-        // 阶段 4：清理
         ctx.info("COMPLETE: drewAny=" + ctx.isDrewAny());
 
-        // 如果新管线失败，fallback 到 tryRender
         boolean drewAny = ctx.isDrewAny();
         if (!drewAny) {
             ctx.warn("New pipeline failed, falling back to tryRender()");
@@ -70,18 +65,14 @@ public class RenderPipeline {
         return drewAny;
     }
 
-    // ========== 决策逻辑 ==========
-
     private RenderBranch decideRenderBranch(RenderContext ctx) {
         ctx.trace("DECIDE: Checking render branch");
 
-        // 1. 物品渲染优先判断
         if (ctx.isItemRender()) {
             ctx.debug("DECIDE: Item render detected");
             return RenderBranch.ITEM;
         }
 
-        // 2. Model 分支：需要查询，触发懒加载
         String modelId = ctx.getModelId();
         if (modelId != null) {
             ctx.debug("DECIDE: Model branch candidate (modelId=" + modelId + ")");
@@ -93,20 +84,17 @@ public class RenderPipeline {
             }
         }
 
-        // 3. 纹理重定位分支
         String iconName = ctx.getIconName();
         if (shouldUseTextureReloc(iconName)) {
             ctx.debug("DECIDE: Selected TEXTURE_RELOC branch");
             return RenderBranch.TEXTURE_RELOC;
         }
 
-        // 4. Legacy 分支
         if (shouldUseLegacy(iconName)) {
             ctx.debug("DECIDE: Selected LEGACY branch");
             return RenderBranch.LEGACY;
         }
 
-        // 5. 无匹配
         ctx.debug("DECIDE: No matching branch (NONE)");
         return RenderBranch.NONE;
     }
@@ -133,8 +121,6 @@ public class RenderPipeline {
         return false;
     }
 
-    // ========== 分支执行函数 ==========
-
     private void executeModelBranch(RenderContext ctx) {
         ctx.debug("MODEL: Looping through " + ctx.getElements().size() + " elements");
 
@@ -144,9 +130,6 @@ public class RenderPipeline {
             ctx.setCurrentElementIndex(index++);
             ctx.resetPipelineFailed();
             ctx.trace("MODEL: Rendering element " + index);
-
-            
-            ctx.trace("RENDER: Parsing texture for element");
 
             ModelFace faceData = element.getFace(ctx.getFace());
             if (faceData == null) {
@@ -168,6 +151,7 @@ public class RenderPipeline {
 
             String domain = extractDomain(ctx.getModelId());
             String textureKey = com.github.wohaopa.MyCTMLib.texture.TextureKeyNormalizer.toCanonicalTextureKey(domain, texturePath);
+            ctx.setTextureKey(textureKey);
             ctx.debug("RENDER: Resolved texture key: " + textureKey);
 
             TextureTypeData data = CTMRenderEntry.getConnectingData(textureKey);
@@ -180,26 +164,6 @@ public class RenderPipeline {
 
             ctx.trace("RENDER: Texture parsed successfully: " + data.getClass().getSimpleName());
 
-
-            ctx.trace("RENDER: Starting element render");
-
-            // 子阶段 2：几何数据
-            ctx.trace("RENDER: Computing geometry bounds");
-            GeometryGroup.boundsFromElement(ctx);
-            if (ctx.isPipelineFailed()) {
-                ctx.error("RENDER: Geometry bounds computation failed");
-                continue;
-            }
-
-            // 子阶段 3：Icon
-            ctx.trace("RENDER: Resolving icon");
-            IconResolveGroup.resolveIcon(ctx);
-            if (ctx.isPipelineFailed()) {
-                ctx.error("RENDER: Icon resolution failed");
-                continue;
-            }
-
-            // 子阶段 4：根据材质类型选择管道
             if (data instanceof BaseTextureData btd) {
                 ctx.setBaseData(btd);
                 ctx.debug("RENDER: BaseTexture pipeline");
@@ -219,7 +183,6 @@ public class RenderPipeline {
                 ctx.debug("MODEL: Element " + index + " failed, continuing to next");
             } else {
                 ctx.trace("MODEL: Element " + index + " rendered successfully");
-                ctx.trace("RENDER: Element render completed");
             }
         }
 
@@ -235,7 +198,6 @@ public class RenderPipeline {
 
     private void executeTextureRelocBranch(RenderContext ctx) {
         ctx.info("TEXTURE_RELOC: Rendering with texture relocation");
-        // TODO: 实现纹理重定位渲染
     }
 
     private void executeLegacyBranch(RenderContext ctx) {
@@ -256,7 +218,6 @@ public class RenderPipeline {
 
     private void executeItemBranch(RenderContext ctx) {
         ctx.info("ITEM: Rendering item face");
-        // 物品渲染使用 BaseTilePipeline
         BaseTilePipeline.execute(ctx);
     }
 }

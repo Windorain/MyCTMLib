@@ -1,5 +1,7 @@
 package com.github.wohaopa.MyCTMLib.render.phasegroups;
 
+import net.minecraft.util.IIcon;
+
 import com.github.wohaopa.MyCTMLib.render.context.RenderContext;
 import com.github.wohaopa.MyCTMLib.texture.ConnectingTextureData;
 import com.github.wohaopa.MyCTMLib.texture.RandomTextureData;
