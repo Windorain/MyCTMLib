@@ -50,6 +50,15 @@ public abstract class MixinRenderBlocks {
         if (iIcon == null) return;
         if (this.hasOverrideBlockTexture()) return;
 
+        RenderInvocationContext ctx = RenderInvocationContextHolder.getIfAvailable();
+        if (ctx != null) {
+            ctx.pushMethod(RenderMethod.RENDER_FACE_Y_NEG);
+            ctx.setCurrentFace(ForgeDirection.DOWN);
+            ctx.setCurrentIcon(iIcon);
+            ctx.setIconName(iIcon.getIconName());
+            ctx.incrementFaceRenderCount(ForgeDirection.DOWN);
+        }
+
         if (blockAccess == null) {
             if (CTMRenderEntry
                 .tryRenderItemFace((RenderBlocks) (Object) this, block, x, y, z, iIcon, ForgeDirection.DOWN)) {
@@ -92,6 +101,15 @@ public abstract class MixinRenderBlocks {
         if (iIcon == null) return;
         if (this.hasOverrideBlockTexture()) return;
 
+        RenderInvocationContext ctx = RenderInvocationContextHolder.getIfAvailable();
+        if (ctx != null) {
+            ctx.pushMethod(RenderMethod.RENDER_FACE_Y_POS);
+            ctx.setCurrentFace(ForgeDirection.UP);
+            ctx.setCurrentIcon(iIcon);
+            ctx.setIconName(iIcon.getIconName());
+            ctx.incrementFaceRenderCount(ForgeDirection.UP);
+        }
+
         if (blockAccess == null) {
             if (CTMRenderEntry
                 .tryRenderItemFace((RenderBlocks) (Object) this, block, x, y, z, iIcon, ForgeDirection.UP)) {
@@ -126,6 +144,15 @@ public abstract class MixinRenderBlocks {
     private void redirect$renderFaceZNeg(Block block, double x, double y, double z, IIcon iIcon, CallbackInfo ci) {
         if (iIcon == null) return;
         if (this.hasOverrideBlockTexture()) return;
+
+        RenderInvocationContext ctx = RenderInvocationContextHolder.getIfAvailable();
+        if (ctx != null) {
+            ctx.pushMethod(RenderMethod.RENDER_FACE_Z_NEG);
+            ctx.setCurrentFace(ForgeDirection.NORTH);
+            ctx.setCurrentIcon(iIcon);
+            ctx.setIconName(iIcon.getIconName());
+            ctx.incrementFaceRenderCount(ForgeDirection.NORTH);
+        }
 
         if (blockAccess == null) {
             if (CTMRenderEntry
@@ -169,6 +196,15 @@ public abstract class MixinRenderBlocks {
         if (iIcon == null) return;
         if (this.hasOverrideBlockTexture()) return;
 
+        RenderInvocationContext ctx = RenderInvocationContextHolder.getIfAvailable();
+        if (ctx != null) {
+            ctx.pushMethod(RenderMethod.RENDER_FACE_Z_POS);
+            ctx.setCurrentFace(ForgeDirection.SOUTH);
+            ctx.setCurrentIcon(iIcon);
+            ctx.setIconName(iIcon.getIconName());
+            ctx.incrementFaceRenderCount(ForgeDirection.SOUTH);
+        }
+
         if (blockAccess == null) {
             if (CTMRenderEntry
                 .tryRenderItemFace((RenderBlocks) (Object) this, block, x, y, z, iIcon, ForgeDirection.SOUTH)) {
@@ -211,6 +247,15 @@ public abstract class MixinRenderBlocks {
         if (iIcon == null) return;
         if (this.hasOverrideBlockTexture()) return;
 
+        RenderInvocationContext ctx = RenderInvocationContextHolder.getIfAvailable();
+        if (ctx != null) {
+            ctx.pushMethod(RenderMethod.RENDER_FACE_X_NEG);
+            ctx.setCurrentFace(ForgeDirection.WEST);
+            ctx.setCurrentIcon(iIcon);
+            ctx.setIconName(iIcon.getIconName());
+            ctx.incrementFaceRenderCount(ForgeDirection.WEST);
+        }
+
         if (blockAccess == null) {
             if (CTMRenderEntry
                 .tryRenderItemFace((RenderBlocks) (Object) this, block, x, y, z, iIcon, ForgeDirection.WEST)) {
@@ -252,6 +297,15 @@ public abstract class MixinRenderBlocks {
     private void redirect$renderFaceXPos(Block block, double x, double y, double z, IIcon iIcon, CallbackInfo ci) {
         if (iIcon == null) return;
         if (this.hasOverrideBlockTexture()) return;
+
+        RenderInvocationContext ctx = RenderInvocationContextHolder.getIfAvailable();
+        if (ctx != null) {
+            ctx.pushMethod(RenderMethod.RENDER_FACE_X_POS);
+            ctx.setCurrentFace(ForgeDirection.EAST);
+            ctx.setCurrentIcon(iIcon);
+            ctx.setIconName(iIcon.getIconName());
+            ctx.incrementFaceRenderCount(ForgeDirection.EAST);
+        }
 
         if (blockAccess == null) {
             if (CTMRenderEntry
@@ -402,18 +456,6 @@ public abstract class MixinRenderBlocks {
         ctx.setMeta(0);
     }
 
-    @Inject(method = "renderFaceYPos", at = @At("HEAD"))
-    private void onRenderFaceYPosStart(Block block, double x, double y, double z, IIcon icon, CallbackInfo ci) {
-        RenderInvocationContext ctx = RenderInvocationContextHolder.getIfAvailable();
-        if (ctx != null) {
-            ctx.pushMethod(RenderMethod.RENDER_FACE_Y_POS);
-            ctx.setCurrentFace(ForgeDirection.UP);
-            ctx.setCurrentIcon(icon);
-            ctx.setIconName(icon.getIconName());
-            ctx.incrementFaceRenderCount(ForgeDirection.UP);
-        }
-    }
-
     @Inject(method = "renderFaceYPos", at = @At("RETURN"))
     private void onRenderFaceYPosEnd(CallbackInfo ci) {
         RenderInvocationContext ctx = RenderInvocationContextHolder.getIfAvailable();
@@ -422,18 +464,6 @@ public abstract class MixinRenderBlocks {
         ctx.setCurrentFace(null);
         ctx.setCurrentIcon(null);
         ctx.popMethod();
-    }
-
-    @Inject(method = "renderFaceYNeg", at = @At("HEAD"))
-    private void onRenderFaceYNegStart(Block block, double x, double y, double z, IIcon icon, CallbackInfo ci) {
-        RenderInvocationContext ctx = RenderInvocationContextHolder.getIfAvailable();
-        if (ctx != null) {
-            ctx.pushMethod(RenderMethod.RENDER_FACE_Y_NEG);
-            ctx.setCurrentFace(ForgeDirection.DOWN);
-            ctx.setCurrentIcon(icon);
-            ctx.setIconName(icon.getIconName());
-            ctx.incrementFaceRenderCount(ForgeDirection.DOWN);
-        }
     }
 
     @Inject(method = "renderFaceYNeg", at = @At("RETURN"))
@@ -446,18 +476,6 @@ public abstract class MixinRenderBlocks {
         ctx.popMethod();
     }
 
-    @Inject(method = "renderFaceXPos", at = @At("HEAD"))
-    private void onRenderFaceXPosStart(Block block, double x, double y, double z, IIcon icon, CallbackInfo ci) {
-        RenderInvocationContext ctx = RenderInvocationContextHolder.getIfAvailable();
-        if (ctx != null) {
-            ctx.pushMethod(RenderMethod.RENDER_FACE_X_POS);
-            ctx.setCurrentFace(ForgeDirection.EAST);
-            ctx.setCurrentIcon(icon);
-            ctx.setIconName(icon.getIconName());
-            ctx.incrementFaceRenderCount(ForgeDirection.EAST);
-        }
-    }
-
     @Inject(method = "renderFaceXPos", at = @At("RETURN"))
     private void onRenderFaceXPosEnd(CallbackInfo ci) {
         RenderInvocationContext ctx = RenderInvocationContextHolder.getIfAvailable();
@@ -466,18 +484,6 @@ public abstract class MixinRenderBlocks {
         ctx.setCurrentFace(null);
         ctx.setCurrentIcon(null);
         ctx.popMethod();
-    }
-
-    @Inject(method = "renderFaceXNeg", at = @At("HEAD"))
-    private void onRenderFaceXNegStart(Block block, double x, double y, double z, IIcon icon, CallbackInfo ci) {
-        RenderInvocationContext ctx = RenderInvocationContextHolder.getIfAvailable();
-        if (ctx != null) {
-            ctx.pushMethod(RenderMethod.RENDER_FACE_X_NEG);
-            ctx.setCurrentFace(ForgeDirection.WEST);
-            ctx.setCurrentIcon(icon);
-            ctx.setIconName(icon.getIconName());
-            ctx.incrementFaceRenderCount(ForgeDirection.WEST);
-        }
     }
 
     @Inject(method = "renderFaceXNeg", at = @At("RETURN"))
@@ -490,18 +496,6 @@ public abstract class MixinRenderBlocks {
         ctx.popMethod();
     }
 
-    @Inject(method = "renderFaceZPos", at = @At("HEAD"))
-    private void onRenderFaceZPosStart(Block block, double x, double y, double z, IIcon icon, CallbackInfo ci) {
-        RenderInvocationContext ctx = RenderInvocationContextHolder.getIfAvailable();
-        if (ctx != null) {
-            ctx.pushMethod(RenderMethod.RENDER_FACE_Z_POS);
-            ctx.setCurrentFace(ForgeDirection.SOUTH);
-            ctx.setCurrentIcon(icon);
-            ctx.setIconName(icon.getIconName());
-            ctx.incrementFaceRenderCount(ForgeDirection.SOUTH);
-        }
-    }
-
     @Inject(method = "renderFaceZPos", at = @At("RETURN"))
     private void onRenderFaceZPosEnd(CallbackInfo ci) {
         RenderInvocationContext ctx = RenderInvocationContextHolder.getIfAvailable();
@@ -510,18 +504,6 @@ public abstract class MixinRenderBlocks {
         ctx.setCurrentFace(null);
         ctx.setCurrentIcon(null);
         ctx.popMethod();
-    }
-
-    @Inject(method = "renderFaceZNeg", at = @At("HEAD"))
-    private void onRenderFaceZNegStart(Block block, double x, double y, double z, IIcon icon, CallbackInfo ci) {
-        RenderInvocationContext ctx = RenderInvocationContextHolder.getIfAvailable();
-        if (ctx != null) {
-            ctx.pushMethod(RenderMethod.RENDER_FACE_Z_NEG);
-            ctx.setCurrentFace(ForgeDirection.NORTH);
-            ctx.setCurrentIcon(icon);
-            ctx.setIconName(icon.getIconName());
-            ctx.incrementFaceRenderCount(ForgeDirection.NORTH);
-        }
     }
 
     @Inject(method = "renderFaceZNeg", at = @At("RETURN"))

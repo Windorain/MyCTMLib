@@ -686,12 +686,6 @@ public final class CTMRenderEntry {
         RenderContext context = RenderContext.create();
         context.setDebugTrace(new PipelineDebugTrace());
         
-        // 检查必要数据是否存在
-        if (context.getFace() == null || context.getOriginalIcon() == null) {
-            context.debug("renderPipeline: missing required data (face or icon), skipping");
-            return false;
-        }
-        
         PipelineDebugTrace trace = context.getDebugTrace();
         trace.addStep("Position: " + (int)context.getX() + ", " + (int)context.getY() + ", " + (int)context.getZ());
         trace.addStep("Face: " + context.getFace());
