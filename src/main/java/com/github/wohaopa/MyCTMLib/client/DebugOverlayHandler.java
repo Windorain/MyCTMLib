@@ -15,6 +15,8 @@ import net.minecraftforge.common.util.ForgeDirection;
 import com.github.wohaopa.MyCTMLib.MyCTMLib;
 import com.github.wohaopa.MyCTMLib.render.CTMRenderEntry;
 import com.github.wohaopa.MyCTMLib.render.PipelineDebugTrace;
+import com.github.wohaopa.MyCTMLib.render.PipelineDebugTrace.LogEntry;
+import com.github.wohaopa.MyCTMLib.render.PipelineDebugTrace.LogLevel;
 import com.github.wohaopa.MyCTMLib.render.PipelineInfo;
 import com.github.wohaopa.MyCTMLib.render.debug.RenderPipelineDebugCache;
 
@@ -50,26 +52,20 @@ public class DebugOverlayHandler {
         List<String> lines = new ArrayList<>();
         String blockId = getBlockId(block);
         int meta = world.getBlockMetadata(x, y, z);
-        lines.add(
-            "block: " + (blockId != null ? blockId
-                : block.getClass()
-                    .getSimpleName())
-                + " meta: "
-                + meta);
+        lines.add("§f§lBlock:§r " + (blockId != null ? blockId : block.getClass().getSimpleName()) + " meta: " + meta);
 
         int hitSide = Math.min(mop.sideHit, 5);
         ForgeDirection hitFace = ForgeDirection.getOrientation(hitSide);
 
         PipelineDebugTrace newPipelineTrace = RenderPipelineDebugCache.get(x, y, z, hitFace);
 
-        if (newPipelineTrace != null && !newPipelineTrace.getSteps()
-            .isEmpty()) {
+        if (newPipelineTrace != null && !newPipelineTrace.getSteps().isEmpty()) {
             addNewPipelineInfo(lines, newPipelineTrace);
         } else {
-            lines.add("=== NO NEW PIPELINE DATA ===");
+            lines.add("§7=== NO NEW PIPELINE DATA ===");
         }
 
-        lines.add("---");
+        lines.add("§f---");
 
         addOldPipelineInfo(lines, world, block, x, y, z, hitFace, hitSide);
 
@@ -83,8 +79,28 @@ public class DebugOverlayHandler {
     }
 
     private void addNewPipelineInfo(List<String> lines, PipelineDebugTrace trace) {
-        lines.add("========== NEW PIPELINE ==========");
+        lines.add("§f§l========== NEW PIPELINE ==========");
 
+        // 1. 状态摘要
+        addStatusSummary(lines, trace);
+
+        // 2. 按级别显示日志
+        lines.add("§f§l--- Logs ---");
+        addLogsByLevel(lines, trace, LogLevel.ERROR, "§4[ERROR] ");
+        addLogsByLevel(lines, trace, LogLevel.WARN, "§e[WARN]  ");
+        addLogsByLevel(lines, trace, LogLevel.INFO, "§a[INFO]  ");
+        addLogsByLevel(lines, trace, LogLevel.DEBUG, "§7[DEBUG] ");
+        addLogsByLevel(lines, trace, LogLevel.TRACE, "§8[TRACE] ");
+
+        // 3. 决策步骤（完整显示，不省略）
+        lines.add("§f§l--- Decision Steps ---");
+        addAllDecisionSteps(lines, trace);
+
+        // 4. 技术细节
+        addTechnicalDetails(lines, trace);
+    }
+
+    private void addStatusSummary(List<String> lines, PipelineDebugTrace trace) {
         String branch = null;
         Boolean drewAny = null;
         Boolean fallbackToTryRender = null;
@@ -103,43 +119,101 @@ public class DebugOverlayHandler {
             }
         }
 
-        String status = "UNKNOWN";
+        String status = "§7UNKNOWN";
         if (Boolean.TRUE.equals(drewAny)) {
-            status = "SUCCESS (drew directly)";
+            status = "§aSUCCESS§r (drew directly)";
         } else if (Boolean.TRUE.equals(tryRenderResult)) {
-            status = "FALLBACK (tryRender succeeded)";
+            status = "§eFALLBACK§r (tryRender succeeded)";
         } else if (degradationReason != null) {
-            status = "FAILED (vanilla fallback)";
+            status = "§4FAILED§r (vanilla fallback)";
         } else if (fallbackToTryRender != null) {
-            status = "FALLBACK (to tryRender)";
+            status = "§eFALLBACK§r (to tryRender)";
         }
 
-        lines.add("Status: " + status);
+        lines.add("§f§lStatus:§r " + status);
         if (branch != null) {
-            lines.add("Branch: " + branch);
+            lines.add("§f§lBranch:§r " + branch);
         }
         if (drewAny != null) {
-            lines.add("drewAny: " + drewAny);
+            lines.add("§f§ldrewAny:§r " + drewAny);
         }
         if (fallbackToTryRender != null) {
-            lines.add("Fallback to tryRender(): " + fallbackToTryRender);
+            lines.add("§f§lFallback to tryRender():§r " + fallbackToTryRender);
         }
         if (tryRenderResult != null) {
-            lines.add("tryRender() result: " + tryRenderResult);
+            lines.add("§f§ltryRender() result:§r " + tryRenderResult);
         }
         if (degradationReason != null) {
-            lines.add("degrade: " + degradationReason);
+            lines.add("§f§ldegrade:§r " + degradationReason);
+        }
+    }
+
+    private void addLogsByLevel(List<String> lines, PipelineDebugTrace trace, LogLevel level, String prefix) {
+        List<LogEntry> levelLogs = trace.getLogsByLevel(level);
+        if (levelLogs.isEmpty()) return;
+
+        for (LogEntry log : levelLogs) {
+            lines.add(prefix + log.message);
+        }
+    }
+
+    private void addAllDecisionSteps(List<String> lines, PipelineDebugTrace trace) {
+        List<String> steps = trace.getSteps();
+        if (steps.isEmpty()) {
+            lines.add("§7(none)");
+            return;
         }
 
-        lines.add("--- steps ---");
-        addAllDecisionSteps(lines, trace);
+        for (String s : steps) {
+            lines.add("§f" + s);
+        }
+    }
+
+    private void addTechnicalDetails(List<String> lines, PipelineDebugTrace trace) {
+        String pred = trace.getPredicateUsed();
+        int[] tile = trace.getTilePos();
+        int[] bits = trace.getConnectionBits();
+        Boolean synced = trace.getTexRegTexMapSynced();
+        String lookupKey = trace.getTexRegGetIconLookupKey();
+        String spriteName = trace.getDrawSpriteName();
+        String spriteLoaded = trace.getDrawSpriteLoaded();
+
+        boolean hasDetails = pred != null || tile != null || bits != null || 
+                            synced != null || spriteName != null;
+
+        if (!hasDetails) return;
+
+        lines.add("§f§l--- Details ---");
+
+        if (pred != null) {
+            lines.add("§fpred: §7" + pred);
+        }
+        if (tile != null) {
+            lines.add("§ftile: §7(" + tile[0] + "," + tile[1] + ")");
+        }
+        if (bits != null) {
+            StringBuilder sb = new StringBuilder("§fconn: §7");
+            for (int i = 0; i < 8; i++) {
+                if (i > 0) sb.append(" ");
+                sb.append(bits[i]);
+            }
+            lines.add(sb.toString());
+        }
+        if (synced != null) {
+            String syncStatus = Boolean.TRUE.equals(synced) ? "§asynced" : "§4OUT OF SYNC";
+            lines.add("§fTexReg/TexMap: §r" + syncStatus + (lookupKey != null ? " (§7" + lookupKey + "§r)" : ""));
+        }
+        if (spriteName != null) {
+            String loaded = spriteLoaded != null ? " §7" + spriteLoaded : "";
+            lines.add("§fdrawSprite: §r" + spriteName + loaded);
+        }
     }
 
     private void addOldPipelineInfo(List<String> lines, World world, Block block, int x, int y, int z,
         ForgeDirection hitFace, int hitSide) {
-        lines.add("========== OLD PIPELINE ==========");
+        lines.add("§f§l========== OLD PIPELINE ==========");
 
-        StringBuilder summary = new StringBuilder("pipeline: ");
+        StringBuilder summary = new StringBuilder("§fpipeline: §r");
         for (int s = 0; s < 6; s++) {
             if (s > 0) summary.append(" ");
             ForgeDirection face = ForgeDirection.getOrientation(s);
@@ -152,57 +226,94 @@ public class DebugOverlayHandler {
 
         PipelineDebugTrace oldTrace = new PipelineDebugTrace();
         PipelineInfo hitInfo = CTMRenderEntry.getPipelineInfo(world, block, x, y, z, hitFace, oldTrace);
-        lines.add("face: " + SIDE_NAMES_FULL[hitSide] + " | pipeline: " + shortName(hitInfo.getType()));
-        lines.add("icon: " + hitInfo.getIconName());
+        lines.add("§fface: §r" + SIDE_NAMES_FULL[hitSide] + " §7|§r pipeline: " + shortName(hitInfo.getType()));
+        lines.add("§ficon: §r" + hitInfo.getIconName());
         switch (hitInfo.getType()) {
             case MODEL:
-                lines.add("modelId: " + hitInfo.getModelId());
-                lines.add("textureKey: " + hitInfo.getTextureKey());
+                lines.add("§fmodelId: §r" + hitInfo.getModelId());
+                lines.add("§ftextureKey: §r" + hitInfo.getTextureKey());
                 if (oldTrace.getTexRegGetIconLookupKey() != null) {
                     Boolean synced = oldTrace.getTexRegTexMapSynced();
                     lines.add(
-                        "TexReg/TexMap: " + (Boolean.TRUE.equals(synced) ? "synced"
-                            : "OUT OF SYNC (getIcon null, fallback to block icon)"));
+                        "§fTexReg/TexMap: §r" + (Boolean.TRUE.equals(synced) ? "§asynced"
+                            : "§4OUT OF SYNC§r (getIcon null, fallback to block icon)"));
                 }
                 addDrawSpriteLine(lines, oldTrace);
                 addLayoutMaskLine(lines, hitInfo);
                 break;
             case TEXTURE_REGISTRY:
-                lines.add("lookupKey: " + hitInfo.getIconName());
+                lines.add("§flookupKey: §r" + hitInfo.getIconName());
                 addDrawSpriteLine(lines, oldTrace);
                 addLayoutMaskLine(lines, hitInfo);
                 break;
             case LEGACY:
-                lines.add("legacy: ctmIconMap");
+                lines.add("§flegacy: §rctmIconMap");
                 break;
             case VANILLA:
-                if (hitInfo.getSkipReason() != null && !hitInfo.getSkipReason()
-                    .isEmpty()) {
-                    lines.add("skip: " + hitInfo.getSkipReason());
+                if (hitInfo.getSkipReason() != null && !hitInfo.getSkipReason().isEmpty()) {
+                    lines.add("§fskip: §r" + hitInfo.getSkipReason());
                 }
                 break;
         }
 
         addPredicateTileConnLine(lines, oldTrace);
-        if (oldTrace.getDegradationReason() != null && !oldTrace.getDegradationReason()
-            .isEmpty()) {
-            lines.add("degrade: " + oldTrace.getDegradationReason());
+        if (oldTrace.getDegradationReason() != null && !oldTrace.getDegradationReason().isEmpty()) {
+            lines.add("§fdegrade: §r" + oldTrace.getDegradationReason());
         }
         addTruncatedDecisionSteps(lines, oldTrace);
     }
 
-    private void addAllDecisionSteps(List<String> lines, PipelineDebugTrace trace) {
-        List<String> steps = trace.getSteps();
-        if (steps.isEmpty()) return;
-        for (String s : steps) {
-            lines.add(s);
+    private static void addDrawSpriteLine(List<String> lines, PipelineDebugTrace trace) {
+        if (trace.getDrawSpriteName() == null) return;
+        String loaded = trace.getDrawSpriteLoaded();
+        String suffix = "";
+        if (loaded != null) {
+            if (loaded.contains("0x0")) suffix = " §7(unloaded?)";
+            else if ("16x16".equals(loaded)) suffix = " §7(16x16?)";
+        }
+        lines.add(
+            "§fdrawSprite: §r" + trace.getDrawSpriteName()
+                + (loaded != null && !loaded.isEmpty() ? " §7" + loaded : "")
+                + suffix);
+    }
+
+    private static void addLayoutMaskLine(List<String> lines, PipelineInfo hitInfo) {
+        if (hitInfo.getLayout() == null) return;
+        if (hitInfo.getMask() >= 0) {
+            lines.add("§flayout: §r" + hitInfo.getLayout() + " §fmask: §70x" + Integer.toHexString(hitInfo.getMask()));
+        } else {
+            lines.add("§flayout: §r" + hitInfo.getLayout());
         }
     }
 
-    private void addTruncatedDecisionSteps(List<String> lines, PipelineDebugTrace trace) {
+    private static void addPredicateTileConnLine(List<String> lines, PipelineDebugTrace trace) {
+        String pred = trace.getPredicateUsed();
+        int[] tile = trace.getTilePos();
+        int[] bits = trace.getConnectionBits();
+        if (pred == null && tile == null && bits == null) return;
+        
+        StringBuilder sb = new StringBuilder();
+        if (pred != null) sb.append("§fpred: §r").append(pred);
+        if (tile != null) {
+            if (sb.length() > 0) sb.append(" ");
+            sb.append("§ftile:(§r").append(tile[0]).append(",").append(tile[1]).append("§f)");
+        }
+        if (bits != null) {
+            if (sb.length() > 0) sb.append(" ");
+            sb.append("§fconn:§r");
+            for (int i = 0; i < 8; i++) {
+                if (i > 0) sb.append(" ");
+                sb.append(bits[i]);
+            }
+        }
+        if (sb.length() > 0) lines.add(sb.toString());
+    }
+
+    private static void addTruncatedDecisionSteps(List<String> lines, PipelineDebugTrace trace) {
         List<String> steps = trace.getSteps();
         if (steps.isEmpty()) return;
-        lines.add("--- decision ---");
+        
+        lines.add("§f§l--- decision ---");
 
         final String[] DECISION_KEYWORDS = { "getIcon", "HIT", "null", "miss", "degrade", "OUT OF SYNC", "不同步" };
 
@@ -225,79 +336,29 @@ public class DebugOverlayHandler {
         int shown = 0;
         for (String s : keySteps) {
             if (shown >= maxSteps) break;
-            lines.add(s);
+            lines.add("§7" + s);
             shown++;
         }
         for (String s : rest) {
             if (shown >= maxSteps) break;
-            lines.add(s);
+            lines.add("§7" + s);
             shown++;
         }
         if (steps.size() > maxSteps) {
-            lines.add("... (" + (steps.size() - maxSteps) + " more)");
+            lines.add("§7... (" + (steps.size() - maxSteps) + " more)");
         }
-    }
-
-    private static void addDrawSpriteLine(List<String> lines, PipelineDebugTrace trace) {
-        if (trace.getDrawSpriteName() == null) return;
-        String loaded = trace.getDrawSpriteLoaded();
-        String suffix = "";
-        if (loaded != null) {
-            if (loaded.contains("0x0")) suffix = " (unloaded?)";
-            else if ("16x16".equals(loaded)) suffix = " (16x16?)";
-        }
-        lines.add(
-            "drawSprite: " + trace.getDrawSpriteName()
-                + (loaded != null && !loaded.isEmpty() ? " " + loaded : "")
-                + suffix);
-    }
-
-    private static void addLayoutMaskLine(List<String> lines, PipelineInfo hitInfo) {
-        if (hitInfo.getLayout() == null) return;
-        if (hitInfo.getMask() >= 0) {
-            lines.add("layout: " + hitInfo.getLayout() + " mask: 0x" + Integer.toHexString(hitInfo.getMask()));
-        } else {
-            lines.add("layout: " + hitInfo.getLayout());
-        }
-    }
-
-    private static void addPredicateTileConnLine(List<String> lines, PipelineDebugTrace trace) {
-        String pred = trace.getPredicateUsed();
-        int[] tile = trace.getTilePos();
-        int[] bits = trace.getConnectionBits();
-        if (pred == null && tile == null && bits == null) return;
-        StringBuilder sb = new StringBuilder();
-        if (pred != null) sb.append("pred: ")
-            .append(pred);
-        if (tile != null) {
-            if (sb.length() > 0) sb.append(" ");
-            sb.append("tile:(")
-                .append(tile[0])
-                .append(",")
-                .append(tile[1])
-                .append(")");
-        }
-        if (bits != null) {
-            if (sb.length() > 0) sb.append(" ");
-            sb.append("conn:");
-            for (int i = 0; i < 8; i++) {
-                if (i > 0) sb.append(" ");
-                sb.append(bits[i]);
-            }
-        }
-        if (sb.length() > 0) lines.add(sb.toString());
     }
 
     private static String shortName(PipelineInfo.PipelineType t) {
         switch (t) {
             case MODEL:
-                return "Model";
+                return "§bModel";
             case TEXTURE_REGISTRY:
-                return "TexReg";
+                return "§dTexReg";
             case LEGACY:
-                return "Legacy";
+                return "§cLegacy";
             case VANILLA:
-                return "Vanilla";
+                return "§7Vanilla";
             default:
                 return t.name();
         }
@@ -305,8 +366,7 @@ public class DebugOverlayHandler {
 
     private static String getBlockId(Block block) {
         if (block == null) return null;
-        Iterator<?> it = Block.blockRegistry.getKeys()
-            .iterator();
+        Iterator<?> it = Block.blockRegistry.getKeys().iterator();
         while (it.hasNext()) {
             Object key = it.next();
             if (key instanceof String && Block.blockRegistry.getObject(key) == block) {

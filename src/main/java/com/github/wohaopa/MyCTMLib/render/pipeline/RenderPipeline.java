@@ -25,31 +25,36 @@ public class RenderPipeline {
 
     public boolean execute(RenderContext ctx) {
         // 阶段 1：初始化
-        ctx.logDebug("INIT: Resetting context");
+        ctx.info("=== RenderPipeline Started ===");
+        ctx.debug("INIT: Resetting context");
         ctx.resetPipelineFailed();
         ctx.setDrewAny(false);
 
         // 阶段 2：决策
         RenderBranch branch = decideRenderBranch(ctx);
         ctx.setRenderBranch(branch);
-        ctx.logDebug("DECIDE: Using branch: " + branch);
+        ctx.info("DECIDE: Using branch: " + branch);
 
         // 阶段 3：渲染（根据 branch 执行）
-        ctx.logDebug("RENDER: Starting render");
+        ctx.debug("RENDER: Starting render");
         switch (branch) {
             case MODEL_ELEMENTS -> executeModelBranch(ctx);
             case TEXTURE_RELOC -> executeTextureRelocBranch(ctx);
             case LEGACY -> executeLegacyBranch(ctx);
             case ITEM -> executeItemBranch(ctx);
-            case ENTITY, NONE -> ctx.setDrewAny(false);
+            case ENTITY, NONE -> {
+                ctx.debug("RENDER: Skipping (ENTITY/NONE branch)");
+                ctx.setDrewAny(false);
+            }
         }
 
         // 阶段 4：清理
-        ctx.logDebug("COMPLETE: drewAny=" + ctx.isDrewAny());
+        ctx.info("COMPLETE: drewAny=" + ctx.isDrewAny());
 
         // 如果新管线失败，fallback 到 tryRender
         boolean drewAny = ctx.isDrewAny();
         if (!drewAny) {
+            ctx.warn("New pipeline failed, falling back to tryRender()");
             drewAny = CTMRenderEntry.tryRender(
                 ctx.getRenderBlocks(),
                 ctx.getBlockAccess(),
@@ -59,6 +64,7 @@ public class RenderPipeline {
                 ctx.getZ(),
                 ctx.getOriginalIcon(),
                 ctx.getFace());
+            ctx.info("tryRender() result: " + drewAny);
         }
 
         return drewAny;
@@ -67,31 +73,41 @@ public class RenderPipeline {
     // ========== 决策逻辑 ==========
 
     private RenderBranch decideRenderBranch(RenderContext ctx) {
+        ctx.trace("DECIDE: Checking render branch");
+
         // 1. 物品渲染优先判断
         if (ctx.isItemRender()) {
+            ctx.debug("DECIDE: Item render detected");
             return RenderBranch.ITEM;
         }
 
         // 2. Model 分支：需要查询，触发懒加载
         String modelId = ctx.getModelId();
         if (modelId != null) {
+            ctx.debug("DECIDE: Model branch candidate (modelId=" + modelId + ")");
             if (!ctx.getElements().isEmpty()) {
+                ctx.info("DECIDE: Selected MODEL_ELEMENTS branch");
                 return RenderBranch.MODEL_ELEMENTS;
+            } else {
+                ctx.debug("DECIDE: Model branch has no elements");
             }
         }
 
         // 3. 纹理重定位分支
         String iconName = ctx.getIconName();
         if (shouldUseTextureReloc(iconName)) {
+            ctx.debug("DECIDE: Selected TEXTURE_RELOC branch");
             return RenderBranch.TEXTURE_RELOC;
         }
 
         // 4. Legacy 分支
         if (shouldUseLegacy(iconName)) {
+            ctx.debug("DECIDE: Selected LEGACY branch");
             return RenderBranch.LEGACY;
         }
 
         // 5. 无匹配
+        ctx.debug("DECIDE: No matching branch (NONE)");
         return RenderBranch.NONE;
     }
 
@@ -120,76 +136,112 @@ public class RenderPipeline {
     // ========== 分支执行函数 ==========
 
     private void executeModelBranch(RenderContext ctx) {
-        ctx.logDebug("MODEL: Looping through " + ctx.getElements().size() + " elements");
+        ctx.debug("MODEL: Looping through " + ctx.getElements().size() + " elements");
 
+        int index = 0;
         for (ModelElement element : ctx.getElements()) {
             ctx.setCurrentElement(element);
+            ctx.setCurrentElementIndex(index++);
             ctx.resetPipelineFailed();
-            ctx.logDebug("MODEL: Rendering element");
+            ctx.trace("MODEL: Rendering element " + index);
 
             renderElement(ctx);
 
             if (ctx.isPipelineFailed()) {
-                ctx.logDebug("MODEL: Element failed, continuing to next");
+                ctx.debug("MODEL: Element " + index + " failed, continuing to next");
+            } else {
+                ctx.trace("MODEL: Element " + index + " rendered successfully");
             }
         }
+
+        ctx.debug("MODEL: Completed processing all elements");
     }
 
     private void renderElement(RenderContext ctx) {
+        ctx.trace("RENDER: Starting element render");
+
         // 子阶段 1：解析材质
         if (!parseTextureForElement(ctx)) {
-            ctx.logDebug("RENDER: Skip element (no texture)");
+            ctx.debug("RENDER: Skip element (no texture)");
             return;
         }
 
         // 子阶段 2：几何数据
+        ctx.trace("RENDER: Computing geometry bounds");
         GeometryGroup.boundsFromElement(ctx);
-        if (ctx.isPipelineFailed()) return;
+        if (ctx.isPipelineFailed()) {
+            ctx.error("RENDER: Geometry bounds computation failed");
+            return;
+        }
 
         // 子阶段 3：Icon
+        ctx.trace("RENDER: Resolving icon");
         IconResolveGroup.resolveIcon(ctx);
-        if (ctx.isPipelineFailed()) return;
+        if (ctx.isPipelineFailed()) {
+            ctx.error("RENDER: Icon resolution failed");
+            return;
+        }
 
         // 子阶段 4：根据材质类型选择管道
         TextureTypeData data = ctx.getTextureData();
         if (data instanceof BaseTextureData btd) {
             ctx.setBaseData(btd);
-            ctx.logDebug("RENDER: BaseTexture pipeline");
+            ctx.debug("RENDER: BaseTexture pipeline");
             BaseTilePipeline.execute(ctx);
         } else if (data instanceof RandomTextureData rtd) {
-            ctx.logDebug("RENDER: RandomTexture pipeline");
+            ctx.debug("RENDER: RandomTexture pipeline");
             RandomTilePipeline.execute(ctx);
         } else if (data instanceof ConnectingTextureData ctd) {
-            ctx.logDebug("RENDER: ConnectingTexture pipeline");
+            ctx.debug("RENDER: ConnectingTexture pipeline");
             ConnectingTilePipeline.execute(ctx);
         } else {
-            ctx.logDebug("RENDER: Unknown texture data type");
+            ctx.debug("RENDER: Unknown texture data type: " + (data != null ? data.getClass().getSimpleName() : "null"));
             ctx.failPipeline("Unknown texture data type: " + data);
         }
+
+        ctx.trace("RENDER: Element render completed");
     }
 
     private boolean parseTextureForElement(RenderContext ctx) {
+        ctx.trace("RENDER: Parsing texture for element");
+
         ModelElement element = ctx.getCurrentElement();
         if (element == null) {
-            ctx.failPipeline("Current element is null");
+            ctx.error("RENDER: Current element is null");
             return false;
         }
 
         ModelFace faceData = element.getFace(ctx.getFace());
-        if (faceData == null || faceData.getTextureKey() == null) {
+        if (faceData == null) {
+            ctx.trace("RENDER: No face data for current direction");
+            return false;
+        }
+
+        if (faceData.getTextureKey() == null) {
+            ctx.trace("RENDER: Face has no texture key");
             return false;
         }
 
         String texturePath = com.github.wohaopa.MyCTMLib.texture.TextureKeyNormalizer.resolveTexturePath(
             faceData.getTextureKey(), ctx.getModelData().getTextures());
         if (texturePath == null) {
+            ctx.warn("RENDER: Could not resolve texture path for key: " + faceData.getTextureKey());
             return false;
         }
 
         String domain = extractDomain(ctx.getModelId());
         String textureKey = com.github.wohaopa.MyCTMLib.texture.TextureKeyNormalizer.toCanonicalTextureKey(domain, texturePath);
-        ctx.setTextureData(CTMRenderEntry.getConnectingData(textureKey));
+        ctx.debug("RENDER: Resolved texture key: " + textureKey);
 
+        TextureTypeData data = CTMRenderEntry.getConnectingData(textureKey);
+        ctx.setTextureData(data);
+
+        if (data == null) {
+            ctx.warn("RENDER: No texture data found for key: " + textureKey);
+            return false;
+        }
+
+        ctx.trace("RENDER: Texture parsed successfully: " + data.getClass().getSimpleName());
         return true;
     }
 
@@ -201,12 +253,12 @@ public class RenderPipeline {
     }
 
     private void executeTextureRelocBranch(RenderContext ctx) {
-        ctx.logDebug("TEXTURE_RELOC: Rendering with texture relocation");
+        ctx.info("TEXTURE_RELOC: Rendering with texture relocation");
         // TODO: 实现纹理重定位渲染
     }
 
     private void executeLegacyBranch(RenderContext ctx) {
-        ctx.logDebug("LEGACY: Using legacy renderer");
+        ctx.info("LEGACY: Using legacy renderer");
         boolean result = Textures.renderWorldBlock(
             ctx.getRenderBlocks(),
             ctx.getBlockAccess(),
@@ -218,10 +270,11 @@ public class RenderPipeline {
             ctx.getFace()
         );
         ctx.setDrewAny(result);
+        ctx.debug("LEGACY: Result=" + result);
     }
 
     private void executeItemBranch(RenderContext ctx) {
-        ctx.logDebug("ITEM: Rendering item face");
+        ctx.info("ITEM: Rendering item face");
         // 物品渲染使用 BaseTilePipeline
         BaseTilePipeline.execute(ctx);
     }

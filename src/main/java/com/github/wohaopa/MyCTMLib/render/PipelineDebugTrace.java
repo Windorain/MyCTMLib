@@ -8,7 +8,22 @@ import com.github.wohaopa.MyCTMLib.render.context.RenderContext;
 
 public final class PipelineDebugTrace {
 
+    public enum LogLevel {
+        TRACE, DEBUG, INFO, WARN, ERROR
+    }
+
+    public static class LogEntry {
+        public final LogLevel level;
+        public final String message;
+
+        public LogEntry(LogLevel level, String message) {
+            this.level = level;
+            this.message = message;
+        }
+    }
+
     private final List<String> steps = new ArrayList<>();
+    private final List<LogEntry> logs = new ArrayList<>();
     private String degradationReason;
     private String predicateUsed;
     private int[] tilePos;
@@ -20,12 +35,45 @@ public final class PipelineDebugTrace {
 
     public PipelineDebugTrace() {}
 
+    // ========== 决策步骤（保持原有逻辑） ==========
     public void addStep(String step) {
         if (step != null && !step.isEmpty()) {
             steps.add(step);
         }
     }
 
+    public List<String> getSteps() {
+        return Collections.unmodifiableList(steps);
+    }
+
+    // ========== 分级日志 ==========
+    public void log(LogLevel level, String message) {
+        if (message != null && !message.isEmpty()) {
+            logs.add(new LogEntry(level, message));
+        }
+    }
+
+    public void trace(String msg) { log(LogLevel.TRACE, msg); }
+    public void debug(String msg) { log(LogLevel.DEBUG, msg); }
+    public void info(String msg) { log(LogLevel.INFO, msg); }
+    public void warn(String msg) { log(LogLevel.WARN, msg); }
+    public void error(String msg) { log(LogLevel.ERROR, msg); }
+
+    public List<LogEntry> getLogs() {
+        return Collections.unmodifiableList(logs);
+    }
+
+    public List<LogEntry> getLogsByLevel(LogLevel level) {
+        List<LogEntry> result = new ArrayList<>();
+        for (LogEntry entry : logs) {
+            if (entry.level == level) {
+                result.add(entry);
+            }
+        }
+        return result;
+    }
+
+    // ========== 元数据 ==========
     public void setDegradationReason(String reason) {
         this.degradationReason = reason;
     }
@@ -69,10 +117,6 @@ public final class PipelineDebugTrace {
 
     public String getDrawSpriteLoaded() {
         return drawSpriteLoaded;
-    }
-
-    public List<String> getSteps() {
-        return Collections.unmodifiableList(steps);
     }
 
     public String getDegradationReason() {

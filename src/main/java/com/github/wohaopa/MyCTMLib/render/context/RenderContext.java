@@ -18,6 +18,7 @@ import com.github.wohaopa.MyCTMLib.render.CTMRenderEntry;
 import com.github.wohaopa.MyCTMLib.render.pipeline.RenderBranch;
 import com.github.wohaopa.MyCTMLib.texture.BaseTextureData;
 import com.github.wohaopa.MyCTMLib.texture.TextureTypeData;
+import com.github.wohaopa.MyCTMLib.render.PipelineDebugTrace;
 
 /**
  * 渲染上下文（简化版：无状态栈）
@@ -76,6 +77,9 @@ public class RenderContext {
     private Integer drawBrightness;
     private Integer biomeColor;
 
+    // Debug
+    private PipelineDebugTrace debugTrace;
+
     // 控制标志
     private boolean drewAny;
     private boolean pipelineFailed;
@@ -107,6 +111,7 @@ public class RenderContext {
         this.drawRelMaxZ = 1.0;
         this.drawBrightness = 0;
         this.biomeColor = null;
+        this.debugTrace = null;
         this.drewAny = false;
         this.pipelineFailed = false;
         this.failureReason = null;
@@ -387,6 +392,41 @@ public class RenderContext {
         return baseData != null && baseData.getTinting() != null;
     }
 
+    // ========== Debug ==========
+    public PipelineDebugTrace getDebugTrace() {
+        return debugTrace;
+    }
+
+    public void setDebugTrace(PipelineDebugTrace trace) {
+        this.debugTrace = trace;
+    }
+
+    public void trace(String msg) {
+        if (debugTrace != null) debugTrace.trace(msg);
+    }
+
+    public void debug(String msg) {
+        if (debugTrace != null) debugTrace.debug(msg);
+    }
+
+    public void info(String msg) {
+        if (debugTrace != null) debugTrace.info(msg);
+    }
+
+    public void warn(String msg) {
+        if (debugTrace != null) debugTrace.warn(msg);
+    }
+
+    public void error(String msg) {
+        if (debugTrace != null) debugTrace.error(msg);
+        failPipeline(msg);
+    }
+
+    @Deprecated
+    public void logDebug(String message) {
+        debug(message);
+    }
+
     // ========== 控制标志 ==========
     public boolean isDrewAny() {
         return drewAny;
@@ -400,7 +440,7 @@ public class RenderContext {
     public void failPipeline(String reason) {
         pipelineFailed = true;
         failureReason = reason;
-        logDebug("PIPELINE FAILED: " + reason);
+        debug("PIPELINE FAILED: " + reason);
     }
 
     public boolean isPipelineFailed() {
@@ -410,14 +450,6 @@ public class RenderContext {
     public void resetPipelineFailed() {
         pipelineFailed = false;
         failureReason = null;
-    }
-
-
-    public void logDebug(String message) {
-        if (MyCTMLib.debugMode) {
-            // 简化调试日志，直接输出
-            System.out.println("[CTMLib Debug] " + message);
-        }
     }
 
     // ========== 工具方法 ==========

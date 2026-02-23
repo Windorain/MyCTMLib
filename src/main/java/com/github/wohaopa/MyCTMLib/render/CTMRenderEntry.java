@@ -19,6 +19,7 @@ import com.github.wohaopa.MyCTMLib.model.ModelRegistry;
 import com.github.wohaopa.MyCTMLib.predicate.ConnectionPredicate;
 import com.github.wohaopa.MyCTMLib.predicate.PredicateRegistry;
 import com.github.wohaopa.MyCTMLib.render.context.RenderContext;
+import com.github.wohaopa.MyCTMLib.render.debug.RenderPipelineDebugCache;
 import com.github.wohaopa.MyCTMLib.render.pipeline.RenderPipeline;
 import com.github.wohaopa.MyCTMLib.texture.BaseTextureData;
 import com.github.wohaopa.MyCTMLib.texture.ConnectingTextureData;
@@ -681,13 +682,34 @@ public final class CTMRenderEntry {
 
     private static final RenderPipeline PIPELINE = new RenderPipeline();
 
-    public static boolean renderPipeline(RenderBlocks renderBlocks, IBlockAccess blockAccess, Block block, double x,
-        double y, double z, IIcon icon, ForgeDirection face) {
-        if (blockAccess == null || icon == null) return false;
-
+    public static boolean renderPipeline() {
         RenderContext context = RenderContext.create();
-
-        return PIPELINE.execute(context);
+        context.setDebugTrace(new PipelineDebugTrace());
+        
+        // 检查必要数据是否存在
+        if (context.getFace() == null || context.getOriginalIcon() == null) {
+            context.debug("renderPipeline: missing required data (face or icon), skipping");
+            return false;
+        }
+        
+        PipelineDebugTrace trace = context.getDebugTrace();
+        trace.addStep("Position: " + (int)context.getX() + ", " + (int)context.getY() + ", " + (int)context.getZ());
+        trace.addStep("Face: " + context.getFace());
+        trace.addStep("Icon: " + context.getOriginalIcon());
+        
+        boolean result = PIPELINE.execute(context);
+        
+        trace.addStep("Branch: " + context.getRenderBranch());
+        trace.addStep("New pipeline drewAny: " + context.isDrewAny());
+        
+        ForgeDirection face = context.getFace();
+        RenderPipelineDebugCache.record(
+            (int)context.getX(), (int)context.getY(), (int)context.getZ(),
+            face,
+            trace
+        );
+        
+        return result;
     }
 
 }
