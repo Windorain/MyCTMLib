@@ -69,7 +69,7 @@ public final class TileDomain {
             ctx.getFace(),
             ctx.getBlock(),
             ctx.getMeta(),
-            null);
+            ctx.getConnectionPredicate());
         ctx.setConnectionMask(mask);
         
         int[] pos = handler.getTilePosition(mask);

@@ -16,6 +16,7 @@ import com.github.wohaopa.MyCTMLib.model.ModelElement;
 import com.github.wohaopa.MyCTMLib.model.ModelRegistry;
 import com.github.wohaopa.MyCTMLib.render.CTMRenderEntry;
 import com.github.wohaopa.MyCTMLib.render.pipeline.RenderBranch;
+import com.github.wohaopa.MyCTMLib.predicate.ConnectionPredicate;
 import com.github.wohaopa.MyCTMLib.texture.BaseTextureData;
 import com.github.wohaopa.MyCTMLib.texture.TextureTypeData;
 import com.github.wohaopa.MyCTMLib.render.PipelineDebugTrace;
@@ -100,6 +101,9 @@ public class RenderContext {
     // 亮度四角（BrightnessDomain 输出）
     private Integer brightnessTL, brightnessTR, brightnessBL, brightnessBR;
 
+    // 连接谓词（Model 分支使用）
+    private ConnectionPredicate connectionPredicate;
+
     // Debug
     private PipelineDebugTrace debugTrace;
 
@@ -168,6 +172,8 @@ public class RenderContext {
         this.brightnessTR = null;
         this.brightnessBL = null;
         this.brightnessBR = null;
+        // 连接谓词
+        this.connectionPredicate = null;
         // Debug
         this.debugTrace = null;
         this.drewAny = false;
@@ -547,6 +553,9 @@ public class RenderContext {
     public void setBrightnessBL(int b) { this.brightnessBL = b; }
     public Integer getBrightnessBR() { return brightnessBR; }
     public void setBrightnessBR(int b) { this.brightnessBR = b; }
+
+    public ConnectionPredicate getConnectionPredicate() { return connectionPredicate; }
+    public void setConnectionPredicate(ConnectionPredicate predicate) { this.connectionPredicate = predicate; }
 
     // ========== Debug ==========
     public PipelineDebugTrace getDebugTrace() {

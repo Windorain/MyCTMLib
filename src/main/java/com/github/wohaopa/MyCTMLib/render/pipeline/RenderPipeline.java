@@ -11,6 +11,8 @@ import com.github.wohaopa.MyCTMLib.render.pipelines.ConnectingTilePipeline;
 import com.github.wohaopa.MyCTMLib.render.pipelines.RandomTilePipeline;
 import com.github.wohaopa.MyCTMLib.model.ModelElement;
 import com.github.wohaopa.MyCTMLib.model.ModelFace;
+import com.github.wohaopa.MyCTMLib.predicate.ConnectionPredicate;
+import com.github.wohaopa.MyCTMLib.predicate.PredicateRegistry;
 import com.github.wohaopa.MyCTMLib.texture.BaseTextureData;
 import com.github.wohaopa.MyCTMLib.texture.ConnectingTextureData;
 import com.github.wohaopa.MyCTMLib.texture.RandomTextureData;
@@ -123,6 +125,20 @@ public class RenderPipeline {
 
     private void executeModelBranch(RenderContext ctx) {
         ctx.debug("MODEL: Looping through " + ctx.getElements().size() + " elements");
+
+        // 在循环外计算 connection predicate（所有 element 复用）
+        ConnectionPredicate predicate = PredicateRegistry.defaultPredicate();
+        if (!ctx.getElements().isEmpty()) {
+            ModelFace firstFace = ctx.getElements().get(0).getFace(ctx.getFace());
+            if (firstFace != null && firstFace.getConnectionKey() != null) {
+                ConnectionPredicate p = PredicateRegistry.getPredicate(
+                    firstFace.getConnectionKey(), 
+                    ctx.getModelData().getConnections());
+                if (p != null) predicate = p;
+            }
+        }
+        ctx.setConnectionPredicate(predicate);
+        ctx.trace("MODEL: Using predicate: " + PredicateRegistry.getPredicateDebugName(predicate, null));
 
         int index = 0;
         for (ModelElement element : ctx.getElements()) {
