@@ -23,12 +23,13 @@ import com.google.gson.GsonBuilder;
 /**
  * HUD 信息导出工具
  * 
- * <p>将当前指向方块的 HUD 调试信息导出为 JSON 文件。</p>
+ * <p>
+ * 将当前指向方块的 HUD 调试信息导出为 JSON 文件。
+ * </p>
  */
 public class DebugOverlayDumpUtil {
 
-    private static final Gson GSON = new GsonBuilder()
-        .setPrettyPrinting()
+    private static final Gson GSON = new GsonBuilder().setPrettyPrinting()
         .disableHtmlEscaping()
         .create();
 
@@ -66,14 +67,18 @@ public class DebugOverlayDumpUtil {
         Map<String, Object> dump = new HashMap<>();
 
         // 基础信息
-        dump.put("block", block.getClass().getName());
+        dump.put(
+            "block",
+            block.getClass()
+                .getName());
         dump.put("blockId", block.getUnlocalizedName());
         dump.put("meta", meta);
-        dump.put("position", new int[]{x, y, z});
+        dump.put("position", new int[] { x, y, z });
         dump.put("face", hitFace.name());
 
         // 新管线信息
-        if (newTrace != null && !newTrace.getSteps().isEmpty()) {
+        if (newTrace != null && !newTrace.getSteps()
+            .isEmpty()) {
             dump.put("newPipeline", buildNewPipelineData(newTrace));
         } else {
             Map<String, Object> noData = new HashMap<>();
@@ -83,7 +88,8 @@ public class DebugOverlayDumpUtil {
         }
 
         // 写入文件
-        outputFile.getParentFile().mkdirs();
+        outputFile.getParentFile()
+            .mkdirs();
         try (FileWriter writer = new FileWriter(outputFile)) {
             GSON.toJson(dump, writer);
         }
@@ -134,45 +140,45 @@ public class DebugOverlayDumpUtil {
 
         // 技术细节
         Map<String, Object> details = new HashMap<>();
-        
+
         if (trace.getTextureKey() != null) {
             details.put("texKey", trace.getTextureKey());
         }
-        
+
         if (trace.getDrawSpriteName() != null) {
             Map<String, Object> spriteInfo = new HashMap<>();
             spriteInfo.put("name", trace.getDrawSpriteName());
             spriteInfo.put("size", trace.getDrawSpriteLoaded());
             details.put("drawSprite", spriteInfo);
         }
-        
+
         if (trace.getTexRegTexMapSynced() != null) {
             details.put("texRegSynced", trace.getTexRegTexMapSynced());
             if (trace.getTexRegGetIconLookupKey() != null) {
                 details.put("lookupKey", trace.getTexRegGetIconLookupKey());
             }
         }
-        
+
         if (trace.getIconUV() != null) {
             details.put("iconUV", parseUV(trace.getIconUV()));
         }
-        
+
         if (trace.getDrawUV() != null) {
             details.put("drawUV", parseUV(trace.getDrawUV()));
         }
-        
+
         if (trace.getGridInfo() != null) {
             details.put("grid", trace.getGridInfo());
         }
-        
+
         if (trace.getTilePos() != null) {
             details.put("tile", trace.getTilePos());
         }
-        
+
         if (trace.getConnectionBits() != null) {
             details.put("connection", trace.getConnectionBits());
         }
-        
+
         if (trace.getPredicateUsed() != null) {
             details.put("predicate", trace.getPredicateUsed());
         }

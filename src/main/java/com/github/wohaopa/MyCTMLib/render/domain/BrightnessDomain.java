@@ -15,18 +15,14 @@ public final class BrightnessDomain {
 
     private static final int FULL_BRIGHTNESS = 15728880;
 
-    private BrightnessDomain() {
-    }
+    private BrightnessDomain() {}
 
     /**
      * 计算统一亮度（非 AO 模式）
      */
     public static void computeUniform(RenderContext ctx) {
-        int brightness = ctx.getBlock().getMixedBrightnessForBlock(
-            ctx.getBlockAccess(),
-            (int) ctx.getX(),
-            (int) ctx.getY(),
-            (int) ctx.getZ());
+        int brightness = ctx.getBlock()
+            .getMixedBrightnessForBlock(ctx.getBlockAccess(), (int) ctx.getX(), (int) ctx.getY(), (int) ctx.getZ());
         ctx.setBrightnessTL(brightness);
         ctx.setBrightnessTR(brightness);
         ctx.setBrightnessBL(brightness);

@@ -61,7 +61,8 @@ public abstract class MixinRenderBlocks {
 
         try {
             if (blockAccess == null) {
-                if (CTMRenderEntry.tryRenderItemFace((RenderBlocks) (Object) this, block, x, y, z, iIcon, ForgeDirection.DOWN)) {
+                if (CTMRenderEntry
+                    .tryRenderItemFace((RenderBlocks) (Object) this, block, x, y, z, iIcon, ForgeDirection.DOWN)) {
                     ci.cancel();
                 }
                 return;
@@ -74,7 +75,8 @@ public abstract class MixinRenderBlocks {
                 return;
             }
 
-            if (CTMRenderEntry.tryRender((RenderBlocks) (Object) this, blockAccess, block, x, y, z, iIcon, ForgeDirection.DOWN)) {
+            if (CTMRenderEntry
+                .tryRender((RenderBlocks) (Object) this, blockAccess, block, x, y, z, iIcon, ForgeDirection.DOWN)) {
                 ci.cancel();
                 return;
             }
@@ -119,7 +121,8 @@ public abstract class MixinRenderBlocks {
 
         try {
             if (blockAccess == null) {
-                if (CTMRenderEntry.tryRenderItemFace((RenderBlocks) (Object) this, block, x, y, z, iIcon, ForgeDirection.UP)) {
+                if (CTMRenderEntry
+                    .tryRenderItemFace((RenderBlocks) (Object) this, block, x, y, z, iIcon, ForgeDirection.UP)) {
                     ci.cancel();
                 }
                 return;
@@ -132,12 +135,21 @@ public abstract class MixinRenderBlocks {
                 return;
             }
 
-            if (CTMRenderEntry.tryRender((RenderBlocks) (Object) this, blockAccess, block, x, y, z, iIcon, ForgeDirection.UP)) {
+            if (CTMRenderEntry
+                .tryRender((RenderBlocks) (Object) this, blockAccess, block, x, y, z, iIcon, ForgeDirection.UP)) {
                 ci.cancel();
                 return;
             }
             if (!Textures.contain(iconName)) return;
-            if (Textures.renderWorldBlock((RenderBlocks) ((Object) this), blockAccess, block, x, y, z, iIcon, ForgeDirection.UP)) {
+            if (Textures.renderWorldBlock(
+                (RenderBlocks) ((Object) this),
+                blockAccess,
+                block,
+                x,
+                y,
+                z,
+                iIcon,
+                ForgeDirection.UP)) {
                 ci.cancel();
             }
         } finally {
@@ -169,7 +181,8 @@ public abstract class MixinRenderBlocks {
 
         try {
             if (blockAccess == null) {
-                if (CTMRenderEntry.tryRenderItemFace((RenderBlocks) (Object) this, block, x, y, z, iIcon, ForgeDirection.NORTH)) {
+                if (CTMRenderEntry
+                    .tryRenderItemFace((RenderBlocks) (Object) this, block, x, y, z, iIcon, ForgeDirection.NORTH)) {
                     ci.cancel();
                 }
                 return;
@@ -182,7 +195,8 @@ public abstract class MixinRenderBlocks {
                 return;
             }
 
-            if (CTMRenderEntry.tryRender((RenderBlocks) (Object) this, blockAccess, block, x, y, z, iIcon, ForgeDirection.NORTH)) {
+            if (CTMRenderEntry
+                .tryRender((RenderBlocks) (Object) this, blockAccess, block, x, y, z, iIcon, ForgeDirection.NORTH)) {
                 ci.cancel();
                 return;
             }
@@ -227,7 +241,8 @@ public abstract class MixinRenderBlocks {
 
         try {
             if (blockAccess == null) {
-                if (CTMRenderEntry.tryRenderItemFace((RenderBlocks) (Object) this, block, x, y, z, iIcon, ForgeDirection.SOUTH)) {
+                if (CTMRenderEntry
+                    .tryRenderItemFace((RenderBlocks) (Object) this, block, x, y, z, iIcon, ForgeDirection.SOUTH)) {
                     ci.cancel();
                 }
                 return;
@@ -240,7 +255,8 @@ public abstract class MixinRenderBlocks {
                 return;
             }
 
-            if (CTMRenderEntry.tryRender((RenderBlocks) (Object) this, blockAccess, block, x, y, z, iIcon, ForgeDirection.SOUTH)) {
+            if (CTMRenderEntry
+                .tryRender((RenderBlocks) (Object) this, blockAccess, block, x, y, z, iIcon, ForgeDirection.SOUTH)) {
                 ci.cancel();
                 return;
             }
@@ -285,7 +301,8 @@ public abstract class MixinRenderBlocks {
 
         try {
             if (blockAccess == null) {
-                if (CTMRenderEntry.tryRenderItemFace((RenderBlocks) (Object) this, block, x, y, z, iIcon, ForgeDirection.WEST)) {
+                if (CTMRenderEntry
+                    .tryRenderItemFace((RenderBlocks) (Object) this, block, x, y, z, iIcon, ForgeDirection.WEST)) {
                     ci.cancel();
                 }
                 return;
@@ -298,7 +315,8 @@ public abstract class MixinRenderBlocks {
                 return;
             }
 
-            if (CTMRenderEntry.tryRender((RenderBlocks) (Object) this, blockAccess, block, x, y, z, iIcon, ForgeDirection.WEST)) {
+            if (CTMRenderEntry
+                .tryRender((RenderBlocks) (Object) this, blockAccess, block, x, y, z, iIcon, ForgeDirection.WEST)) {
                 ci.cancel();
                 return;
             }
@@ -343,7 +361,8 @@ public abstract class MixinRenderBlocks {
 
         try {
             if (blockAccess == null) {
-                if (CTMRenderEntry.tryRenderItemFace((RenderBlocks) (Object) this, block, x, y, z, iIcon, ForgeDirection.EAST)) {
+                if (CTMRenderEntry
+                    .tryRenderItemFace((RenderBlocks) (Object) this, block, x, y, z, iIcon, ForgeDirection.EAST)) {
                     ci.cancel();
                 }
                 return;
@@ -356,7 +375,8 @@ public abstract class MixinRenderBlocks {
                 return;
             }
 
-            if (CTMRenderEntry.tryRender((RenderBlocks) (Object) this, blockAccess, block, x, y, z, iIcon, ForgeDirection.EAST)) {
+            if (CTMRenderEntry
+                .tryRender((RenderBlocks) (Object) this, blockAccess, block, x, y, z, iIcon, ForgeDirection.EAST)) {
                 ci.cancel();
                 return;
             }

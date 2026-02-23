@@ -18,8 +18,7 @@ import com.github.wohaopa.MyCTMLib.texture.layout.LayoutHandlers;
  */
 public final class TileDomain {
 
-    private TileDomain() {
-    }
+    private TileDomain() {}
 
     /**
      * Base 材质：默认位置 (0, 0)
@@ -40,12 +39,8 @@ public final class TileDomain {
             worldSeed = w.getSeed();
         }
 
-        int randomIndex = FastRandom.getRandomIndex(
-            worldSeed,
-            (int) ctx.getX(),
-            (int) ctx.getY(),
-            (int) ctx.getZ(),
-            rtd.getCount());
+        int randomIndex = FastRandom
+            .getRandomIndex(worldSeed, (int) ctx.getX(), (int) ctx.getY(), (int) ctx.getZ(), rtd.getCount());
         ctx.setRandomIndex(randomIndex);
 
         int tileX = randomIndex % rtd.getColumns();
@@ -60,7 +55,7 @@ public final class TileDomain {
     public static void computeConnecting(RenderContext ctx) {
         ConnectingTextureData ctd = (ConnectingTextureData) ctx.getTextureData();
         LayoutHandler handler = LayoutHandlers.get(ctd.getLayout());
-        
+
         int mask = ConnectionState.computeMask(
             ctx.getBlockAccess(),
             (int) ctx.getX(),
@@ -71,7 +66,7 @@ public final class TileDomain {
             ctx.getMeta(),
             ctx.getConnectionPredicate());
         ctx.setConnectionMask(mask);
-        
+
         int[] pos = handler.getTilePosition(mask);
         ctx.setTileX(pos[0]);
         ctx.setTileY(pos[1]);

@@ -13,7 +13,8 @@ import com.github.wohaopa.MyCTMLib.texture.layout.LayoutHandlers;
 /**
  * Tile 位置计算组（使用独立的 tileX 和 tileY）
  * 
- * <p>本组方法假设输入数据有效，由调用方（Pipeline 层）负责验证前置条件。
+ * <p>
+ * 本组方法假设输入数据有效，由调用方（Pipeline 层）负责验证前置条件。
  */
 public final class TilePositionGroup {
 
@@ -24,16 +25,18 @@ public final class TilePositionGroup {
     /**
      * 计算连接掩码（Connecting 材质）
      * 
-     * <p>前置条件（由调用方保证）：
+     * <p>
+     * 前置条件（由调用方保证）：
      * <ul>
-     *   <li>{@code ctx.getBlockAccess() != null}</li>
-     *   <li>{@code ctx.getBlock() != null}</li>
-     *   <li>{@code ctx.getFace() != null}</li>
+     * <li>{@code ctx.getBlockAccess() != null}</li>
+     * <li>{@code ctx.getBlock() != null}</li>
+     * <li>{@code ctx.getFace() != null}</li>
      * </ul>
      * 
-     * <p>后置条件：
+     * <p>
+     * 后置条件：
      * <ul>
-     *   <li>{@code ctx.getConnectionMask() != null}</li>
+     * <li>{@code ctx.getConnectionMask() != null}</li>
      * </ul>
      * 
      * @param ctx 渲染上下文
@@ -54,16 +57,18 @@ public final class TilePositionGroup {
     /**
      * 根据连接掩码查找 tile 位置（Connecting 材质）
      * 
-     * <p>前置条件：
+     * <p>
+     * 前置条件：
      * <ul>
-     *   <li>{@code ctx.getConnectionMask() != null}</li>
-     *   <li>{@code ctx.getTextureData()} 是 {@link ConnectingTextureData}</li>
+     * <li>{@code ctx.getConnectionMask() != null}</li>
+     * <li>{@code ctx.getTextureData()} 是 {@link ConnectingTextureData}</li>
      * </ul>
      * 
-     * <p>后置条件：
+     * <p>
+     * 后置条件：
      * <ul>
-     *   <li>{@code ctx.getTileX() != null}</li>
-     *   <li>{@code ctx.getTileY() != null}</li>
+     * <li>{@code ctx.getTileX() != null}</li>
+     * <li>{@code ctx.getTileY() != null}</li>
      * </ul>
      * 
      * @param ctx 渲染上下文
@@ -79,14 +84,16 @@ public final class TilePositionGroup {
     /**
      * 计算随机索引（Random 材质）
      * 
-     * <p>前置条件：
+     * <p>
+     * 前置条件：
      * <ul>
-     *   <li>{@code ctx.getTextureData()} 是 {@link RandomTextureData}</li>
+     * <li>{@code ctx.getTextureData()} 是 {@link RandomTextureData}</li>
      * </ul>
      * 
-     * <p>后置条件：
+     * <p>
+     * 后置条件：
      * <ul>
-     *   <li>{@code ctx.getRandomIndex() != null}</li>
+     * <li>{@code ctx.getRandomIndex() != null}</li>
      * </ul>
      * 
      * @param ctx 渲染上下文
@@ -99,28 +106,26 @@ public final class TilePositionGroup {
             worldSeed = w.getSeed();
         }
 
-        int randomIndex = FastRandom.getRandomIndex(
-            worldSeed,
-            (int) ctx.getX(),
-            (int) ctx.getY(),
-            (int) ctx.getZ(),
-            rtd.getCount());
+        int randomIndex = FastRandom
+            .getRandomIndex(worldSeed, (int) ctx.getX(), (int) ctx.getY(), (int) ctx.getZ(), rtd.getCount());
         ctx.setRandomIndex(randomIndex);
     }
 
     /**
      * 根据随机索引查找 tile 位置（Random 材质）
      * 
-     * <p>前置条件：
+     * <p>
+     * 前置条件：
      * <ul>
-     *   <li>{@code ctx.getRandomIndex() != null}</li>
-     *   <li>{@code ctx.getTextureData()} 是 {@link RandomTextureData}</li>
+     * <li>{@code ctx.getRandomIndex() != null}</li>
+     * <li>{@code ctx.getTextureData()} 是 {@link RandomTextureData}</li>
      * </ul>
      * 
-     * <p>后置条件：
+     * <p>
+     * 后置条件：
      * <ul>
-     *   <li>{@code ctx.getTileX() != null}</li>
-     *   <li>{@code ctx.getTileY() != null}</li>
+     * <li>{@code ctx.getTileX() != null}</li>
+     * <li>{@code ctx.getTileY() != null}</li>
      * </ul>
      * 
      * @param ctx 渲染上下文
@@ -138,10 +143,11 @@ public final class TilePositionGroup {
     /**
      * 设置默认 tile 位置（Base 材质）
      * 
-     * <p>后置条件：
+     * <p>
+     * 后置条件：
      * <ul>
-     *   <li>{@code ctx.getTileX() = 0}</li>
-     *   <li>{@code ctx.getTileY() = 0}</li>
+     * <li>{@code ctx.getTileX() = 0}</li>
+     * <li>{@code ctx.getTileY() = 0}</li>
      * </ul>
      * 
      * @param ctx 渲染上下文

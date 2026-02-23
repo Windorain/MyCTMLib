@@ -4,15 +4,18 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import com.github.wohaopa.MyCTMLib.render.context.RenderContext;
-
 public final class PipelineDebugTrace {
 
     public enum LogLevel {
-        TRACE, DEBUG, INFO, WARN, ERROR
+        TRACE,
+        DEBUG,
+        INFO,
+        WARN,
+        ERROR
     }
 
     public static class LogEntry {
+
         public final LogLevel level;
         public final String message;
 
@@ -32,12 +35,12 @@ public final class PipelineDebugTrace {
     private String texRegGetIconLookupKey;
     private String drawSpriteName;
     private String drawSpriteLoaded;
-    
+
     // UV 调试信息
-    private String iconUV;       // icon 原始 UV: [minU,maxU,minV,maxV]
-    private String drawUV;       // 最终绘制 UV: [minU,maxU,minV,maxV]
-    private String gridInfo;     // grid 尺寸：WxH
-    private String textureKey;   // 纹理键
+    private String iconUV; // icon 原始 UV: [minU,maxU,minV,maxV]
+    private String drawUV; // 最终绘制 UV: [minU,maxU,minV,maxV]
+    private String gridInfo; // grid 尺寸：WxH
+    private String textureKey; // 纹理键
 
     public PipelineDebugTrace() {}
 
@@ -59,11 +62,25 @@ public final class PipelineDebugTrace {
         }
     }
 
-    public void trace(String msg) { log(LogLevel.TRACE, msg); }
-    public void debug(String msg) { log(LogLevel.DEBUG, msg); }
-    public void info(String msg) { log(LogLevel.INFO, msg); }
-    public void warn(String msg) { log(LogLevel.WARN, msg); }
-    public void error(String msg) { log(LogLevel.ERROR, msg); }
+    public void trace(String msg) {
+        log(LogLevel.TRACE, msg);
+    }
+
+    public void debug(String msg) {
+        log(LogLevel.DEBUG, msg);
+    }
+
+    public void info(String msg) {
+        log(LogLevel.INFO, msg);
+    }
+
+    public void warn(String msg) {
+        log(LogLevel.WARN, msg);
+    }
+
+    public void error(String msg) {
+        log(LogLevel.ERROR, msg);
+    }
 
     public List<LogEntry> getLogs() {
         return Collections.unmodifiableList(logs);
@@ -140,26 +157,37 @@ public final class PipelineDebugTrace {
     public int[] getConnectionBits() {
         return connectionBits;
     }
-    
+
     // ========== UV 调试信息 ==========
     public void setIconUV(double minU, double maxU, double minV, double maxV) {
         this.iconUV = String.format("[%.6f,%.6f,%.6f,%.6f]", minU, maxU, minV, maxV);
     }
-    
+
     public void setDrawUV(double minU, double maxU, double minV, double maxV) {
         this.drawUV = String.format("[%.6f,%.6f,%.6f,%.6f]", minU, maxU, minV, maxV);
     }
-    
+
     public void setGridInfo(int w, int h) {
         this.gridInfo = w + "x" + h;
     }
-    
+
     public void setTextureKey(String key) {
         this.textureKey = key;
     }
-    
-    public String getIconUV() { return iconUV; }
-    public String getDrawUV() { return drawUV; }
-    public String getGridInfo() { return gridInfo; }
-    public String getTextureKey() { return textureKey; }
+
+    public String getIconUV() {
+        return iconUV;
+    }
+
+    public String getDrawUV() {
+        return drawUV;
+    }
+
+    public String getGridInfo() {
+        return gridInfo;
+    }
+
+    public String getTextureKey() {
+        return textureKey;
+    }
 }

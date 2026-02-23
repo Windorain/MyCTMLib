@@ -11,8 +11,7 @@ import com.github.wohaopa.MyCTMLib.render.context.RenderContext;
  */
 public final class ColorDomain {
 
-    private ColorDomain() {
-    }
+    private ColorDomain() {}
 
     /**
      * 设置默认白色（非 AO 模式）
@@ -37,19 +36,19 @@ public final class ColorDomain {
      */
     public static void computeAO(RenderContext ctx) {
         net.minecraft.client.renderer.RenderBlocks rb = ctx.getRenderBlocks();
-        
+
         ctx.setColorTL_R(rb.colorRedTopLeft);
         ctx.setColorTL_G(rb.colorGreenTopLeft);
         ctx.setColorTL_B(rb.colorBlueTopLeft);
-        
+
         ctx.setColorTR_R(rb.colorRedTopRight);
         ctx.setColorTR_G(rb.colorGreenTopRight);
         ctx.setColorTR_B(rb.colorBlueTopRight);
-        
+
         ctx.setColorBL_R(rb.colorRedBottomLeft);
         ctx.setColorBL_G(rb.colorGreenBottomLeft);
         ctx.setColorBL_B(rb.colorBlueBottomLeft);
-        
+
         ctx.setColorBR_R(rb.colorRedBottomRight);
         ctx.setColorBR_G(rb.colorGreenBottomRight);
         ctx.setColorBR_B(rb.colorBlueBottomRight);

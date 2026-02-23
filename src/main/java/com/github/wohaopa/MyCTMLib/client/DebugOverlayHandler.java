@@ -52,14 +52,20 @@ public class DebugOverlayHandler {
         List<String> lines = new ArrayList<>();
         String blockId = getBlockId(block);
         int meta = world.getBlockMetadata(x, y, z);
-        lines.add("§f§lBlock:§r " + (blockId != null ? blockId : block.getClass().getSimpleName()) + " meta: " + meta);
+        lines.add(
+            "§f§lBlock:§r " + (blockId != null ? blockId
+                : block.getClass()
+                    .getSimpleName())
+                + " meta: "
+                + meta);
 
         int hitSide = Math.min(mop.sideHit, 5);
         ForgeDirection hitFace = ForgeDirection.getOrientation(hitSide);
 
         PipelineDebugTrace newPipelineTrace = RenderPipelineDebugCache.get(x, y, z, hitFace);
 
-        if (newPipelineTrace != null && !newPipelineTrace.getSteps().isEmpty()) {
+        if (newPipelineTrace != null && !newPipelineTrace.getSteps()
+            .isEmpty()) {
             addNewPipelineInfo(lines, newPipelineTrace);
         } else {
             lines.add("§7=== NO NEW PIPELINE DATA ===");
@@ -177,21 +183,26 @@ public class DebugOverlayHandler {
         String lookupKey = trace.getTexRegGetIconLookupKey();
         String spriteName = trace.getDrawSpriteName();
         String spriteLoaded = trace.getDrawSpriteLoaded();
-        
+
         // 新增 UV 调试信息
         String iconUV = trace.getIconUV();
         String drawUV = trace.getDrawUV();
         String gridInfo = trace.getGridInfo();
         String textureKey = trace.getTextureKey();
 
-        boolean hasDetails = pred != null || tile != null || bits != null || 
-                            synced != null || spriteName != null ||
-                            iconUV != null || drawUV != null || gridInfo != null || textureKey != null;
+        boolean hasDetails = pred != null || tile != null
+            || bits != null
+            || synced != null
+            || spriteName != null
+            || iconUV != null
+            || drawUV != null
+            || gridInfo != null
+            || textureKey != null;
 
         if (!hasDetails) return;
 
         lines.add("§f§l--- Details ---");
-        
+
         // 第一行：纹理信息
         if (textureKey != null) {
             lines.add("§ftexKey: §7" + textureKey);
@@ -204,7 +215,7 @@ public class DebugOverlayHandler {
             String syncStatus = Boolean.TRUE.equals(synced) ? "§asynced" : "§4OUT OF SYNC";
             lines.add("§fTexReg/TexMap: §r" + syncStatus + (lookupKey != null ? " (§7" + lookupKey + "§r)" : ""));
         }
-        
+
         // 第二行：UV 信息
         if (iconUV != null) {
             lines.add("§ficonUV:  §7" + iconUV);
@@ -215,7 +226,7 @@ public class DebugOverlayHandler {
         if (gridInfo != null) {
             lines.add("§fgrid:    §7" + gridInfo);
         }
-        
+
         // 第三行：连接信息
         if (tile != null) {
             lines.add("§ftile:    §7(" + tile[0] + "," + tile[1] + ")");
@@ -274,14 +285,16 @@ public class DebugOverlayHandler {
                 lines.add("§flegacy: §rctmIconMap");
                 break;
             case VANILLA:
-                if (hitInfo.getSkipReason() != null && !hitInfo.getSkipReason().isEmpty()) {
+                if (hitInfo.getSkipReason() != null && !hitInfo.getSkipReason()
+                    .isEmpty()) {
                     lines.add("§fskip: §r" + hitInfo.getSkipReason());
                 }
                 break;
         }
 
         addPredicateTileConnLine(lines, oldTrace);
-        if (oldTrace.getDegradationReason() != null && !oldTrace.getDegradationReason().isEmpty()) {
+        if (oldTrace.getDegradationReason() != null && !oldTrace.getDegradationReason()
+            .isEmpty()) {
             lines.add("§fdegrade: §r" + oldTrace.getDegradationReason());
         }
         addTruncatedDecisionSteps(lines, oldTrace);
@@ -315,12 +328,17 @@ public class DebugOverlayHandler {
         int[] tile = trace.getTilePos();
         int[] bits = trace.getConnectionBits();
         if (pred == null && tile == null && bits == null) return;
-        
+
         StringBuilder sb = new StringBuilder();
-        if (pred != null) sb.append("§fpred: §r").append(pred);
+        if (pred != null) sb.append("§fpred: §r")
+            .append(pred);
         if (tile != null) {
             if (sb.length() > 0) sb.append(" ");
-            sb.append("§ftile:(§r").append(tile[0]).append(",").append(tile[1]).append("§f)");
+            sb.append("§ftile:(§r")
+                .append(tile[0])
+                .append(",")
+                .append(tile[1])
+                .append("§f)");
         }
         if (bits != null) {
             if (sb.length() > 0) sb.append(" ");
@@ -336,7 +354,7 @@ public class DebugOverlayHandler {
     private static void addTruncatedDecisionSteps(List<String> lines, PipelineDebugTrace trace) {
         List<String> steps = trace.getSteps();
         if (steps.isEmpty()) return;
-        
+
         lines.add("§f§l--- decision ---");
 
         final String[] DECISION_KEYWORDS = { "getIcon", "HIT", "null", "miss", "degrade", "OUT OF SYNC", "不同步" };
@@ -390,7 +408,8 @@ public class DebugOverlayHandler {
 
     private static String getBlockId(Block block) {
         if (block == null) return null;
-        Iterator<?> it = Block.blockRegistry.getKeys().iterator();
+        Iterator<?> it = Block.blockRegistry.getKeys()
+            .iterator();
         while (it.hasNext()) {
             Object key = it.next();
             if (key instanceof String && Block.blockRegistry.getObject(key) == block) {

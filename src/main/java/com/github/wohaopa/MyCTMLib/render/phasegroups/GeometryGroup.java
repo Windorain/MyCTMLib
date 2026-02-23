@@ -6,7 +6,9 @@ import com.github.wohaopa.MyCTMLib.render.context.RenderContext;
 /**
  * 几何 bounds 计算组
  * 
- * <p>本组方法假设输入数据有效，由调用方（Pipeline 层）负责验证前置条件。</p>
+ * <p>
+ * 本组方法假设输入数据有效，由调用方（Pipeline 层）负责验证前置条件。
+ * </p>
  */
 public final class GeometryGroup {
 
@@ -17,15 +19,19 @@ public final class GeometryGroup {
     /**
      * 从 Element 提取 bounds
      * 
-     * <p>前置条件：</p>
+     * <p>
+     * 前置条件：
+     * </p>
      * <ul>
-     *   <li>{@code ctx.getCurrentElement() != null}</li>
-     *   <li>{@code ctx.getCurrentElement().getFrom/To() != null}</li>
+     * <li>{@code ctx.getCurrentElement() != null}</li>
+     * <li>{@code ctx.getCurrentElement().getFrom/To() != null}</li>
      * </ul>
      * 
-     * <p>后置条件：</p>
+     * <p>
+     * 后置条件：
+     * </p>
      * <ul>
-     *   <li>{@code ctx.getDrawRelMinX/MaxX/MinY/MaxY/MinZ/MaxZ()} 已更新</li>
+     * <li>{@code ctx.getDrawRelMinX/MaxX/MinY/MaxY/MinZ/MaxZ()} 已更新</li>
      * </ul>
      * 
      * @param ctx 渲染上下文
@@ -46,14 +52,18 @@ public final class GeometryGroup {
     /**
      * 从 RenderBlocks 提取 bounds
      * 
-     * <p>前置条件：</p>
+     * <p>
+     * 前置条件：
+     * </p>
      * <ul>
-     *   <li>{@code ctx.getRenderBlocks() != null}</li>
+     * <li>{@code ctx.getRenderBlocks() != null}</li>
      * </ul>
      * 
-     * <p>后置条件：</p>
+     * <p>
+     * 后置条件：
+     * </p>
      * <ul>
-     *   <li>{@code ctx.getDrawRelMinX/MaxX/MinY/MaxY/MinZ/MaxZ()} 已更新</li>
+     * <li>{@code ctx.getDrawRelMinX/MaxX/MinY/MaxY/MinZ/MaxZ()} 已更新</li>
      * </ul>
      * 
      * @param ctx 渲染上下文
@@ -70,11 +80,13 @@ public final class GeometryGroup {
     /**
      * 默认 bounds(0,1)
      * 
-     * <p>后置条件：</p>
+     * <p>
+     * 后置条件：
+     * </p>
      * <ul>
-     *   <li>{@code ctx.getDrawRelMinX/MaxX() = 0.0, 1.0}</li>
-     *   <li>{@code ctx.getDrawRelMinY/MaxY() = 0.0, 1.0}</li>
-     *   <li>{@code ctx.getDrawRelMinZ/MaxZ() = 0.0, 1.0}</li>
+     * <li>{@code ctx.getDrawRelMinX/MaxX() = 0.0, 1.0}</li>
+     * <li>{@code ctx.getDrawRelMinY/MaxY() = 0.0, 1.0}</li>
+     * <li>{@code ctx.getDrawRelMinZ/MaxZ() = 0.0, 1.0}</li>
      * </ul>
      * 
      * @param ctx 渲染上下文

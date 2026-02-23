@@ -10,8 +10,7 @@ import com.github.wohaopa.MyCTMLib.render.context.RenderContext;
  */
 public final class PositionDomain {
 
-    private PositionDomain() {
-    }
+    private PositionDomain() {}
 
     /**
      * 计算世界坐标
@@ -20,7 +19,7 @@ public final class PositionDomain {
         double blockX = ctx.getX();
         double blockY = ctx.getY();
         double blockZ = ctx.getZ();
-        
+
         ctx.setWorldX(blockX + ctx.getDrawRelMinX());
         ctx.setWorldY(blockY + ctx.getDrawRelMinY());
         ctx.setWorldZ(blockZ + ctx.getDrawRelMinZ());

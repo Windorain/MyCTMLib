@@ -1,18 +1,15 @@
 package com.github.wohaopa.MyCTMLib.render.pipeline;
 
-import com.github.wohaopa.MyCTMLib.MyCTMLib;
 import com.github.wohaopa.MyCTMLib.Textures;
-import com.github.wohaopa.MyCTMLib.render.CTMRenderEntry;
-import com.github.wohaopa.MyCTMLib.render.context.RenderContext;
-import com.github.wohaopa.MyCTMLib.render.domain.GeometryDomain;
-import com.github.wohaopa.MyCTMLib.render.domain.IconDomain;
-import com.github.wohaopa.MyCTMLib.render.pipelines.BaseTilePipeline;
-import com.github.wohaopa.MyCTMLib.render.pipelines.ConnectingTilePipeline;
-import com.github.wohaopa.MyCTMLib.render.pipelines.RandomTilePipeline;
 import com.github.wohaopa.MyCTMLib.model.ModelElement;
 import com.github.wohaopa.MyCTMLib.model.ModelFace;
 import com.github.wohaopa.MyCTMLib.predicate.ConnectionPredicate;
 import com.github.wohaopa.MyCTMLib.predicate.PredicateRegistry;
+import com.github.wohaopa.MyCTMLib.render.CTMRenderEntry;
+import com.github.wohaopa.MyCTMLib.render.context.RenderContext;
+import com.github.wohaopa.MyCTMLib.render.pipelines.BaseTilePipeline;
+import com.github.wohaopa.MyCTMLib.render.pipelines.ConnectingTilePipeline;
+import com.github.wohaopa.MyCTMLib.render.pipelines.RandomTilePipeline;
 import com.github.wohaopa.MyCTMLib.texture.BaseTextureData;
 import com.github.wohaopa.MyCTMLib.texture.ConnectingTextureData;
 import com.github.wohaopa.MyCTMLib.texture.RandomTextureData;
@@ -78,7 +75,8 @@ public class RenderPipeline {
         String modelId = ctx.getModelId();
         if (modelId != null) {
             ctx.debug("DECIDE: Model branch candidate (modelId=" + modelId + ")");
-            if (!ctx.getElements().isEmpty()) {
+            if (!ctx.getElements()
+                .isEmpty()) {
                 ctx.info("DECIDE: Selected MODEL_ELEMENTS branch");
                 return RenderBranch.MODEL_ELEMENTS;
             } else {
@@ -124,16 +122,22 @@ public class RenderPipeline {
     }
 
     private void executeModelBranch(RenderContext ctx) {
-        ctx.debug("MODEL: Looping through " + ctx.getElements().size() + " elements");
+        ctx.debug(
+            "MODEL: Looping through " + ctx.getElements()
+                .size() + " elements");
 
         // 在循环外计算 connection predicate（所有 element 复用）
         ConnectionPredicate predicate = PredicateRegistry.defaultPredicate();
-        if (!ctx.getElements().isEmpty()) {
-            ModelFace firstFace = ctx.getElements().get(0).getFace(ctx.getFace());
+        if (!ctx.getElements()
+            .isEmpty()) {
+            ModelFace firstFace = ctx.getElements()
+                .get(0)
+                .getFace(ctx.getFace());
             if (firstFace != null && firstFace.getConnectionKey() != null) {
                 ConnectionPredicate p = PredicateRegistry.getPredicate(
-                    firstFace.getConnectionKey(), 
-                    ctx.getModelData().getConnections());
+                    firstFace.getConnectionKey(),
+                    ctx.getModelData()
+                        .getConnections());
                 if (p != null) predicate = p;
             }
         }
@@ -159,14 +163,17 @@ public class RenderPipeline {
             }
 
             String texturePath = com.github.wohaopa.MyCTMLib.texture.TextureKeyNormalizer.resolveTexturePath(
-                faceData.getTextureKey(), ctx.getModelData().getTextures());
+                faceData.getTextureKey(),
+                ctx.getModelData()
+                    .getTextures());
             if (texturePath == null) {
                 ctx.warn("RENDER: Could not resolve texture path for key: " + faceData.getTextureKey());
                 continue;
             }
 
             String domain = extractDomain(ctx.getModelId());
-            String textureKey = com.github.wohaopa.MyCTMLib.texture.TextureKeyNormalizer.toCanonicalTextureKey(domain, texturePath);
+            String textureKey = com.github.wohaopa.MyCTMLib.texture.TextureKeyNormalizer
+                .toCanonicalTextureKey(domain, texturePath);
             ctx.setTextureKey(textureKey);
             ctx.debug("RENDER: Resolved texture key: " + textureKey);
 
@@ -178,7 +185,9 @@ public class RenderPipeline {
                 continue;
             }
 
-            ctx.trace("RENDER: Texture parsed successfully: " + data.getClass().getSimpleName());
+            ctx.trace(
+                "RENDER: Texture parsed successfully: " + data.getClass()
+                    .getSimpleName());
 
             if (data instanceof BaseTextureData btd) {
                 ctx.setBaseData(btd);
@@ -191,7 +200,9 @@ public class RenderPipeline {
                 ctx.debug("RENDER: ConnectingTexture pipeline");
                 ConnectingTilePipeline.execute(ctx);
             } else {
-                ctx.debug("RENDER: Unknown texture data type: " + (data != null ? data.getClass().getSimpleName() : "null"));
+                ctx.debug(
+                    "RENDER: Unknown texture data type: " + (data != null ? data.getClass()
+                        .getSimpleName() : "null"));
                 ctx.failPipeline("Unknown texture data type: " + data);
             }
 
@@ -226,8 +237,7 @@ public class RenderPipeline {
             ctx.getY(),
             ctx.getZ(),
             ctx.getOriginalIcon(),
-            ctx.getFace()
-        );
+            ctx.getFace());
         ctx.setDrewAny(result);
         ctx.debug("LEGACY: Result=" + result);
     }

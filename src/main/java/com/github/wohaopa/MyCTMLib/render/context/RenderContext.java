@@ -9,17 +9,16 @@ import net.minecraft.util.IIcon;
 import net.minecraft.world.IBlockAccess;
 import net.minecraftforge.common.util.ForgeDirection;
 
-import com.github.wohaopa.MyCTMLib.MyCTMLib;
 import com.github.wohaopa.MyCTMLib.blockstate.BlockStateRegistry;
 import com.github.wohaopa.MyCTMLib.model.ModelData;
 import com.github.wohaopa.MyCTMLib.model.ModelElement;
 import com.github.wohaopa.MyCTMLib.model.ModelRegistry;
-import com.github.wohaopa.MyCTMLib.render.CTMRenderEntry;
-import com.github.wohaopa.MyCTMLib.render.pipeline.RenderBranch;
 import com.github.wohaopa.MyCTMLib.predicate.ConnectionPredicate;
+import com.github.wohaopa.MyCTMLib.render.CTMRenderEntry;
+import com.github.wohaopa.MyCTMLib.render.PipelineDebugTrace;
+import com.github.wohaopa.MyCTMLib.render.pipeline.RenderBranch;
 import com.github.wohaopa.MyCTMLib.texture.BaseTextureData;
 import com.github.wohaopa.MyCTMLib.texture.TextureTypeData;
-import com.github.wohaopa.MyCTMLib.render.PipelineDebugTrace;
 
 /**
  * 渲染上下文（简化版：无状态栈）
@@ -185,7 +184,6 @@ public class RenderContext {
         return new RenderContext();
     }
 
-
     // ========== 决策结果存储 ==========
     public RenderBranch getRenderBranch() {
         return renderBranch;
@@ -200,7 +198,8 @@ public class RenderContext {
         if (modelId == null) {
             String blockId = getBlockId(getBlock());
             if (blockId != null) {
-                modelId = BlockStateRegistry.getInstance().getModelId(blockId, getMeta());
+                modelId = BlockStateRegistry.getInstance()
+                    .getModelId(blockId, getMeta());
             }
         }
         return modelId;
@@ -210,7 +209,8 @@ public class RenderContext {
         if (modelData == null) {
             String modelId = getModelId();
             if (modelId != null) {
-                modelData = ModelRegistry.getInstance().get(modelId);
+                modelData = ModelRegistry.getInstance()
+                    .get(modelId);
             }
         }
         return modelData;
@@ -363,29 +363,71 @@ public class RenderContext {
 
     // ========== 新数据流字段 Getter/Setter ==========
     // 原始 UV（只读）
-    public Double getIconMinU() { return iconMinU; }
-    public Double getIconMaxU() { return iconMaxU; }
-    public Double getIconMinV() { return iconMinV; }
-    public Double getIconMaxV() { return iconMaxV; }
-    
-    public void setIconMinU(double u) { this.iconMinU = u; }
-    public void setIconMaxU(double u) { this.iconMaxU = u; }
-    public void setIconMinV(double v) { this.iconMinV = v; }
-    public void setIconMaxV(double v) { this.iconMaxV = v; }
-    
+    public Double getIconMinU() {
+        return iconMinU;
+    }
+
+    public Double getIconMaxU() {
+        return iconMaxU;
+    }
+
+    public Double getIconMinV() {
+        return iconMinV;
+    }
+
+    public Double getIconMaxV() {
+        return iconMaxV;
+    }
+
+    public void setIconMinU(double u) {
+        this.iconMinU = u;
+    }
+
+    public void setIconMaxU(double u) {
+        this.iconMaxU = u;
+    }
+
+    public void setIconMinV(double v) {
+        this.iconMinV = v;
+    }
+
+    public void setIconMaxV(double v) {
+        this.iconMaxV = v;
+    }
+
     // TileX, TileY（独立存储）
-    public Integer getTileX() { return tileX; }
-    public Integer getTileY() { return tileY; }
-    
-    public void setTileX(int x) { this.tileX = x; }
-    public void setTileY(int y) { this.tileY = y; }
-    
+    public Integer getTileX() {
+        return tileX;
+    }
+
+    public Integer getTileY() {
+        return tileY;
+    }
+
+    public void setTileX(int x) {
+        this.tileX = x;
+    }
+
+    public void setTileY(int y) {
+        this.tileY = y;
+    }
+
     // Grid 尺寸
-    public Integer getGridW() { return gridW; }
-    public Integer getGridH() { return gridH; }
-    
-    public void setGridW(int w) { this.gridW = w; }
-    public void setGridH(int h) { this.gridH = h; }
+    public Integer getGridW() {
+        return gridW;
+    }
+
+    public Integer getGridH() {
+        return gridH;
+    }
+
+    public void setGridW(int w) {
+        this.gridW = w;
+    }
+
+    public void setGridH(int h) {
+        this.gridH = h;
+    }
 
     // ========== UV 相关 Getter/Setter ==========
     public double getDrawMinU() {
@@ -516,46 +558,142 @@ public class RenderContext {
     }
 
     // ========== 颜色四角 Getter/Setter ==========
-    public Float getColorTL_R() { return colorTL_R; }
-    public void setColorTL_R(float r) { this.colorTL_R = r; }
-    public Float getColorTL_G() { return colorTL_G; }
-    public void setColorTL_G(float g) { this.colorTL_G = g; }
-    public Float getColorTL_B() { return colorTL_B; }
-    public void setColorTL_B(float b) { this.colorTL_B = b; }
+    public Float getColorTL_R() {
+        return colorTL_R;
+    }
 
-    public Float getColorTR_R() { return colorTR_R; }
-    public void setColorTR_R(float r) { this.colorTR_R = r; }
-    public Float getColorTR_G() { return colorTR_G; }
-    public void setColorTR_G(float g) { this.colorTR_G = g; }
-    public Float getColorTR_B() { return colorTR_B; }
-    public void setColorTR_B(float b) { this.colorTR_B = b; }
+    public void setColorTL_R(float r) {
+        this.colorTL_R = r;
+    }
 
-    public Float getColorBL_R() { return colorBL_R; }
-    public void setColorBL_R(float r) { this.colorBL_R = r; }
-    public Float getColorBL_G() { return colorBL_G; }
-    public void setColorBL_G(float g) { this.colorBL_G = g; }
-    public Float getColorBL_B() { return colorBL_B; }
-    public void setColorBL_B(float b) { this.colorBL_B = b; }
+    public Float getColorTL_G() {
+        return colorTL_G;
+    }
 
-    public Float getColorBR_R() { return colorBR_R; }
-    public void setColorBR_R(float r) { this.colorBR_R = r; }
-    public Float getColorBR_G() { return colorBR_G; }
-    public void setColorBR_G(float g) { this.colorBR_G = g; }
-    public Float getColorBR_B() { return colorBR_B; }
-    public void setColorBR_B(float b) { this.colorBR_B = b; }
+    public void setColorTL_G(float g) {
+        this.colorTL_G = g;
+    }
+
+    public Float getColorTL_B() {
+        return colorTL_B;
+    }
+
+    public void setColorTL_B(float b) {
+        this.colorTL_B = b;
+    }
+
+    public Float getColorTR_R() {
+        return colorTR_R;
+    }
+
+    public void setColorTR_R(float r) {
+        this.colorTR_R = r;
+    }
+
+    public Float getColorTR_G() {
+        return colorTR_G;
+    }
+
+    public void setColorTR_G(float g) {
+        this.colorTR_G = g;
+    }
+
+    public Float getColorTR_B() {
+        return colorTR_B;
+    }
+
+    public void setColorTR_B(float b) {
+        this.colorTR_B = b;
+    }
+
+    public Float getColorBL_R() {
+        return colorBL_R;
+    }
+
+    public void setColorBL_R(float r) {
+        this.colorBL_R = r;
+    }
+
+    public Float getColorBL_G() {
+        return colorBL_G;
+    }
+
+    public void setColorBL_G(float g) {
+        this.colorBL_G = g;
+    }
+
+    public Float getColorBL_B() {
+        return colorBL_B;
+    }
+
+    public void setColorBL_B(float b) {
+        this.colorBL_B = b;
+    }
+
+    public Float getColorBR_R() {
+        return colorBR_R;
+    }
+
+    public void setColorBR_R(float r) {
+        this.colorBR_R = r;
+    }
+
+    public Float getColorBR_G() {
+        return colorBR_G;
+    }
+
+    public void setColorBR_G(float g) {
+        this.colorBR_G = g;
+    }
+
+    public Float getColorBR_B() {
+        return colorBR_B;
+    }
+
+    public void setColorBR_B(float b) {
+        this.colorBR_B = b;
+    }
 
     // ========== 亮度四角 Getter/Setter ==========
-    public Integer getBrightnessTL() { return brightnessTL; }
-    public void setBrightnessTL(int b) { this.brightnessTL = b; }
-    public Integer getBrightnessTR() { return brightnessTR; }
-    public void setBrightnessTR(int b) { this.brightnessTR = b; }
-    public Integer getBrightnessBL() { return brightnessBL; }
-    public void setBrightnessBL(int b) { this.brightnessBL = b; }
-    public Integer getBrightnessBR() { return brightnessBR; }
-    public void setBrightnessBR(int b) { this.brightnessBR = b; }
+    public Integer getBrightnessTL() {
+        return brightnessTL;
+    }
 
-    public ConnectionPredicate getConnectionPredicate() { return connectionPredicate; }
-    public void setConnectionPredicate(ConnectionPredicate predicate) { this.connectionPredicate = predicate; }
+    public void setBrightnessTL(int b) {
+        this.brightnessTL = b;
+    }
+
+    public Integer getBrightnessTR() {
+        return brightnessTR;
+    }
+
+    public void setBrightnessTR(int b) {
+        this.brightnessTR = b;
+    }
+
+    public Integer getBrightnessBL() {
+        return brightnessBL;
+    }
+
+    public void setBrightnessBL(int b) {
+        this.brightnessBL = b;
+    }
+
+    public Integer getBrightnessBR() {
+        return brightnessBR;
+    }
+
+    public void setBrightnessBR(int b) {
+        this.brightnessBR = b;
+    }
+
+    public ConnectionPredicate getConnectionPredicate() {
+        return connectionPredicate;
+    }
+
+    public void setConnectionPredicate(ConnectionPredicate predicate) {
+        this.connectionPredicate = predicate;
+    }
 
     // ========== Debug ==========
     public PipelineDebugTrace getDebugTrace() {

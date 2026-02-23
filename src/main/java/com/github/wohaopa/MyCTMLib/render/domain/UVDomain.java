@@ -1,7 +1,8 @@
 package com.github.wohaopa.MyCTMLib.render.domain;
 
-import com.github.wohaopa.MyCTMLib.render.context.RenderContext;
 import net.minecraftforge.common.util.ForgeDirection;
+
+import com.github.wohaopa.MyCTMLib.render.context.RenderContext;
 
 /**
  * UV 坐标数据域
@@ -12,8 +13,7 @@ import net.minecraftforge.common.util.ForgeDirection;
  */
 public final class UVDomain {
 
-    private UVDomain() {
-    }
+    private UVDomain() {}
 
     /**
      * 计算最终 UV 坐标
@@ -27,7 +27,7 @@ public final class UVDomain {
         int tileY = ctx.getTileY();
         int gridW = ctx.getGridW();
         int gridH = ctx.getGridH();
-        
+
         // 步骤 1: 计算基础 UV（texture 切片）
         double baseMinU = iconMinU + (iconMaxU - iconMinU) * tileX / gridW;
         double baseMaxU = iconMinU + (iconMaxU - iconMinU) * (tileX + 1) / gridW;
@@ -37,10 +37,10 @@ public final class UVDomain {
         // 步骤 2: 根据 face 插值（texture 缩放）
         double uRange = baseMaxU - baseMinU;
         double vRange = baseMaxV - baseMinV;
-        
+
         double drawMinU, drawMaxU, drawMinV, drawMaxV;
         ForgeDirection face = ctx.getFace();
-        
+
         switch (face) {
             case DOWN, UP -> {
                 // 水平面：U 对应 X 轴，V 对应 Z 轴
@@ -70,7 +70,7 @@ public final class UVDomain {
                 drawMaxV = baseMaxV;
             }
         }
-        
+
         ctx.setDrawMinU(drawMinU);
         ctx.setDrawMaxU(drawMaxU);
         ctx.setDrawMinV(drawMinV);

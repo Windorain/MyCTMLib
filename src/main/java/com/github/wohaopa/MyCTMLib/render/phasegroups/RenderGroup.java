@@ -9,7 +9,9 @@ import com.github.wohaopa.MyCTMLib.render.context.RenderContext;
 /**
  * 渲染输出组（纯提交层，零计算）
  * 
- * <p>本组方法假设所有输入数据已由上游 Domain 计算完毕。</p>
+ * <p>
+ * 本组方法假设所有输入数据已由上游 Domain 计算完毕。
+ * </p>
  */
 public final class RenderGroup {
 
@@ -27,19 +29,20 @@ public final class RenderGroup {
         { CORNER_TOP_LEFT, CORNER_BOTTOM_LEFT, CORNER_BOTTOM_RIGHT, CORNER_TOP_RIGHT }, // EAST
     };
 
-    private RenderGroup() {
-    }
+    private RenderGroup() {}
 
     /**
      * 渲染面（纯提交，零计算）
      * 
-     * <p>前置条件（由调用方保证）：</p>
+     * <p>
+     * 前置条件（由调用方保证）：
+     * </p>
      * <ul>
-     *   <li>PositionDomain.calc() 已调用：worldX/Y/Z</li>
-     *   <li>GeometryDomain 已调用：relMinX/Y/Z, relMaxX/Y/Z</li>
-     *   <li>UVDomain.calc() 已调用：drawMinU/V, drawMaxU/V</li>
-     *   <li>BrightnessDomain 已调用：drawBrightness</li>
-     *   <li>ColorDomain 已调用：color 四角</li>
+     * <li>PositionDomain.calc() 已调用：worldX/Y/Z</li>
+     * <li>GeometryDomain 已调用：relMinX/Y/Z, relMaxX/Y/Z</li>
+     * <li>UVDomain.calc() 已调用：drawMinU/V, drawMaxU/V</li>
+     * <li>BrightnessDomain 已调用：drawBrightness</li>
+     * <li>ColorDomain 已调用：color 四角</li>
      * </ul>
      */
     public static void renderFace(RenderContext ctx) {
@@ -53,14 +56,14 @@ public final class RenderGroup {
         double baseX = ctx.getWorldX();
         double baseY = ctx.getWorldY();
         double baseZ = ctx.getWorldZ();
-        
+
         double relMinX = ctx.getDrawRelMinX();
         double relMaxX = ctx.getDrawRelMaxX();
         double relMinY = ctx.getDrawRelMinY();
         double relMaxY = ctx.getDrawRelMaxY();
         double relMinZ = ctx.getDrawRelMinZ();
         double relMaxZ = ctx.getDrawRelMaxZ();
-        
+
         double minX = baseX;
         double maxX = baseX - relMinX + relMaxX;
         double minY = baseY;

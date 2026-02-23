@@ -17,8 +17,7 @@ import com.github.wohaopa.MyCTMLib.texture.layout.LayoutHandlers;
  */
 public final class IconDomain {
 
-    private IconDomain() {
-    }
+    private IconDomain() {}
 
     /**
      * 解析 Icon 数据
@@ -30,13 +29,13 @@ public final class IconDomain {
         if (icon == null) {
             icon = ctx.getOriginalIcon();
         }
-        
+
         ctx.setDrawIcon(icon);
         ctx.setIconMinU(icon.getMinU());
         ctx.setIconMaxU(icon.getMaxU());
         ctx.setIconMinV(icon.getMinV());
         ctx.setIconMaxV(icon.getMaxV());
-        
+
         int gridW, gridH;
         com.github.wohaopa.MyCTMLib.texture.TextureTypeData texData = ctx.getTextureData();
         if (texData instanceof RandomTextureData rtd) {
@@ -50,7 +49,7 @@ public final class IconDomain {
             gridW = 1;
             gridH = 1;
         }
-        
+
         ctx.setGridW(gridW);
         ctx.setGridH(gridH);
     }

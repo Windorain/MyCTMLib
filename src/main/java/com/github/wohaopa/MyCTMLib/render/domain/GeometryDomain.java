@@ -13,8 +13,7 @@ import com.github.wohaopa.MyCTMLib.render.context.RenderContext;
  */
 public final class GeometryDomain {
 
-    private GeometryDomain() {
-    }
+    private GeometryDomain() {}
 
     /**
      * 从 ModelElement 提取 bounds

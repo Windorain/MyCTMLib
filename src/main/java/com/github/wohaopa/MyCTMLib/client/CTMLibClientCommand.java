@@ -1,7 +1,6 @@
 package com.github.wohaopa.MyCTMLib.client;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -44,14 +43,7 @@ public class CTMLibClientCommand extends CommandBase {
         if (args.length == 1) {
             return getListOfStringsMatchingLastWord(args, "debug", "dump");
         } else if (args.length == 2 && args[0].equalsIgnoreCase("dump")) {
-            return getListOfStringsMatchingLastWord(
-                args,
-                "registry",
-                "sprites",
-                "textures",
-                "errors",
-                "load",
-                "hud");
+            return getListOfStringsMatchingLastWord(args, "registry", "sprites", "textures", "errors", "load", "hud");
         }
         return Collections.emptyList();
     }
@@ -76,7 +68,9 @@ public class CTMLibClientCommand extends CommandBase {
 
     private void processDump(ICommandSender sender, String[] args) {
         if (args.length < 2) {
-            send(sender, EnumChatFormatting.RED + "Usage: /ctmlib dump <registry|sprites|textures|errors|load|hud> [path]");
+            send(
+                sender,
+                EnumChatFormatting.RED + "Usage: /ctmlib dump <registry|sprites|textures|errors|load|hud> [path]");
             return;
         }
         switch (args[1].toLowerCase()) {
@@ -126,7 +120,7 @@ public class CTMLibClientCommand extends CommandBase {
     private void processDumpHUD(ICommandSender sender, String[] args) {
         String path = args.length >= 3 ? args[2] : "config/ctmlib_hud_dump.json";
         File f = new File(Minecraft.getMinecraft().mcDataDir, path);
-        
+
         try {
             DebugOverlayDumpUtil.dumpCurrentHUDToFile(f);
             send(sender, EnumChatFormatting.GREEN + "HUD dump written to " + f.getAbsolutePath());
