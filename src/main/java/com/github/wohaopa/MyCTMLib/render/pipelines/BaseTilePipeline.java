@@ -24,8 +24,13 @@ public final class BaseTilePipeline {
         GeometryDomain.fromElement(ctx);
         UVDomain.calc(ctx);
         PositionDomain.calc(ctx);
-        BrightnessDomain.setFull(ctx);
-        ColorDomain.setDefault(ctx);
+        if (ctx.getRenderBlocks().enableAO) {
+            BrightnessDomain.setFullAO(ctx);
+            ColorDomain.computeAO(ctx);
+        } else {
+            BrightnessDomain.setFullUniform(ctx);
+            ColorDomain.computeUniform(ctx);
+        }
         RenderGroup.renderFace(ctx);
         if (!ctx.isPipelineFailed()) {
             ctx.setDrewAny(true);

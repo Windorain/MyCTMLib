@@ -6,9 +6,8 @@ import com.github.wohaopa.MyCTMLib.render.context.RenderContext;
  * 颜色数据域
  * 
  * 职责：
- * - computeAO: 从 RenderBlocks 获取 AO 四角颜色
- * - computeTint: 计算群系着色颜色
- * - setDefault: 设置默认白色 (1, 1, 1)
+ * - computeUniform: 设置默认白色（非 AO 模式）
+ * - computeAO: 从 RenderBlocks 获取四角颜色（AO 模式）
  */
 public final class ColorDomain {
 
@@ -16,7 +15,25 @@ public final class ColorDomain {
     }
 
     /**
-     * 从 RenderBlocks 获取 AO 四角颜色
+     * 设置默认白色（非 AO 模式）
+     */
+    public static void computeUniform(RenderContext ctx) {
+        ctx.setColorTL_R(1.0f);
+        ctx.setColorTL_G(1.0f);
+        ctx.setColorTL_B(1.0f);
+        ctx.setColorTR_R(1.0f);
+        ctx.setColorTR_G(1.0f);
+        ctx.setColorTR_B(1.0f);
+        ctx.setColorBL_R(1.0f);
+        ctx.setColorBL_G(1.0f);
+        ctx.setColorBL_B(1.0f);
+        ctx.setColorBR_R(1.0f);
+        ctx.setColorBR_G(1.0f);
+        ctx.setColorBR_B(1.0f);
+    }
+
+    /**
+     * 从 RenderBlocks 获取四角颜色（AO 模式）
      */
     public static void computeAO(RenderContext ctx) {
         net.minecraft.client.renderer.RenderBlocks rb = ctx.getRenderBlocks();
@@ -36,23 +53,5 @@ public final class ColorDomain {
         ctx.setColorBR_R(rb.colorRedBottomRight);
         ctx.setColorBR_G(rb.colorGreenBottomRight);
         ctx.setColorBR_B(rb.colorBlueBottomRight);
-    }
-
-    /**
-     * 设置默认白色
-     */
-    public static void setDefault(RenderContext ctx) {
-        ctx.setColorTL_R(1.0f);
-        ctx.setColorTL_G(1.0f);
-        ctx.setColorTL_B(1.0f);
-        ctx.setColorTR_R(1.0f);
-        ctx.setColorTR_G(1.0f);
-        ctx.setColorTR_B(1.0f);
-        ctx.setColorBL_R(1.0f);
-        ctx.setColorBL_G(1.0f);
-        ctx.setColorBL_B(1.0f);
-        ctx.setColorBR_R(1.0f);
-        ctx.setColorBR_G(1.0f);
-        ctx.setColorBR_B(1.0f);
     }
 }

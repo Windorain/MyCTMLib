@@ -24,8 +24,13 @@ public final class RandomTilePipeline {
         GeometryDomain.fromElement(ctx);
         UVDomain.calc(ctx);
         PositionDomain.calc(ctx);
-        BrightnessDomain.compute(ctx);
-        ColorDomain.computeAO(ctx);
+        if (ctx.getRenderBlocks().enableAO) {
+            BrightnessDomain.computeAO(ctx);
+            ColorDomain.computeAO(ctx);
+        } else {
+            BrightnessDomain.computeUniform(ctx);
+            ColorDomain.computeUniform(ctx);
+        }
         RenderGroup.renderFace(ctx);
         if (!ctx.isPipelineFailed()) {
             ctx.setDrewAny(true);

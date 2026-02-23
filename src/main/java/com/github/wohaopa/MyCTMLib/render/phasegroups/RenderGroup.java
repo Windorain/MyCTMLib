@@ -74,7 +74,7 @@ public final class RenderGroup {
             maxU = t;
         }
 
-        int brightness = ctx.getDrawBrightness();
+        // 四角颜色
         float rTL = ctx.getColorTL_R();
         float gTL = ctx.getColorTL_G();
         float bTL = ctx.getColorTL_B();
@@ -88,91 +88,97 @@ public final class RenderGroup {
         float gBR = ctx.getColorBR_G();
         float bBR = ctx.getColorBR_B();
 
+        // 四角亮度
+        int brightTL = ctx.getBrightnessTL();
+        int brightTR = ctx.getBrightnessTR();
+        int brightBL = ctx.getBrightnessBL();
+        int brightBR = ctx.getBrightnessBR();
+
         ForgeDirection face = ctx.getFace();
         int[] corners = CORNER_ORDER_BY_FACE[face.ordinal()];
 
         switch (face) {
             case DOWN:
-                setVertex(tes, corners[0], rTL, gTL, bTL, brightness);
+                setVertex(tes, corners[0], rTL, gTL, bTL, brightTL);
                 tes.addVertexWithUV(minX, minY, maxZ, minU, minV);
 
-                setVertex(tes, corners[1], rBL, gBL, bBL, brightness);
+                setVertex(tes, corners[1], rBL, gBL, bBL, brightBL);
                 tes.addVertexWithUV(minX, minY, minZ, minU, maxV);
 
-                setVertex(tes, corners[2], rBR, gBR, bBR, brightness);
+                setVertex(tes, corners[2], rBR, gBR, bBR, brightBR);
                 tes.addVertexWithUV(maxX, minY, minZ, maxU, maxV);
 
-                setVertex(tes, corners[3], rTR, gTR, bTR, brightness);
+                setVertex(tes, corners[3], rTR, gTR, bTR, brightTR);
                 tes.addVertexWithUV(maxX, minY, maxZ, maxU, minV);
                 break;
 
             case UP:
-                setVertex(tes, corners[0], rTL, gTL, bTL, brightness);
+                setVertex(tes, corners[0], rTL, gTL, bTL, brightTL);
                 tes.addVertexWithUV(maxX, maxY, maxZ, maxU, maxV);
 
-                setVertex(tes, corners[1], rBL, gBL, bBL, brightness);
+                setVertex(tes, corners[1], rBL, gBL, bBL, brightBL);
                 tes.addVertexWithUV(maxX, maxY, minZ, maxU, minV);
 
-                setVertex(tes, corners[2], rBR, gBR, bBR, brightness);
+                setVertex(tes, corners[2], rBR, gBR, bBR, brightBR);
                 tes.addVertexWithUV(minX, maxY, minZ, minU, minV);
 
-                setVertex(tes, corners[3], rTR, gTR, bTR, brightness);
+                setVertex(tes, corners[3], rTR, gTR, bTR, brightTR);
                 tes.addVertexWithUV(minX, maxY, maxZ, minU, maxV);
                 break;
 
             case NORTH:
-                setVertex(tes, corners[0], rTL, gTL, bTL, brightness);
+                setVertex(tes, corners[0], rTL, gTL, bTL, brightTL);
                 tes.addVertexWithUV(minX, maxY, minZ, maxU, minV);
 
-                setVertex(tes, corners[1], rBL, gBL, bBL, brightness);
+                setVertex(tes, corners[1], rBL, gBL, bBL, brightBL);
                 tes.addVertexWithUV(maxX, maxY, minZ, minU, minV);
 
-                setVertex(tes, corners[2], rBR, gBR, bBR, brightness);
+                setVertex(tes, corners[2], rBR, gBR, bBR, brightBR);
                 tes.addVertexWithUV(maxX, minY, minZ, minU, maxV);
 
-                setVertex(tes, corners[3], rTR, gTR, bTR, brightness);
+                setVertex(tes, corners[3], rTR, gTR, bTR, brightTR);
                 tes.addVertexWithUV(minX, minY, minZ, maxU, maxV);
                 break;
 
             case SOUTH:
-                setVertex(tes, corners[0], rTL, gTL, bTL, brightness);
+                setVertex(tes, corners[0], rTL, gTL, bTL, brightTL);
                 tes.addVertexWithUV(minX, maxY, maxZ, minU, minV);
 
-                setVertex(tes, corners[1], rBL, gBL, bBL, brightness);
+                setVertex(tes, corners[1], rBL, gBL, bBL, brightBL);
                 tes.addVertexWithUV(minX, minY, maxZ, minU, maxV);
 
-                setVertex(tes, corners[2], rBR, gBR, bBR, brightness);
+                setVertex(tes, corners[2], rBR, gBR, bBR, brightBR);
                 tes.addVertexWithUV(maxX, minY, maxZ, maxU, maxV);
 
-                setVertex(tes, corners[3], rTR, gTR, bTR, brightness);
+                setVertex(tes, corners[3], rTR, gTR, bTR, brightTR);
                 tes.addVertexWithUV(maxX, maxY, maxZ, maxU, minV);
                 break;
 
             case WEST:
-                setVertex(tes, corners[0], rTL, gTL, bTL, brightness);
+                setVertex(tes, corners[0], rTL, gTL, bTL, brightTL);
                 tes.addVertexWithUV(minX, maxY, maxZ, maxU, minV);
 
-                setVertex(tes, corners[1], rBL, gBL, bBL, brightness);
+                setVertex(tes, corners[1], rBL, gBL, bBL, brightBL);
                 tes.addVertexWithUV(minX, maxY, minZ, minU, minV);
 
-                setVertex(tes, corners[2], rBR, gBR, bBR, brightness);
+                setVertex(tes, corners[2], rBR, gBR, bBR, brightBR);
                 tes.addVertexWithUV(minX, minY, minZ, minU, maxV);
 
-                setVertex(tes, corners[3], rTR, gTR, bTR, brightness);
+                setVertex(tes, corners[3], rTR, gTR, bTR, brightTR);
                 tes.addVertexWithUV(minX, minY, maxZ, maxU, maxV);
                 break;
 
             case EAST:
-                setVertex(tes, corners[0], rTL, gTL, bTL, brightness);
+                setVertex(tes, corners[0], rTL, gTL, bTL, brightTL);
                 tes.addVertexWithUV(maxX, minY, maxZ, minU, maxV);
 
-                setVertex(tes, corners[1], rBL, gBL, bBL, brightness);
+                setVertex(tes, corners[1], rBL, gBL, bBL, brightBL);
                 tes.addVertexWithUV(maxX, minY, minZ, maxU, maxV);
 
-                setVertex(tes, corners[2], rBR, gBR, bBR, brightness);
+                setVertex(tes, corners[2], rBR, gBR, bBR, brightBR);
                 tes.addVertexWithUV(maxX, maxY, minZ, maxU, minV);
 
-                setVertex(tes, corners[3], rTR, gTR, bTR, brightness);
+                setVertex(tes, corners[3], rTR, gTR, bTR, brightTR);
                 tes.addVertexWithUV(maxX, maxY, maxZ, minU, minV);
                 break;
 

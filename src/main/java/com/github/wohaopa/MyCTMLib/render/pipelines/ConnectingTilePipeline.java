@@ -25,11 +25,15 @@ public final class ConnectingTilePipeline {
         UVDomain.calc(ctx);
         PositionDomain.calc(ctx);
         if (ctx.isItemRender()) {
-            BrightnessDomain.setFull(ctx);
+            BrightnessDomain.setFullAO(ctx);
+            ColorDomain.computeUniform(ctx);
+        } else if (ctx.getRenderBlocks().enableAO) {
+            BrightnessDomain.computeAO(ctx);
+            ColorDomain.computeAO(ctx);
         } else {
-            BrightnessDomain.compute(ctx);
+            BrightnessDomain.computeUniform(ctx);
+            ColorDomain.computeUniform(ctx);
         }
-        ColorDomain.computeAO(ctx);
         RenderGroup.renderFace(ctx);
         if (!ctx.isPipelineFailed()) {
             ctx.setDrewAny(true);

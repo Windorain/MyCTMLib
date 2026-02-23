@@ -97,6 +97,9 @@ public class RenderContext {
     private Float colorBL_R, colorBL_G, colorBL_B;
     private Float colorBR_R, colorBR_G, colorBR_B;
 
+    // 亮度四角（BrightnessDomain 输出）
+    private Integer brightnessTL, brightnessTR, brightnessBL, brightnessBR;
+
     // Debug
     private PipelineDebugTrace debugTrace;
 
@@ -160,6 +163,11 @@ public class RenderContext {
         this.colorBR_R = null;
         this.colorBR_G = null;
         this.colorBR_B = null;
+        // 亮度四角
+        this.brightnessTL = null;
+        this.brightnessTR = null;
+        this.brightnessBL = null;
+        this.brightnessBR = null;
         // Debug
         this.debugTrace = null;
         this.drewAny = false;
@@ -529,6 +537,16 @@ public class RenderContext {
     public void setColorBR_G(float g) { this.colorBR_G = g; }
     public Float getColorBR_B() { return colorBR_B; }
     public void setColorBR_B(float b) { this.colorBR_B = b; }
+
+    // ========== 亮度四角 Getter/Setter ==========
+    public Integer getBrightnessTL() { return brightnessTL; }
+    public void setBrightnessTL(int b) { this.brightnessTL = b; }
+    public Integer getBrightnessTR() { return brightnessTR; }
+    public void setBrightnessTR(int b) { this.brightnessTR = b; }
+    public Integer getBrightnessBL() { return brightnessBL; }
+    public void setBrightnessBL(int b) { this.brightnessBL = b; }
+    public Integer getBrightnessBR() { return brightnessBR; }
+    public void setBrightnessBR(int b) { this.brightnessBR = b; }
 
     // ========== Debug ==========
     public PipelineDebugTrace getDebugTrace() {
