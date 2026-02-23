@@ -145,104 +145,85 @@ public class RenderPipeline {
             ctx.resetPipelineFailed();
             ctx.trace("MODEL: Rendering element " + index);
 
-            renderElement(ctx);
+            
+            ctx.trace("RENDER: Parsing texture for element");
+
+            ModelFace faceData = element.getFace(ctx.getFace());
+            if (faceData == null) {
+                ctx.trace("RENDER: No face data for current direction");
+                continue;
+            }
+
+            if (faceData.getTextureKey() == null) {
+                ctx.trace("RENDER: Face has no texture key");
+                continue;
+            }
+
+            String texturePath = com.github.wohaopa.MyCTMLib.texture.TextureKeyNormalizer.resolveTexturePath(
+                faceData.getTextureKey(), ctx.getModelData().getTextures());
+            if (texturePath == null) {
+                ctx.warn("RENDER: Could not resolve texture path for key: " + faceData.getTextureKey());
+                continue;
+            }
+
+            String domain = extractDomain(ctx.getModelId());
+            String textureKey = com.github.wohaopa.MyCTMLib.texture.TextureKeyNormalizer.toCanonicalTextureKey(domain, texturePath);
+            ctx.debug("RENDER: Resolved texture key: " + textureKey);
+
+            TextureTypeData data = CTMRenderEntry.getConnectingData(textureKey);
+            ctx.setTextureData(data);
+
+            if (data == null) {
+                ctx.warn("RENDER: No texture data found for key: " + textureKey);
+                continue;
+            }
+
+            ctx.trace("RENDER: Texture parsed successfully: " + data.getClass().getSimpleName());
+
+
+            ctx.trace("RENDER: Starting element render");
+
+            // 子阶段 2：几何数据
+            ctx.trace("RENDER: Computing geometry bounds");
+            GeometryGroup.boundsFromElement(ctx);
+            if (ctx.isPipelineFailed()) {
+                ctx.error("RENDER: Geometry bounds computation failed");
+                continue;
+            }
+
+            // 子阶段 3：Icon
+            ctx.trace("RENDER: Resolving icon");
+            IconResolveGroup.resolveIcon(ctx);
+            if (ctx.isPipelineFailed()) {
+                ctx.error("RENDER: Icon resolution failed");
+                continue;
+            }
+
+            // 子阶段 4：根据材质类型选择管道
+            if (data instanceof BaseTextureData btd) {
+                ctx.setBaseData(btd);
+                ctx.debug("RENDER: BaseTexture pipeline");
+                BaseTilePipeline.execute(ctx);
+            } else if (data instanceof RandomTextureData rtd) {
+                ctx.debug("RENDER: RandomTexture pipeline");
+                RandomTilePipeline.execute(ctx);
+            } else if (data instanceof ConnectingTextureData ctd) {
+                ctx.debug("RENDER: ConnectingTexture pipeline");
+                ConnectingTilePipeline.execute(ctx);
+            } else {
+                ctx.debug("RENDER: Unknown texture data type: " + (data != null ? data.getClass().getSimpleName() : "null"));
+                ctx.failPipeline("Unknown texture data type: " + data);
+            }
 
             if (ctx.isPipelineFailed()) {
                 ctx.debug("MODEL: Element " + index + " failed, continuing to next");
             } else {
                 ctx.trace("MODEL: Element " + index + " rendered successfully");
+                ctx.trace("RENDER: Element render completed");
             }
         }
 
         ctx.debug("MODEL: Completed processing all elements");
-    }
-
-    private void renderElement(RenderContext ctx) {
-        ctx.trace("RENDER: Starting element render");
-
-        // 子阶段 1：解析材质
-        if (!parseTextureForElement(ctx)) {
-            ctx.debug("RENDER: Skip element (no texture)");
-            return;
-        }
-
-        // 子阶段 2：几何数据
-        ctx.trace("RENDER: Computing geometry bounds");
-        GeometryGroup.boundsFromElement(ctx);
-        if (ctx.isPipelineFailed()) {
-            ctx.error("RENDER: Geometry bounds computation failed");
-            return;
-        }
-
-        // 子阶段 3：Icon
-        ctx.trace("RENDER: Resolving icon");
-        IconResolveGroup.resolveIcon(ctx);
-        if (ctx.isPipelineFailed()) {
-            ctx.error("RENDER: Icon resolution failed");
-            return;
-        }
-
-        // 子阶段 4：根据材质类型选择管道
-        TextureTypeData data = ctx.getTextureData();
-        if (data instanceof BaseTextureData btd) {
-            ctx.setBaseData(btd);
-            ctx.debug("RENDER: BaseTexture pipeline");
-            BaseTilePipeline.execute(ctx);
-        } else if (data instanceof RandomTextureData rtd) {
-            ctx.debug("RENDER: RandomTexture pipeline");
-            RandomTilePipeline.execute(ctx);
-        } else if (data instanceof ConnectingTextureData ctd) {
-            ctx.debug("RENDER: ConnectingTexture pipeline");
-            ConnectingTilePipeline.execute(ctx);
-        } else {
-            ctx.debug("RENDER: Unknown texture data type: " + (data != null ? data.getClass().getSimpleName() : "null"));
-            ctx.failPipeline("Unknown texture data type: " + data);
-        }
-
-        ctx.trace("RENDER: Element render completed");
-    }
-
-    private boolean parseTextureForElement(RenderContext ctx) {
-        ctx.trace("RENDER: Parsing texture for element");
-
-        ModelElement element = ctx.getCurrentElement();
-        if (element == null) {
-            ctx.error("RENDER: Current element is null");
-            return false;
-        }
-
-        ModelFace faceData = element.getFace(ctx.getFace());
-        if (faceData == null) {
-            ctx.trace("RENDER: No face data for current direction");
-            return false;
-        }
-
-        if (faceData.getTextureKey() == null) {
-            ctx.trace("RENDER: Face has no texture key");
-            return false;
-        }
-
-        String texturePath = com.github.wohaopa.MyCTMLib.texture.TextureKeyNormalizer.resolveTexturePath(
-            faceData.getTextureKey(), ctx.getModelData().getTextures());
-        if (texturePath == null) {
-            ctx.warn("RENDER: Could not resolve texture path for key: " + faceData.getTextureKey());
-            return false;
-        }
-
-        String domain = extractDomain(ctx.getModelId());
-        String textureKey = com.github.wohaopa.MyCTMLib.texture.TextureKeyNormalizer.toCanonicalTextureKey(domain, texturePath);
-        ctx.debug("RENDER: Resolved texture key: " + textureKey);
-
-        TextureTypeData data = CTMRenderEntry.getConnectingData(textureKey);
-        ctx.setTextureData(data);
-
-        if (data == null) {
-            ctx.warn("RENDER: No texture data found for key: " + textureKey);
-            return false;
-        }
-
-        ctx.trace("RENDER: Texture parsed successfully: " + data.getClass().getSimpleName());
-        return true;
     }
 
     private String extractDomain(String modelId) {

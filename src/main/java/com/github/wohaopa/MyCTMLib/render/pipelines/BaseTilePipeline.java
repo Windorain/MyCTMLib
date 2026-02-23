@@ -1,5 +1,6 @@
 package com.github.wohaopa.MyCTMLib.render.pipelines;
 
+import com.github.wohaopa.MyCTMLib.render.phasegroups.GeometryGroup;
 import com.github.wohaopa.MyCTMLib.render.phasegroups.IconResolveGroup;
 import com.github.wohaopa.MyCTMLib.render.phasegroups.RenderGroup;
 import com.github.wohaopa.MyCTMLib.render.phasegroups.ShadingGroup;
@@ -20,21 +21,25 @@ public final class BaseTilePipeline {
      * 执行 Base 材质渲染
      */
     public static void execute(RenderContext ctx) {
-        // Group 1: Tile 位置（默认）
-        TilePositionGroup.setDefaultTile(ctx);
-
-        // Group 2: UV
-        UVCalcGroup.calcUV(ctx);
-        if (ctx.isPipelineFailed()) return;
-
-        // Group 3: Icon
+        // Phase 1: Icon 解析（最前面）
         IconResolveGroup.resolveIcon(ctx);
         if (ctx.isPipelineFailed()) return;
 
-        // Group 4: 着色（全亮）
+        // Phase 2: Tile 位置
+        TilePositionGroup.setDefaultTile(ctx);
+
+        // Phase 3: UV
+        UVCalcGroup.calcUV(ctx);
+        if (ctx.isPipelineFailed()) return;
+
+        // Phase 4: 几何 bounds
+        GeometryGroup.boundsFromElement(ctx);
+        if (ctx.isPipelineFailed()) return;
+
+        // Phase 5: 着色（全亮）
         ShadingGroup.setFullBrightness(ctx);
 
-        // Group 5: 渲染
+        // Phase 6: 渲染
         RenderGroup.renderFace(ctx);
         if (!ctx.isPipelineFailed()) {
             ctx.setDrewAny(true);

@@ -1,15 +1,11 @@
 package com.github.wohaopa.MyCTMLib.render.phasegroups;
 
 import com.github.wohaopa.MyCTMLib.render.context.RenderContext;
-import com.github.wohaopa.MyCTMLib.texture.ConnectingTextureData;
-import com.github.wohaopa.MyCTMLib.texture.RandomTextureData;
-import com.github.wohaopa.MyCTMLib.texture.layout.LayoutHandler;
-import com.github.wohaopa.MyCTMLib.texture.layout.LayoutHandlers;
 
 /**
- * UV 坐标计算组
+ * UV 坐标计算组（基于原始数据一次性完成）
  * 
- * <p>本组方法假设输入数据有效，由调用方（Pipeline 层）负责验证前置条件。</p>
+ * <p>本组方法假设输入数据有效，由调用方（Pipeline 层）负责验证前置条件。
  */
 public final class UVCalcGroup {
 
@@ -18,15 +14,21 @@ public final class UVCalcGroup {
     }
 
     /**
-     * 统一 UV 公式计算
+     * 统一 UV 公式计算（基于原始数据一次性完成）
      * 
-     * <p>前置条件：</p>
+     * <p>前置条件：
      * <ul>
-     *   <li>{@code ctx.getTilePosition() != null}</li>
-     *   <li>{@code ctx.getTextureData()} 不为 null</li>
+     *   <li>{@code ctx.getTileX() != null}</li>
+     *   <li>{@code ctx.getTileY() != null}</li>
+     *   <li>{@code ctx.getGridW() != null}</li>
+     *   <li>{@code ctx.getGridH() != null}</li>
+     *   <li>{@code ctx.getIconMinU() != null}</li>
+     *   <li>{@code ctx.getIconMaxU() != null}</li>
+     *   <li>{@code ctx.getIconMinV() != null}</li>
+     *   <li>{@code ctx.getIconMaxV() != null}</li>
      * </ul>
      * 
-     * <p>后置条件：</p>
+     * <p>后置条件：
      * <ul>
      *   <li>{@code ctx.getDrawMinU/MaxU/MinV/MaxV()} 已更新</li>
      * </ul>
@@ -34,27 +36,32 @@ public final class UVCalcGroup {
      * @param ctx 渲染上下文
      */
     public static void calcUV(RenderContext ctx) {
-        int[] tile = ctx.getTilePosition();
-
-        int gridW, gridH;
-        if (ctx.getTextureData() instanceof RandomTextureData rtd) {
-            gridW = rtd.getColumns();
-            gridH = rtd.getRows();
-        } else if (ctx.getTextureData() instanceof ConnectingTextureData ctd) {
-            LayoutHandler handler = LayoutHandlers.get(ctd.getLayout());
-            gridW = handler.getWidth();
-            gridH = handler.getHeight();
-        } else {
-            gridW = 1;
-            gridH = 1;
+        Integer tileX = ctx.getTileX();
+        Integer tileY = ctx.getTileY();
+        Integer gridW = ctx.getGridW();
+        Integer gridH = ctx.getGridH();
+        Double iconMinU = ctx.getIconMinU();
+        Double iconMaxU = ctx.getIconMaxU();
+        Double iconMinV = ctx.getIconMinV();
+        Double iconMaxV = ctx.getIconMaxV();
+        
+        if (tileX == null || tileY == null || gridW == null || gridH == null
+            || iconMinU == null || iconMaxU == null || iconMinV == null || iconMaxV == null) {
+            ctx.failPipeline("Missing data for UV calculation: tileX/tileY/gridW/gridH or icon UV");
+            return;
         }
-
-        double uRange = ctx.getDrawMaxU() - ctx.getDrawMinU();
-        double vRange = ctx.getDrawMaxV() - ctx.getDrawMinV();
-
-        ctx.setDrawMinU(ctx.getDrawMinU() + uRange * tile[0] / gridW);
-        ctx.setDrawMaxU(ctx.getDrawMinU() + uRange * (tile[0] + 1) / gridW);
-        ctx.setDrawMinV(ctx.getDrawMinV() + vRange * tile[1] / gridH);
-        ctx.setDrawMaxV(ctx.getDrawMinV() + vRange * (tile[1] + 1) / gridH);
+        
+        double uRange = iconMaxU - iconMinU;
+        double vRange = iconMaxV - iconMinV;
+        
+        double newMinU = iconMinU + uRange * tileX / gridW;
+        double newMaxU = iconMinU + uRange * (tileX + 1) / gridW;
+        double newMinV = iconMinV + vRange * tileY / gridH;
+        double newMaxV = iconMinV + vRange * (tileY + 1) / gridH;
+        
+        ctx.setDrawMinU(newMinU);
+        ctx.setDrawMaxU(newMaxU);
+        ctx.setDrawMinV(newMinV);
+        ctx.setDrawMaxV(newMaxV);
     }
 }

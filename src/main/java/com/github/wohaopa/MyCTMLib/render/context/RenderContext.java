@@ -65,6 +65,16 @@ public class RenderContext {
     private Integer randomIndex;
     private int[] tilePosition;
 
+    // 新数据流字段
+    // 原始 UV（从 drawIcon 获取的，只读，不修改）
+    private Double iconMinU, iconMaxU, iconMinV, iconMaxV;
+    // Tile 位置（独立存储，分开访问）
+    private Integer tileX;
+    private Integer tileY;
+    // Grid 尺寸
+    private Integer gridW;
+    private Integer gridH;
+
     // UV 相关
     private Double drawMinU, drawMaxU, drawMinV, drawMaxV;
 
@@ -99,18 +109,31 @@ public class RenderContext {
         this.connectionMask = null;
         this.randomIndex = null;
         this.tilePosition = null;
+        // 新数据流字段初始化
+        this.iconMinU = null;
+        this.iconMaxU = null;
+        this.iconMinV = null;
+        this.iconMaxV = null;
+        this.tileX = null;
+        this.tileY = null;
+        this.gridW = null;
+        this.gridH = null;
+        // UV 相关
         this.drawMinU = 0.0;
         this.drawMaxU = 1.0;
         this.drawMinV = 0.0;
         this.drawMaxV = 1.0;
+        // 几何相关
         this.drawRelMinX = 0.0;
         this.drawRelMaxX = 1.0;
         this.drawRelMinY = 0.0;
         this.drawRelMaxY = 1.0;
         this.drawRelMinZ = 0.0;
         this.drawRelMaxZ = 1.0;
+        // 着色相关
         this.drawBrightness = 0;
         this.biomeColor = null;
+        // Debug
         this.debugTrace = null;
         this.drewAny = false;
         this.pipelineFailed = false;
@@ -288,6 +311,32 @@ public class RenderContext {
     public void setTilePosition(int[] pos) {
         this.tilePosition = pos;
     }
+
+    // ========== 新数据流字段 Getter/Setter ==========
+    // 原始 UV（只读）
+    public Double getIconMinU() { return iconMinU; }
+    public Double getIconMaxU() { return iconMaxU; }
+    public Double getIconMinV() { return iconMinV; }
+    public Double getIconMaxV() { return iconMaxV; }
+    
+    public void setIconMinU(double u) { this.iconMinU = u; }
+    public void setIconMaxU(double u) { this.iconMaxU = u; }
+    public void setIconMinV(double v) { this.iconMinV = v; }
+    public void setIconMaxV(double v) { this.iconMaxV = v; }
+    
+    // TileX, TileY（独立存储）
+    public Integer getTileX() { return tileX; }
+    public Integer getTileY() { return tileY; }
+    
+    public void setTileX(int x) { this.tileX = x; }
+    public void setTileY(int y) { this.tileY = y; }
+    
+    // Grid 尺寸
+    public Integer getGridW() { return gridW; }
+    public Integer getGridH() { return gridH; }
+    
+    public void setGridW(int w) { this.gridW = w; }
+    public void setGridH(int h) { this.gridH = h; }
 
     // ========== UV 相关 Getter/Setter ==========
     public double getDrawMinU() {
