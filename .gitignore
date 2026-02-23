@@ -42,3 +42,4 @@ layout.json
 .qwenignore
 .ignore
 .opencode
+*.java.bak

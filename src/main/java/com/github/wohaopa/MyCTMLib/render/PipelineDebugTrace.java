@@ -5,11 +5,8 @@ import java.util.Collections;
 import java.util.List;
 
 import com.github.wohaopa.MyCTMLib.render.context.RenderContext;
-import com.github.wohaopa.MyCTMLib.render.debug.PipelineDebugListener;
-import com.github.wohaopa.MyCTMLib.render.pipeline.PhaseResult;
-import com.github.wohaopa.MyCTMLib.render.pipeline.RenderState;
 
-public final class PipelineDebugTrace implements PipelineDebugListener {
+public final class PipelineDebugTrace {
 
     private final List<String> steps = new ArrayList<>();
     private String degradationReason;
@@ -94,24 +91,4 @@ public final class PipelineDebugTrace implements PipelineDebugListener {
         return connectionBits;
     }
 
-    @Override
-    public void beforePhase(RenderState state, RenderContext context) {
-        addStep("Phase START: " + state);
-    }
-
-    @Override
-    public void afterPhase(RenderState state, RenderContext context, PhaseResult result) {
-        addStep("Phase END: " + state + " -> " + result);
-    }
-
-    @Override
-    public void onPhaseError(RenderState state, RenderContext context, Exception e) {
-        addStep("Phase ERROR: " + state + " - " + e.getMessage());
-    }
-
-    @Override
-    public boolean onFallback(FallbackStrategy strategy, RenderContext context) {
-        addStep("Fallback: " + strategy);
-        return true;
-    }
 }

@@ -1,186 +1,228 @@
 package com.github.wohaopa.MyCTMLib.render.pipeline;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import com.github.wohaopa.MyCTMLib.MyCTMLib;
+import com.github.wohaopa.MyCTMLib.Textures;
 import com.github.wohaopa.MyCTMLib.render.CTMRenderEntry;
-import com.github.wohaopa.MyCTMLib.render.PipelineDebugTrace;
 import com.github.wohaopa.MyCTMLib.render.context.RenderContext;
-import com.github.wohaopa.MyCTMLib.render.debug.PipelineDebugListener;
-import com.github.wohaopa.MyCTMLib.render.debug.RenderPipelineDebugCache;
-import com.github.wohaopa.MyCTMLib.render.phases.CalculateElementBoundsPhase;
-import com.github.wohaopa.MyCTMLib.render.phases.CalculateTexturePhase;
-import com.github.wohaopa.MyCTMLib.render.phases.CompletePhase;
-import com.github.wohaopa.MyCTMLib.render.phases.DecidePhases;
-import com.github.wohaopa.MyCTMLib.render.phases.ControlElementLoopPhase;
-import com.github.wohaopa.MyCTMLib.render.phases.InitContextPhase;
-import com.github.wohaopa.MyCTMLib.render.phases.PrepareElementDataPhase;
-import com.github.wohaopa.MyCTMLib.render.phases.PrepareLegacyDataPhase;
-import com.github.wohaopa.MyCTMLib.render.phases.PrepareModelDataPhase;
-import com.github.wohaopa.MyCTMLib.render.phases.PrepareTextureDataPhase;
-import com.github.wohaopa.MyCTMLib.render.phases.PrepareTextureIconPhase;
-import com.github.wohaopa.MyCTMLib.render.phases.RenderFacePhase;
-import com.github.wohaopa.MyCTMLib.render.phases.RenderLegacyPhase;
+import com.github.wohaopa.MyCTMLib.render.pipelines.BaseTilePipeline;
+import com.github.wohaopa.MyCTMLib.render.pipelines.ConnectingTilePipeline;
+import com.github.wohaopa.MyCTMLib.render.pipelines.RandomTilePipeline;
+import com.github.wohaopa.MyCTMLib.render.phasegroups.GeometryGroup;
+import com.github.wohaopa.MyCTMLib.render.phasegroups.IconResolveGroup;
+import com.github.wohaopa.MyCTMLib.model.ModelElement;
+import com.github.wohaopa.MyCTMLib.model.ModelFace;
+import com.github.wohaopa.MyCTMLib.texture.BaseTextureData;
+import com.github.wohaopa.MyCTMLib.texture.ConnectingTextureData;
+import com.github.wohaopa.MyCTMLib.texture.RandomTextureData;
+import com.github.wohaopa.MyCTMLib.texture.TextureTypeData;
 
+/**
+ * 渲染管线（线性管道）
+ * 
+ * 执行流程：INIT → DECIDE → RENDER → COMPLETE
+ */
 public class RenderPipeline {
 
-    private final Map<RenderState, PipelinePhase> phaseMap = new HashMap<>();
+    public boolean execute(RenderContext ctx) {
+        // 阶段 1：初始化
+        ctx.logDebug("INIT: Resetting context");
+        ctx.resetPipelineFailed();
+        ctx.setDrewAny(false);
 
-    public RenderPipeline() {
-        DecidePhases decidePhases = new DecidePhases();
-        
-        phaseMap.put(RenderState.INIT_CONTEXT, new InitContextPhase());
-        phaseMap.put(RenderState.DECIDE, decidePhases);
-        phaseMap.put(RenderState.PREPARE_MODEL_DATA, new PrepareModelDataPhase());
-        phaseMap.put(RenderState.PREPARE_TEXTURE_ICON, new PrepareTextureIconPhase());
-        phaseMap.put(RenderState.PREPARE_TEXTURE_DATA, new PrepareTextureDataPhase());
-        phaseMap.put(RenderState.PREPARE_ELEMENT_DATA, new PrepareElementDataPhase());
-        phaseMap.put(RenderState.PREPARE_LEGACY_DATA, new PrepareLegacyDataPhase());
-        phaseMap.put(RenderState.CALCULATE_TEXTURE, new CalculateTexturePhase());
-        phaseMap.put(RenderState.CALCULATE_ELEMENT_BOUNDS, new CalculateElementBoundsPhase());
-        phaseMap.put(RenderState.ELEMENT_LOOP_CONTROL, new ControlElementLoopPhase());
-        phaseMap.put(RenderState.RENDER_FACE, new RenderFacePhase());
-        phaseMap.put(RenderState.RENDER_LEGACY, new RenderLegacyPhase());
-        phaseMap.put(RenderState.COMPLETE, new CompletePhase());
-    }
+        // 阶段 2：决策
+        RenderBranch branch = decideRenderBranch(ctx);
+        ctx.setRenderBranch(branch);
+        ctx.logDebug("DECIDE: Using branch: " + branch);
 
-    public boolean execute(RenderContext context) {
-        PipelineDebugTrace trace = null;
-
-        if (MyCTMLib.debugMode) {
-            trace = new PipelineDebugTrace();
-            if (context.getDebugListener() == null) {
-                context.setDebugListener(trace);
-            }
-            trace.addStep("New pipeline started");
+        // 阶段 3：渲染（根据 branch 执行）
+        ctx.logDebug("RENDER: Starting render");
+        switch (branch) {
+            case MODEL_ELEMENTS -> executeModelBranch(ctx);
+            case TEXTURE_RELOC -> executeTextureRelocBranch(ctx);
+            case LEGACY -> executeLegacyBranch(ctx);
+            case ITEM -> executeItemBranch(ctx);
+            case ENTITY, NONE -> ctx.setDrewAny(false);
         }
 
-        context.pushState(RenderState.INIT_CONTEXT);
+        // 阶段 4：清理
+        ctx.logDebug("COMPLETE: drewAny=" + ctx.isDrewAny());
 
-        while (context.getCurrentState() != RenderState.DONE) {
-            RenderState currentState = context.getCurrentState();
-            if (currentState == null) {
-                break;
-            }
-
-            notifyBeforePhase(currentState, context);
-
-            try {
-                PipelinePhase phase = phaseMap.get(currentState);
-                PhaseResult result = PhaseResult.CONTINUE;
-
-                if (phase != null) {
-                    result = phase.process(context);
-                }
-
-                notifyAfterPhase(currentState, context, result);
-                handlePhaseResult(result, context);
-
-            } catch (RenderPipelineException e) {
-                notifyOnPhaseError(currentState, context, e);
-                handleFallback(e.getFallback(), context);
-            }
-        }
-
-        boolean drewAny = context.isDrewAny();
-
-        if (MyCTMLib.debugMode && trace != null) {
-            trace.addStep("New pipeline drewAny: " + drewAny);
-
-            if (!drewAny) {
-                trace.addStep("Falling back to tryRender()");
-                boolean tryRenderResult = CTMRenderEntry.tryRender(
-                    context.getRenderBlocks(),
-                    context.getBlockAccess(),
-                    context.getBlock(),
-                    context.getX(),
-                    context.getY(),
-                    context.getZ(),
-                    context.getOriginalIcon(),
-                    context.getFace());
-                trace.addStep("tryRender() result: " + tryRenderResult);
-                drewAny = tryRenderResult;
-
-                if (!drewAny) {
-                    trace.setDegradationReason("New pipeline and tryRender() both failed, falling back to vanilla");
-                }
-            }
-
-            int x = (int) context.getX();
-            int y = (int) context.getY();
-            int z = (int) context.getZ();
-            RenderPipelineDebugCache.record(x, y, z, context.getFace(), trace);
-        } else {
-            if (!drewAny) {
-                drewAny = CTMRenderEntry.tryRender(
-                    context.getRenderBlocks(),
-                    context.getBlockAccess(),
-                    context.getBlock(),
-                    context.getX(),
-                    context.getY(),
-                    context.getZ(),
-                    context.getOriginalIcon(),
-                    context.getFace());
-            }
+        // 如果新管线失败，fallback 到 tryRender
+        boolean drewAny = ctx.isDrewAny();
+        if (!drewAny) {
+            drewAny = CTMRenderEntry.tryRender(
+                ctx.getRenderBlocks(),
+                ctx.getBlockAccess(),
+                ctx.getBlock(),
+                ctx.getX(),
+                ctx.getY(),
+                ctx.getZ(),
+                ctx.getOriginalIcon(),
+                ctx.getFace());
         }
 
         return drewAny;
     }
 
-    private void handlePhaseResult(PhaseResult result, RenderContext context) {
-        switch (result) {
-            case CONTINUE:
-                break;
-            case SKIP_REMAINING:
-                context.pushState(RenderState.COMPLETE);
-                break;
-            case FALLBACK_TO_LEGACY:
-                context.pushState(RenderState.PREPARE_LEGACY_DATA);
-                break;
-            case FALLBACK_TO_VANILLA:
-                context.setDrewAny(false);
-                context.pushState(RenderState.DONE);
-                break;
-            case ERROR:
-                context.setDrewAny(false);
-                context.pushState(RenderState.DONE);
-                break;
+    // ========== 决策逻辑 ==========
+
+    private RenderBranch decideRenderBranch(RenderContext ctx) {
+        // 1. 物品渲染优先判断
+        if (ctx.isItemRender()) {
+            return RenderBranch.ITEM;
+        }
+
+        // 2. Model 分支：需要查询，触发懒加载
+        String modelId = ctx.getModelId();
+        if (modelId != null) {
+            if (!ctx.getElements().isEmpty()) {
+                return RenderBranch.MODEL_ELEMENTS;
+            }
+        }
+
+        // 3. 纹理重定位分支
+        String iconName = ctx.getIconName();
+        if (shouldUseTextureReloc(iconName)) {
+            return RenderBranch.TEXTURE_RELOC;
+        }
+
+        // 4. Legacy 分支
+        if (shouldUseLegacy(iconName)) {
+            return RenderBranch.LEGACY;
+        }
+
+        // 5. 无匹配
+        return RenderBranch.NONE;
+    }
+
+    private boolean shouldUseTextureReloc(String iconName) {
+        if (iconName == null) return false;
+        return iconName.endsWith("_ctm") || isNumericSuffix(iconName);
+    }
+
+    private boolean shouldUseLegacy(String iconName) {
+        return iconName != null && Textures.contain(iconName);
+    }
+
+    private boolean isNumericSuffix(String iconName) {
+        int lastUnderscore = iconName.lastIndexOf('_');
+        if (lastUnderscore > 0 && lastUnderscore < iconName.length() - 1) {
+            try {
+                Integer.parseInt(iconName.substring(lastUnderscore + 1));
+                return true;
+            } catch (NumberFormatException e) {
+                return false;
+            }
+        }
+        return false;
+    }
+
+    // ========== 分支执行函数 ==========
+
+    private void executeModelBranch(RenderContext ctx) {
+        ctx.logDebug("MODEL: Looping through " + ctx.getElements().size() + " elements");
+
+        for (ModelElement element : ctx.getElements()) {
+            ctx.setCurrentElement(element);
+            ctx.resetPipelineFailed();
+            ctx.logDebug("MODEL: Rendering element");
+
+            renderElement(ctx);
+
+            if (ctx.isPipelineFailed()) {
+                ctx.logDebug("MODEL: Element failed, continuing to next");
+            }
         }
     }
 
-    private void handleFallback(RenderPipelineException.FallbackStrategy fallback, RenderContext context) {
-        switch (fallback) {
-            case LEGACY:
-                context.pushState(RenderState.PREPARE_LEGACY_DATA);
-                break;
-            case VANILLA:
-            case NONE:
-            default:
-                context.setDrewAny(false);
-                context.pushState(RenderState.DONE);
-                break;
+    private void renderElement(RenderContext ctx) {
+        // 子阶段 1：解析材质
+        if (!parseTextureForElement(ctx)) {
+            ctx.logDebug("RENDER: Skip element (no texture)");
+            return;
+        }
+
+        // 子阶段 2：几何数据
+        GeometryGroup.boundsFromElement(ctx);
+        if (ctx.isPipelineFailed()) return;
+
+        // 子阶段 3：Icon
+        IconResolveGroup.resolveIcon(ctx);
+        if (ctx.isPipelineFailed()) return;
+
+        // 子阶段 4：根据材质类型选择管道
+        TextureTypeData data = ctx.getTextureData();
+        if (data instanceof BaseTextureData btd) {
+            ctx.setBaseData(btd);
+            ctx.logDebug("RENDER: BaseTexture pipeline");
+            BaseTilePipeline.execute(ctx);
+        } else if (data instanceof RandomTextureData rtd) {
+            ctx.logDebug("RENDER: RandomTexture pipeline");
+            RandomTilePipeline.execute(ctx);
+        } else if (data instanceof ConnectingTextureData ctd) {
+            ctx.logDebug("RENDER: ConnectingTexture pipeline");
+            ConnectingTilePipeline.execute(ctx);
+        } else {
+            ctx.logDebug("RENDER: Unknown texture data type");
+            ctx.failPipeline("Unknown texture data type: " + data);
         }
     }
 
-    private void notifyBeforePhase(RenderState state, RenderContext context) {
-        PipelineDebugListener listener = context.getDebugListener();
-        if (listener != null) {
-            listener.beforePhase(state, context);
+    private boolean parseTextureForElement(RenderContext ctx) {
+        ModelElement element = ctx.getCurrentElement();
+        if (element == null) {
+            ctx.failPipeline("Current element is null");
+            return false;
         }
+
+        ModelFace faceData = element.getFace(ctx.getFace());
+        if (faceData == null || faceData.getTextureKey() == null) {
+            return false;
+        }
+
+        String texturePath = com.github.wohaopa.MyCTMLib.texture.TextureKeyNormalizer.resolveTexturePath(
+            faceData.getTextureKey(), ctx.getModelData().getTextures());
+        if (texturePath == null) {
+            return false;
+        }
+
+        String domain = extractDomain(ctx.getModelId());
+        String textureKey = com.github.wohaopa.MyCTMLib.texture.TextureKeyNormalizer.toCanonicalTextureKey(domain, texturePath);
+        ctx.setTextureData(CTMRenderEntry.getConnectingData(textureKey));
+
+        return true;
     }
 
-    private void notifyAfterPhase(RenderState state, RenderContext context, PhaseResult result) {
-        PipelineDebugListener listener = context.getDebugListener();
-        if (listener != null) {
-            listener.afterPhase(state, context, result);
+    private String extractDomain(String modelId) {
+        if (modelId == null || modelId.indexOf(':') < 0) {
+            return "minecraft";
         }
+        return modelId.substring(0, modelId.indexOf(':'));
     }
 
-    private void notifyOnPhaseError(RenderState state, RenderContext context, Exception e) {
-        PipelineDebugListener listener = context.getDebugListener();
-        if (listener != null) {
-            listener.onPhaseError(state, context, e);
-        }
+    private void executeTextureRelocBranch(RenderContext ctx) {
+        ctx.logDebug("TEXTURE_RELOC: Rendering with texture relocation");
+        // TODO: 实现纹理重定位渲染
+    }
+
+    private void executeLegacyBranch(RenderContext ctx) {
+        ctx.logDebug("LEGACY: Using legacy renderer");
+        boolean result = Textures.renderWorldBlock(
+            ctx.getRenderBlocks(),
+            ctx.getBlockAccess(),
+            ctx.getBlock(),
+            ctx.getX(),
+            ctx.getY(),
+            ctx.getZ(),
+            ctx.getOriginalIcon(),
+            ctx.getFace()
+        );
+        ctx.setDrewAny(result);
+    }
+
+    private void executeItemBranch(RenderContext ctx) {
+        ctx.logDebug("ITEM: Rendering item face");
+        // 物品渲染使用 BaseTilePipeline
+        BaseTilePipeline.execute(ctx);
     }
 }
