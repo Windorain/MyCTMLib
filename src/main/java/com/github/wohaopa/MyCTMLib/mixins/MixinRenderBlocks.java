@@ -43,7 +43,7 @@ public abstract class MixinRenderBlocks {
     public abstract boolean hasOverrideBlockTexture();
 
     /**
-     * 注入 renderFaceYNeg（底面）渲染方法，在匹配指定纹理时调用自定义渲染逻辑。
+     * 注入 renderFaceYNeg（底面）渲染方法。
      */
     @Inject(method = "renderFaceYNeg", at = @At("HEAD"), cancellable = true)
     private void redirect$renderFaceYNeg(Block block, double x, double y, double z, IIcon iIcon, CallbackInfo ci) {
@@ -59,37 +59,44 @@ public abstract class MixinRenderBlocks {
             ctx.incrementFaceRenderCount(ForgeDirection.DOWN);
         }
 
-        if (blockAccess == null) {
-            if (CTMRenderEntry
-                .tryRenderItemFace((RenderBlocks) (Object) this, block, x, y, z, iIcon, ForgeDirection.DOWN)) {
+        try {
+            if (blockAccess == null) {
+                if (CTMRenderEntry.tryRenderItemFace((RenderBlocks) (Object) this, block, x, y, z, iIcon, ForgeDirection.DOWN)) {
+                    ci.cancel();
+                }
+                return;
+            }
+
+            String iconName = TextureKeyNormalizer.normalizeIconName(iIcon.getIconName());
+
+            if (CTMRenderEntry.renderPipeline()) {
+                ci.cancel();
+                return;
+            }
+
+            if (CTMRenderEntry.tryRender((RenderBlocks) (Object) this, blockAccess, block, x, y, z, iIcon, ForgeDirection.DOWN)) {
+                ci.cancel();
+                return;
+            }
+            if (!Textures.contain(iconName)) return;
+            if (Textures.renderWorldBlock(
+                (RenderBlocks) ((Object) this),
+                blockAccess,
+                block,
+                x,
+                y,
+                z,
+                iIcon,
+                ForgeDirection.DOWN)) {
                 ci.cancel();
             }
-            return;
-        }
-
-        String iconName = TextureKeyNormalizer.normalizeIconName(iIcon.getIconName());
-
-        if (CTMRenderEntry.renderPipeline()) {
-            ci.cancel();
-            return;
-        }
-
-        if (CTMRenderEntry
-            .tryRender((RenderBlocks) (Object) this, blockAccess, block, x, y, z, iIcon, ForgeDirection.DOWN)) {
-            ci.cancel();
-            return;
-        }
-        if (!Textures.contain(iconName)) return;
-        if (Textures.renderWorldBlock(
-            (RenderBlocks) ((Object) this),
-            blockAccess,
-            block,
-            x,
-            y,
-            z,
-            iIcon,
-            ForgeDirection.DOWN)) {
-            ci.cancel();
+        } finally {
+            if (ctx != null) {
+                ctx.popMethod();
+                ctx.setCurrentFace(null);
+                ctx.setCurrentIcon(null);
+                ctx.setIconName(null);
+            }
         }
     }
 
@@ -110,30 +117,36 @@ public abstract class MixinRenderBlocks {
             ctx.incrementFaceRenderCount(ForgeDirection.UP);
         }
 
-        if (blockAccess == null) {
-            if (CTMRenderEntry
-                .tryRenderItemFace((RenderBlocks) (Object) this, block, x, y, z, iIcon, ForgeDirection.UP)) {
+        try {
+            if (blockAccess == null) {
+                if (CTMRenderEntry.tryRenderItemFace((RenderBlocks) (Object) this, block, x, y, z, iIcon, ForgeDirection.UP)) {
+                    ci.cancel();
+                }
+                return;
+            }
+
+            String iconName = TextureKeyNormalizer.normalizeIconName(iIcon.getIconName());
+
+            if (CTMRenderEntry.renderPipeline()) {
+                ci.cancel();
+                return;
+            }
+
+            if (CTMRenderEntry.tryRender((RenderBlocks) (Object) this, blockAccess, block, x, y, z, iIcon, ForgeDirection.UP)) {
+                ci.cancel();
+                return;
+            }
+            if (!Textures.contain(iconName)) return;
+            if (Textures.renderWorldBlock((RenderBlocks) ((Object) this), blockAccess, block, x, y, z, iIcon, ForgeDirection.UP)) {
                 ci.cancel();
             }
-            return;
-        }
-
-        String iconName = TextureKeyNormalizer.normalizeIconName(iIcon.getIconName());
-
-        if (CTMRenderEntry.renderPipeline()) {
-            ci.cancel();
-            return;
-        }
-
-        if (CTMRenderEntry
-            .tryRender((RenderBlocks) (Object) this, blockAccess, block, x, y, z, iIcon, ForgeDirection.UP)) {
-            ci.cancel();
-            return;
-        }
-        if (!Textures.contain(iconName)) return;
-        if (Textures
-            .renderWorldBlock((RenderBlocks) ((Object) this), blockAccess, block, x, y, z, iIcon, ForgeDirection.UP)) {
-            ci.cancel();
+        } finally {
+            if (ctx != null) {
+                ctx.popMethod();
+                ctx.setCurrentFace(null);
+                ctx.setCurrentIcon(null);
+                ctx.setIconName(null);
+            }
         }
     }
 
@@ -154,37 +167,44 @@ public abstract class MixinRenderBlocks {
             ctx.incrementFaceRenderCount(ForgeDirection.NORTH);
         }
 
-        if (blockAccess == null) {
-            if (CTMRenderEntry
-                .tryRenderItemFace((RenderBlocks) (Object) this, block, x, y, z, iIcon, ForgeDirection.NORTH)) {
+        try {
+            if (blockAccess == null) {
+                if (CTMRenderEntry.tryRenderItemFace((RenderBlocks) (Object) this, block, x, y, z, iIcon, ForgeDirection.NORTH)) {
+                    ci.cancel();
+                }
+                return;
+            }
+
+            String iconName = TextureKeyNormalizer.normalizeIconName(iIcon.getIconName());
+
+            if (CTMRenderEntry.renderPipeline()) {
+                ci.cancel();
+                return;
+            }
+
+            if (CTMRenderEntry.tryRender((RenderBlocks) (Object) this, blockAccess, block, x, y, z, iIcon, ForgeDirection.NORTH)) {
+                ci.cancel();
+                return;
+            }
+            if (!Textures.contain(iconName)) return;
+            if (Textures.renderWorldBlock(
+                (RenderBlocks) ((Object) this),
+                blockAccess,
+                block,
+                x,
+                y,
+                z,
+                iIcon,
+                ForgeDirection.NORTH)) {
                 ci.cancel();
             }
-            return;
-        }
-
-        String iconName = TextureKeyNormalizer.normalizeIconName(iIcon.getIconName());
-
-        if (CTMRenderEntry.renderPipeline()) {
-            ci.cancel();
-            return;
-        }
-
-        if (CTMRenderEntry
-            .tryRender((RenderBlocks) (Object) this, blockAccess, block, x, y, z, iIcon, ForgeDirection.NORTH)) {
-            ci.cancel();
-            return;
-        }
-        if (!Textures.contain(iconName)) return;
-        if (Textures.renderWorldBlock(
-            (RenderBlocks) ((Object) this),
-            blockAccess,
-            block,
-            x,
-            y,
-            z,
-            iIcon,
-            ForgeDirection.NORTH)) {
-            ci.cancel();
+        } finally {
+            if (ctx != null) {
+                ctx.popMethod();
+                ctx.setCurrentFace(null);
+                ctx.setCurrentIcon(null);
+                ctx.setIconName(null);
+            }
         }
     }
 
@@ -205,37 +225,44 @@ public abstract class MixinRenderBlocks {
             ctx.incrementFaceRenderCount(ForgeDirection.SOUTH);
         }
 
-        if (blockAccess == null) {
-            if (CTMRenderEntry
-                .tryRenderItemFace((RenderBlocks) (Object) this, block, x, y, z, iIcon, ForgeDirection.SOUTH)) {
+        try {
+            if (blockAccess == null) {
+                if (CTMRenderEntry.tryRenderItemFace((RenderBlocks) (Object) this, block, x, y, z, iIcon, ForgeDirection.SOUTH)) {
+                    ci.cancel();
+                }
+                return;
+            }
+
+            String iconName = TextureKeyNormalizer.normalizeIconName(iIcon.getIconName());
+
+            if (CTMRenderEntry.renderPipeline()) {
+                ci.cancel();
+                return;
+            }
+
+            if (CTMRenderEntry.tryRender((RenderBlocks) (Object) this, blockAccess, block, x, y, z, iIcon, ForgeDirection.SOUTH)) {
+                ci.cancel();
+                return;
+            }
+            if (!Textures.contain(iconName)) return;
+            if (Textures.renderWorldBlock(
+                (RenderBlocks) ((Object) this),
+                blockAccess,
+                block,
+                x,
+                y,
+                z,
+                iIcon,
+                ForgeDirection.SOUTH)) {
                 ci.cancel();
             }
-            return;
-        }
-
-        String iconName = TextureKeyNormalizer.normalizeIconName(iIcon.getIconName());
-
-        if (CTMRenderEntry.renderPipeline()) {
-            ci.cancel();
-            return;
-        }
-
-        if (CTMRenderEntry
-            .tryRender((RenderBlocks) (Object) this, blockAccess, block, x, y, z, iIcon, ForgeDirection.SOUTH)) {
-            ci.cancel();
-            return;
-        }
-        if (!Textures.contain(iconName)) return;
-        if (Textures.renderWorldBlock(
-            (RenderBlocks) ((Object) this),
-            blockAccess,
-            block,
-            x,
-            y,
-            z,
-            iIcon,
-            ForgeDirection.SOUTH)) {
-            ci.cancel();
+        } finally {
+            if (ctx != null) {
+                ctx.popMethod();
+                ctx.setCurrentFace(null);
+                ctx.setCurrentIcon(null);
+                ctx.setIconName(null);
+            }
         }
     }
 
@@ -256,37 +283,44 @@ public abstract class MixinRenderBlocks {
             ctx.incrementFaceRenderCount(ForgeDirection.WEST);
         }
 
-        if (blockAccess == null) {
-            if (CTMRenderEntry
-                .tryRenderItemFace((RenderBlocks) (Object) this, block, x, y, z, iIcon, ForgeDirection.WEST)) {
+        try {
+            if (blockAccess == null) {
+                if (CTMRenderEntry.tryRenderItemFace((RenderBlocks) (Object) this, block, x, y, z, iIcon, ForgeDirection.WEST)) {
+                    ci.cancel();
+                }
+                return;
+            }
+
+            String iconName = TextureKeyNormalizer.normalizeIconName(iIcon.getIconName());
+
+            if (CTMRenderEntry.renderPipeline()) {
+                ci.cancel();
+                return;
+            }
+
+            if (CTMRenderEntry.tryRender((RenderBlocks) (Object) this, blockAccess, block, x, y, z, iIcon, ForgeDirection.WEST)) {
+                ci.cancel();
+                return;
+            }
+            if (!Textures.contain(iconName)) return;
+            if (Textures.renderWorldBlock(
+                (RenderBlocks) ((Object) this),
+                blockAccess,
+                block,
+                x,
+                y,
+                z,
+                iIcon,
+                ForgeDirection.WEST)) {
                 ci.cancel();
             }
-            return;
-        }
-
-        String iconName = TextureKeyNormalizer.normalizeIconName(iIcon.getIconName());
-
-        if (CTMRenderEntry.renderPipeline()) {
-            ci.cancel();
-            return;
-        }
-
-        if (CTMRenderEntry
-            .tryRender((RenderBlocks) (Object) this, blockAccess, block, x, y, z, iIcon, ForgeDirection.WEST)) {
-            ci.cancel();
-            return;
-        }
-        if (!Textures.contain(iconName)) return;
-        if (Textures.renderWorldBlock(
-            (RenderBlocks) ((Object) this),
-            blockAccess,
-            block,
-            x,
-            y,
-            z,
-            iIcon,
-            ForgeDirection.WEST)) {
-            ci.cancel();
+        } finally {
+            if (ctx != null) {
+                ctx.popMethod();
+                ctx.setCurrentFace(null);
+                ctx.setCurrentIcon(null);
+                ctx.setIconName(null);
+            }
         }
     }
 
@@ -307,37 +341,44 @@ public abstract class MixinRenderBlocks {
             ctx.incrementFaceRenderCount(ForgeDirection.EAST);
         }
 
-        if (blockAccess == null) {
-            if (CTMRenderEntry
-                .tryRenderItemFace((RenderBlocks) (Object) this, block, x, y, z, iIcon, ForgeDirection.EAST)) {
+        try {
+            if (blockAccess == null) {
+                if (CTMRenderEntry.tryRenderItemFace((RenderBlocks) (Object) this, block, x, y, z, iIcon, ForgeDirection.EAST)) {
+                    ci.cancel();
+                }
+                return;
+            }
+
+            String iconName = TextureKeyNormalizer.normalizeIconName(iIcon.getIconName());
+
+            if (CTMRenderEntry.renderPipeline()) {
+                ci.cancel();
+                return;
+            }
+
+            if (CTMRenderEntry.tryRender((RenderBlocks) (Object) this, blockAccess, block, x, y, z, iIcon, ForgeDirection.EAST)) {
+                ci.cancel();
+                return;
+            }
+            if (!Textures.contain(iconName)) return;
+            if (Textures.renderWorldBlock(
+                (RenderBlocks) ((Object) this),
+                blockAccess,
+                block,
+                x,
+                y,
+                z,
+                iIcon,
+                ForgeDirection.EAST)) {
                 ci.cancel();
             }
-            return;
-        }
-
-        String iconName = TextureKeyNormalizer.normalizeIconName(iIcon.getIconName());
-
-        if (CTMRenderEntry.renderPipeline()) {
-            ci.cancel();
-            return;
-        }
-
-        if (CTMRenderEntry
-            .tryRender((RenderBlocks) (Object) this, blockAccess, block, x, y, z, iIcon, ForgeDirection.EAST)) {
-            ci.cancel();
-            return;
-        }
-        if (!Textures.contain(iconName)) return;
-        if (Textures.renderWorldBlock(
-            (RenderBlocks) ((Object) this),
-            blockAccess,
-            block,
-            x,
-            y,
-            z,
-            iIcon,
-            ForgeDirection.EAST)) {
-            ci.cancel();
+        } finally {
+            if (ctx != null) {
+                ctx.popMethod();
+                ctx.setCurrentFace(null);
+                ctx.setCurrentIcon(null);
+                ctx.setIconName(null);
+            }
         }
     }
 
@@ -454,66 +495,6 @@ public abstract class MixinRenderBlocks {
         ctx.setRenderBlocks(null);
         ctx.setBlock(null);
         ctx.setMeta(0);
-    }
-
-    @Inject(method = "renderFaceYPos", at = @At("RETURN"))
-    private void onRenderFaceYPosEnd(CallbackInfo ci) {
-        RenderInvocationContext ctx = RenderInvocationContextHolder.getIfAvailable();
-        if (ctx == null) return;
-
-        ctx.setCurrentFace(null);
-        ctx.setCurrentIcon(null);
-        ctx.popMethod();
-    }
-
-    @Inject(method = "renderFaceYNeg", at = @At("RETURN"))
-    private void onRenderFaceYNegEnd(CallbackInfo ci) {
-        RenderInvocationContext ctx = RenderInvocationContextHolder.getIfAvailable();
-        if (ctx == null) return;
-
-        ctx.setCurrentFace(null);
-        ctx.setCurrentIcon(null);
-        ctx.popMethod();
-    }
-
-    @Inject(method = "renderFaceXPos", at = @At("RETURN"))
-    private void onRenderFaceXPosEnd(CallbackInfo ci) {
-        RenderInvocationContext ctx = RenderInvocationContextHolder.getIfAvailable();
-        if (ctx == null) return;
-
-        ctx.setCurrentFace(null);
-        ctx.setCurrentIcon(null);
-        ctx.popMethod();
-    }
-
-    @Inject(method = "renderFaceXNeg", at = @At("RETURN"))
-    private void onRenderFaceXNegEnd(CallbackInfo ci) {
-        RenderInvocationContext ctx = RenderInvocationContextHolder.getIfAvailable();
-        if (ctx == null) return;
-
-        ctx.setCurrentFace(null);
-        ctx.setCurrentIcon(null);
-        ctx.popMethod();
-    }
-
-    @Inject(method = "renderFaceZPos", at = @At("RETURN"))
-    private void onRenderFaceZPosEnd(CallbackInfo ci) {
-        RenderInvocationContext ctx = RenderInvocationContextHolder.getIfAvailable();
-        if (ctx == null) return;
-
-        ctx.setCurrentFace(null);
-        ctx.setCurrentIcon(null);
-        ctx.popMethod();
-    }
-
-    @Inject(method = "renderFaceZNeg", at = @At("RETURN"))
-    private void onRenderFaceZNegEnd(CallbackInfo ci) {
-        RenderInvocationContext ctx = RenderInvocationContextHolder.getIfAvailable();
-        if (ctx == null) return;
-
-        ctx.setCurrentFace(null);
-        ctx.setCurrentIcon(null);
-        ctx.popMethod();
     }
 
 }
