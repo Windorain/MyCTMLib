@@ -18,60 +18,38 @@ public final class ConnectingTilePipeline {
     private ConnectingTilePipeline() {}
 
     public static void execute(RenderContext ctx) {
-        ctx.trace("=== ConnectingTilePipeline START ===");
-        ctx.trace("Texture: key=" + ctx.getTextureKey());
+        ctx.trace(() -> "=== ConnectingTilePipeline START ===");
+        ctx.trace(() -> "Texture: key=" + ctx.getTextureKey());
 
         IconDomain.resolve(ctx);
-        ctx.trace(
-            "IconDomain: icon=[" + formatDouble(ctx.getIconMinU())
-                + ","
-                + formatDouble(ctx.getIconMaxU())
-                + ","
-                + formatDouble(ctx.getIconMinV())
-                + ","
-                + formatDouble(ctx.getIconMaxV())
-                + "]"
-                + ", grid="
-                + ctx.getGridW()
-                + "x"
-                + ctx.getGridH());
+        ctx.trace(() -> "IconDomain: icon=[" + formatDouble(ctx.getIconMinU())
+            + "," + formatDouble(ctx.getIconMaxU())
+            + "," + formatDouble(ctx.getIconMinV())
+            + "," + formatDouble(ctx.getIconMaxV())
+            + "], grid=" + ctx.getGridW() + "x" + ctx.getGridH());
 
         TileDomain.computeConnecting(ctx);
-        ctx.trace(
-            "TileDomain: mask=0x" + String
-                .format("%02X", ctx.getConnectionMask()) + ", tile=(" + ctx.getTileX() + "," + ctx.getTileY() + ")");
+        ctx.trace(() -> "TileDomain: mask=0x" + String.format("%02X", ctx.getConnectionMask())
+            + ", tile=(" + ctx.getTileX() + "," + ctx.getTileY() + ")");
 
         GeometryDomain.fromElement(ctx);
-        ctx.trace(
-            "GeometryDomain: relMin=[" + formatDouble(ctx.getDrawRelMinX())
-                + ","
-                + formatDouble(ctx.getDrawRelMinY())
-                + ","
-                + formatDouble(ctx.getDrawRelMinZ())
-                + "]"
-                + ", relMax=["
-                + formatDouble(ctx.getDrawRelMaxX())
-                + ","
-                + formatDouble(ctx.getDrawRelMaxY())
-                + ","
-                + formatDouble(ctx.getDrawRelMaxZ())
-                + "]");
+        ctx.trace(() -> "GeometryDomain: relMin=[" + formatDouble(ctx.getDrawRelMinX())
+            + "," + formatDouble(ctx.getDrawRelMinY())
+            + "," + formatDouble(ctx.getDrawRelMinZ())
+            + "], relMax=[" + formatDouble(ctx.getDrawRelMaxX())
+            + "," + formatDouble(ctx.getDrawRelMaxY())
+            + "," + formatDouble(ctx.getDrawRelMaxZ()) + "]");
 
         UVDomain.calc(ctx);
-        ctx.trace(
-            "UVDomain: drawUV=[" + formatDouble(ctx.getDrawMinU())
-                + ","
-                + formatDouble(ctx.getDrawMaxU())
-                + ","
-                + formatDouble(ctx.getDrawMinV())
-                + ","
-                + formatDouble(ctx.getDrawMaxV())
-                + "]");
+        ctx.trace(() -> "UVDomain: drawUV=[" + formatDouble(ctx.getDrawMinU())
+            + "," + formatDouble(ctx.getDrawMaxU())
+            + "," + formatDouble(ctx.getDrawMinV())
+            + "," + formatDouble(ctx.getDrawMaxV()) + "]");
 
         PositionDomain.calc(ctx);
-        ctx.trace(
-            "PositionDomain: world=[" + formatDouble(
-                ctx.getWorldX()) + "," + formatDouble(ctx.getWorldY()) + "," + formatDouble(ctx.getWorldZ()) + "]");
+        ctx.trace(() -> "PositionDomain: world=[" + formatDouble(ctx.getWorldX())
+            + "," + formatDouble(ctx.getWorldY())
+            + "," + formatDouble(ctx.getWorldZ()) + "]");
 
         if (ctx.isItemRender()) {
             ctx.trace("Shading: item render (full brightness, uniform color)");
@@ -92,9 +70,9 @@ public final class ConnectingTilePipeline {
 
         if (!ctx.isPipelineFailed()) {
             ctx.setDrewAny(true);
-            ctx.trace("=== ConnectingTilePipeline COMPLETE (drewAny=true) ===");
+            ctx.trace(() -> "=== ConnectingTilePipeline COMPLETE (drewAny=true) ===");
         } else {
-            ctx.trace("=== ConnectingTilePipeline COMPLETE (failed) ===");
+            ctx.trace(() -> "=== ConnectingTilePipeline COMPLETE (failed) ===");
         }
     }
 

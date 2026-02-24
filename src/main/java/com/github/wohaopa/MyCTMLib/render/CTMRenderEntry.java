@@ -698,12 +698,10 @@ public final class CTMRenderEntry {
      * </p>
      */
     public static boolean renderPipeline() {
-        RenderContext context = RenderContext.create();
+        RenderContext context = RenderContext.get();
 
-        // 只在 isDebug()=true 时创建和填充 trace（debugMode + 光标方块）
+        // 只在 isDebug()=true 时记录 debug 信息（debugMode + 光标方块）
         if (context.isDebug()) {
-            context.setDebugTrace(new PipelineDebugTrace());
-
             PipelineDebugTrace trace = context.getDebugTrace();
             trace.addStep("Position: " + (int) context.getX() + ", " + (int) context.getY() + ", " + (int) context.getZ());
             trace.addStep("Face: " + context.getFace());
@@ -715,12 +713,8 @@ public final class CTMRenderEntry {
             trace.addStep("New pipeline drewAny: " + context.isDrewAny());
 
             // 填充技术细节到 trace，供 HUD 显示
-            if (context.getConnectionMask() != null) {
-                trace.setConnectionBits(context.getConnectionMask());
-            }
-            if (context.getTileX() != null && context.getTileY() != null) {
-                trace.setTilePos(context.getTileX(), context.getTileY());
-            }
+            trace.setConnectionBits(context.getConnectionMask());
+            trace.setTilePos(context.getTileX(), context.getTileY());
             if (context.getDrawIcon() != null) {
                 trace.setDrawSpriteInfo(
                     context.getDrawIcon()
@@ -734,16 +728,9 @@ public final class CTMRenderEntry {
                 trace.setTexRegTexMapSync(true, context.getTextureKey());
                 trace.setTextureKey(context.getTextureKey());
             }
-            if (context.getIconMinU() != null && context.getIconMaxU() != null
-                && context.getIconMinV() != null
-                && context.getIconMaxV() != null) {
-                trace.setIconUV(context.getIconMinU(), context.getIconMaxU(), context.getIconMinV(), context.getIconMaxV());
-            }
-            // drawUV 总是有值（默认为 0.0-1.0），直接设置
+            trace.setIconUV(context.getIconMinU(), context.getIconMaxU(), context.getIconMinV(), context.getIconMaxV());
             trace.setDrawUV(context.getDrawMinU(), context.getDrawMaxU(), context.getDrawMinV(), context.getDrawMaxV());
-            if (context.getGridW() != null && context.getGridH() != null) {
-                trace.setGridInfo(context.getGridW(), context.getGridH());
-            }
+            trace.setGridInfo(context.getGridW(), context.getGridH());
 
             ForgeDirection face = context.getFace();
             RenderPipelineDebugCache.record((int) context.getX(), (int) context.getY(), (int) context.getZ(), face, trace);

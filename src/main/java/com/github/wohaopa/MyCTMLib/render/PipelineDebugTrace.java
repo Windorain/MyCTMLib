@@ -44,6 +44,23 @@ public final class PipelineDebugTrace {
 
     public PipelineDebugTrace() {}
 
+    public void clear() {
+        steps.clear();
+        logs.clear();
+        degradationReason = null;
+        predicateUsed = null;
+        tilePos = null;
+        connectionBits = null;
+        texRegTexMapSynced = null;
+        texRegGetIconLookupKey = null;
+        drawSpriteName = null;
+        drawSpriteLoaded = null;
+        iconUV = null;
+        drawUV = null;
+        gridInfo = null;
+        textureKey = null;
+    }
+
     // ========== 决策步骤（保持原有逻辑） ==========
     public void addStep(String step) {
         if (step != null && !step.isEmpty()) {

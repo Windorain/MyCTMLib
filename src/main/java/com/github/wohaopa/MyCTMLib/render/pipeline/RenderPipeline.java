@@ -23,32 +23,32 @@ import com.github.wohaopa.MyCTMLib.texture.TextureTypeData;
 public class RenderPipeline {
 
     public boolean execute(RenderContext ctx) {
-        ctx.info("=== RenderPipeline Started ===");
-        ctx.debug("INIT: Resetting context");
+        ctx.info(() -> "=== RenderPipeline Started ===");
+        ctx.debug(() -> "INIT: Resetting context");
         ctx.resetPipelineFailed();
         ctx.setDrewAny(false);
 
         RenderBranch branch = decideRenderBranch(ctx);
         ctx.setRenderBranch(branch);
-        ctx.info("DECIDE: Using branch: " + branch);
+        ctx.info(() -> "DECIDE: Using branch: " + branch);
 
-        ctx.debug("RENDER: Starting render");
+        ctx.debug(() -> "RENDER: Starting render");
         switch (branch) {
             case MODEL_ELEMENTS -> executeModelBranch(ctx);
             case TEXTURE_RELOC -> executeTextureRelocBranch(ctx);
             case LEGACY -> executeLegacyBranch(ctx);
             case ITEM -> executeItemBranch(ctx);
             case ENTITY, NONE -> {
-                ctx.debug("RENDER: Skipping (ENTITY/NONE branch)");
+                ctx.debug(() -> "RENDER: Skipping (ENTITY/NONE branch)");
                 ctx.setDrewAny(false);
             }
         }
 
-        ctx.info("COMPLETE: drewAny=" + ctx.isDrewAny());
+        ctx.info(() -> "COMPLETE: drewAny=" + ctx.isDrewAny());
 
         boolean drewAny = ctx.isDrewAny();
         if (!drewAny) {
-            ctx.warn("New pipeline failed, falling back to tryRender()");
+            ctx.warn(() -> "New pipeline failed, falling back to tryRender()");
             drewAny = CTMRenderEntry.tryRender(
                 ctx.getRenderBlocks(),
                 ctx.getBlockAccess(),
@@ -58,44 +58,43 @@ public class RenderPipeline {
                 ctx.getZ(),
                 ctx.getOriginalIcon(),
                 ctx.getFace());
-            ctx.info("tryRender() result: " + drewAny);
         }
 
         return drewAny;
     }
 
     private RenderBranch decideRenderBranch(RenderContext ctx) {
-        ctx.trace("DECIDE: Checking render branch");
+        ctx.trace(() -> "DECIDE: Checking render branch");
 
         if (ctx.isItemRender()) {
-            ctx.debug("DECIDE: Item render detected");
+            ctx.debug(() -> "DECIDE: Item render detected");
             return RenderBranch.ITEM;
         }
 
         String modelId = ctx.getModelId();
         if (modelId != null) {
-            ctx.debug("DECIDE: Model branch candidate (modelId=" + modelId + ")");
+            ctx.debug(() -> "DECIDE: Model branch candidate (modelId=" + modelId + ")");
             if (!ctx.getElements()
                 .isEmpty()) {
-                ctx.info("DECIDE: Selected MODEL_ELEMENTS branch");
+                ctx.info(() -> "DECIDE: Selected MODEL_ELEMENTS branch");
                 return RenderBranch.MODEL_ELEMENTS;
             } else {
-                ctx.debug("DECIDE: Model branch has no elements");
+                ctx.debug(() -> "DECIDE: Model branch has no elements");
             }
         }
 
         String iconName = ctx.getIconName();
         if (shouldUseTextureReloc(iconName)) {
-            ctx.debug("DECIDE: Selected TEXTURE_RELOC branch");
+            ctx.debug(() -> "DECIDE: Selected TEXTURE_RELOC branch");
             return RenderBranch.TEXTURE_RELOC;
         }
 
         if (shouldUseLegacy(iconName)) {
-            ctx.debug("DECIDE: Selected LEGACY branch");
+            ctx.debug(() -> "DECIDE: Selected LEGACY branch");
             return RenderBranch.LEGACY;
         }
 
-        ctx.debug("DECIDE: No matching branch (NONE)");
+        ctx.debug(() -> "DECIDE: No matching branch (NONE)");
         return RenderBranch.NONE;
     }
 
@@ -122,11 +121,8 @@ public class RenderPipeline {
     }
 
     private void executeModelBranch(RenderContext ctx) {
-        ctx.debug(
-            "MODEL: Looping through " + ctx.getElements()
-                .size() + " elements");
+        ctx.debug(() -> "MODEL: Looping through " + ctx.getElements().size() + " elements");
 
-        // 在循环外计算 connection predicate（所有 element 复用）
         ConnectionPredicate predicate = PredicateRegistry.defaultPredicate();
         if (!ctx.getElements()
             .isEmpty()) {
@@ -142,23 +138,24 @@ public class RenderPipeline {
             }
         }
         ctx.setConnectionPredicate(predicate);
-        ctx.trace("MODEL: Using predicate: " + PredicateRegistry.getPredicateDebugName(predicate, null));
+        ctx.trace(() -> "MODEL: Using predicate: " + PredicateRegistry.getPredicateDebugName(ctx.getConnectionPredicate(), null));
 
         int index = 0;
         for (ModelElement element : ctx.getElements()) {
             ctx.setCurrentElement(element);
-            ctx.setCurrentElementIndex(index++);
+            final int currentIndex = index++;
+            ctx.setCurrentElementIndex(currentIndex);
             ctx.resetPipelineFailed();
-            ctx.trace("MODEL: Rendering element " + index);
+            ctx.trace(() -> "MODEL: Rendering element " + currentIndex);
 
             ModelFace faceData = element.getFace(ctx.getFace());
             if (faceData == null) {
-                ctx.trace("RENDER: No face data for current direction");
+                ctx.trace(() -> "RENDER: No face data for current direction");
                 continue;
             }
 
             if (faceData.getTextureKey() == null) {
-                ctx.trace("RENDER: Face has no texture key");
+                ctx.trace(() -> "RENDER: Face has no texture key");
                 continue;
             }
 
@@ -167,7 +164,7 @@ public class RenderPipeline {
                 ctx.getModelData()
                     .getTextures());
             if (texturePath == null) {
-                ctx.warn("RENDER: Could not resolve texture path for key: " + faceData.getTextureKey());
+                ctx.warn(() -> "RENDER: Could not resolve texture path for key: " + faceData.getTextureKey());
                 continue;
             }
 
@@ -175,45 +172,41 @@ public class RenderPipeline {
             String textureKey = com.github.wohaopa.MyCTMLib.texture.TextureKeyNormalizer
                 .toCanonicalTextureKey(domain, texturePath);
             ctx.setTextureKey(textureKey);
-            ctx.debug("RENDER: Resolved texture key: " + textureKey);
+            ctx.debug(() -> "RENDER: Resolved texture key: " + textureKey);
 
             TextureTypeData data = CTMRenderEntry.getConnectingData(textureKey);
             ctx.setTextureData(data);
 
             if (data == null) {
-                ctx.warn("RENDER: No texture data found for key: " + textureKey);
+                ctx.warn(() -> "RENDER: No texture data found for key: " + textureKey);
                 continue;
             }
 
-            ctx.trace(
-                "RENDER: Texture parsed successfully: " + data.getClass()
-                    .getSimpleName());
+            ctx.trace(() -> "RENDER: Texture parsed successfully: " + data.getClass().getSimpleName());
 
             if (data instanceof BaseTextureData btd) {
                 ctx.setBaseData(btd);
-                ctx.debug("RENDER: BaseTexture pipeline");
+                ctx.debug(() -> "RENDER: BaseTexture pipeline");
                 BaseTilePipeline.execute(ctx);
             } else if (data instanceof RandomTextureData rtd) {
-                ctx.debug("RENDER: RandomTexture pipeline");
+                ctx.debug(() -> "RENDER: RandomTexture pipeline");
                 RandomTilePipeline.execute(ctx);
             } else if (data instanceof ConnectingTextureData ctd) {
-                ctx.debug("RENDER: ConnectingTexture pipeline");
+                ctx.debug(() -> "RENDER: ConnectingTexture pipeline");
                 ConnectingTilePipeline.execute(ctx);
             } else {
-                ctx.debug(
-                    "RENDER: Unknown texture data type: " + (data != null ? data.getClass()
-                        .getSimpleName() : "null"));
+                ctx.debug(() -> "RENDER: Unknown texture data type: " + (data != null ? data.getClass().getSimpleName() : "null"));
                 ctx.failPipeline("Unknown texture data type: " + data);
             }
 
             if (ctx.isPipelineFailed()) {
-                ctx.debug("MODEL: Element " + index + " failed, continuing to next");
+                ctx.debug(() -> "MODEL: Element " + currentIndex + " failed, continuing to next");
             } else {
-                ctx.trace("MODEL: Element " + index + " rendered successfully");
+                ctx.trace(() -> "MODEL: Element " + currentIndex + " rendered successfully");
             }
         }
 
-        ctx.debug("MODEL: Completed processing all elements");
+        ctx.debug(() -> "MODEL: Completed processing all elements");
     }
 
     private String extractDomain(String modelId) {
@@ -224,11 +217,11 @@ public class RenderPipeline {
     }
 
     private void executeTextureRelocBranch(RenderContext ctx) {
-        ctx.info("TEXTURE_RELOC: Rendering with texture relocation");
+        ctx.info(() -> "TEXTURE_RELOC: Rendering with texture relocation");
     }
 
     private void executeLegacyBranch(RenderContext ctx) {
-        ctx.info("LEGACY: Using legacy renderer");
+        ctx.info(() -> "LEGACY: Using legacy renderer");
         boolean result = Textures.renderWorldBlock(
             ctx.getRenderBlocks(),
             ctx.getBlockAccess(),
@@ -239,11 +232,11 @@ public class RenderPipeline {
             ctx.getOriginalIcon(),
             ctx.getFace());
         ctx.setDrewAny(result);
-        ctx.debug("LEGACY: Result=" + result);
+        ctx.debug(() -> "LEGACY: Result=" + result);
     }
 
     private void executeItemBranch(RenderContext ctx) {
-        ctx.info("ITEM: Rendering item face");
+        ctx.info(() -> "ITEM: Rendering item face");
         BaseTilePipeline.execute(ctx);
     }
 }

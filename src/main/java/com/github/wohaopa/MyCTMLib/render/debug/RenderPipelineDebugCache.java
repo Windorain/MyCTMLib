@@ -40,7 +40,7 @@ public class RenderPipelineDebugCache {
      * -1 表示无缓存
      */
     private static volatile long currentKey = -1;
-    
+
     /**
      * 当前方块的 6 个面的 trace 数据
      */
@@ -59,21 +59,21 @@ public class RenderPipelineDebugCache {
      * <li>只保存最新光标方块的 trace，其他方块的 trace 自动丢弃</li>
      * </ul>
      * 
-     * @param x 方块 X 坐标
-     * @param y 方块 Y 坐标
-     * @param z 方块 Z 坐标
-     * @param face 面方向
+     * @param x     方块 X 坐标
+     * @param y     方块 Y 坐标
+     * @param z     方块 Z 坐标
+     * @param face  面方向
      * @param trace 调试轨迹
      */
     public static void record(int x, int y, int z, ForgeDirection face, PipelineDebugTrace trace) {
         long key = getKey(x, y, z);
-        
+
         // 检查是否需要更新当前方块
         if (key != currentKey || currentTraces == null) {
             currentKey = key;
             currentTraces = new EnumMap<>(ForgeDirection.class);
         }
-        
+
         currentTraces.put(face, trace);
     }
 
@@ -84,20 +84,20 @@ public class RenderPipelineDebugCache {
      * <strong>注意：</strong>只返回当前光标方块的 trace，其他方块返回 null
      * </p>
      * 
-     * @param x 方块 X 坐标
-     * @param y 方块 Y 坐标
-     * @param z 方块 Z 坐标
+     * @param x    方块 X 坐标
+     * @param y    方块 Y 坐标
+     * @param z    方块 Z 坐标
      * @param face 面方向
      * @return 调试轨迹，如果坐标不匹配或无缓存则返回 null
      */
     public static PipelineDebugTrace get(int x, int y, int z, ForgeDirection face) {
         long key = getKey(x, y, z);
-        
+
         // 只返回当前光标方块的 trace
         if (key != currentKey) {
             return null;
         }
-        
+
         return currentTraces != null ? currentTraces.get(face) : null;
     }
 
@@ -118,16 +118,16 @@ public class RenderPipelineDebugCache {
         if (currentKey == -1) {
             return null;
         }
-        
+
         int x = (int) ((currentKey >>> 38) & 0x7FFFFFFFL);
         int y = (int) ((currentKey >>> 26) & 0xFFFL);
         int z = (int) (currentKey & 0x3FFFFFFL);
-        
+
         // 处理符号扩展
         if ((x & 0x40000000) != 0) x |= 0x80000000;
         if ((y & 0x2000) != 0) y |= 0xFFFFF000;
         if ((z & 0x20000000) != 0) z |= 0xC0000000;
-        
+
         return new int[] { x, y, z };
     }
 
@@ -137,6 +137,7 @@ public class RenderPipelineDebugCache {
      * <p>
      * 位运算布局：
      * </p>
+     * 
      * <pre>
      * bit 63-38: X 坐标 (26 bits, signed)
      * bit 37-26: Y 坐标 (12 bits, signed)
