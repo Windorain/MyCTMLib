@@ -66,9 +66,7 @@ public class RenderPipeline {
             return RenderBranch.ITEM;
         }
 
-        if (ModelDomain.findModelId(ctx) 
-            && ModelDomain.findModelData(ctx) 
-            && ModelDomain.findElements(ctx)) {
+        if (ModelDomain.findModelId(ctx) && ModelDomain.findModelData(ctx) && ModelDomain.findElements(ctx)) {
             return RenderBranch.MODEL_ELEMENTS;
         }
 
@@ -89,15 +87,21 @@ public class RenderPipeline {
     }
 
     private void executeModelBranch(RenderContext ctx) {
-        ctx.debug(() -> "MODEL: Looping through " + ctx.getElements().size() + " elements");
+        ctx.debug(
+            () -> "MODEL: Looping through " + ctx.getElements()
+                .size() + " elements");
 
         ConnectionPredicate predicate = PredicateRegistry.defaultPredicate();
-        if (!ctx.getElements().isEmpty()) {
-            ModelFace firstFace = ctx.getElements().get(0).getFace(ctx.getFace());
+        if (!ctx.getElements()
+            .isEmpty()) {
+            ModelFace firstFace = ctx.getElements()
+                .get(0)
+                .getFace(ctx.getFace());
             if (firstFace != null && firstFace.getConnectionKey() != null) {
                 ConnectionPredicate p = PredicateRegistry.getPredicate(
                     firstFace.getConnectionKey(),
-                    ctx.getModelData().getConnections());
+                    ctx.getModelData()
+                        .getConnections());
                 if (p != null) predicate = p;
             }
         }

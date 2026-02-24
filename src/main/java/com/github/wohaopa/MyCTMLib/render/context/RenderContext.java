@@ -30,8 +30,7 @@ import com.github.wohaopa.MyCTMLib.texture.TextureTypeData;
 public class RenderContext {
 
     // ========== ThreadLocal 单例 ==========
-    private static final ThreadLocal<RenderContext> THREAD_LOCAL =
-        ThreadLocal.withInitial(RenderContext::new);
+    private static final ThreadLocal<RenderContext> THREAD_LOCAL = ThreadLocal.withInitial(RenderContext::new);
 
     public static RenderContext get() {
         RenderContext ctx = THREAD_LOCAL.get();
@@ -675,9 +674,7 @@ public class RenderContext {
         int focusY = mc.objectMouseOver.blockY;
         int focusZ = mc.objectMouseOver.blockZ;
 
-        return (int) getX() == focusX
-            && (int) getY() == focusY
-            && (int) getZ() == focusZ;
+        return (int) getX() == focusX && (int) getY() == focusY && (int) getZ() == focusZ;
     }
 
     // ========== Debug 日志（支持懒加载） ==========

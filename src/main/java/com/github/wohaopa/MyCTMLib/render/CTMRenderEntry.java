@@ -5,14 +5,14 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import net.minecraft.block.Block;
 import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.util.IIcon;
 import net.minecraft.world.IBlockAccess;
 import net.minecraftforge.common.util.ForgeDirection;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import com.github.wohaopa.MyCTMLib.Textures;
 import com.github.wohaopa.MyCTMLib.blockstate.BlockStateRegistry;
@@ -23,7 +23,6 @@ import com.github.wohaopa.MyCTMLib.model.ModelRegistry;
 import com.github.wohaopa.MyCTMLib.predicate.ConnectionPredicate;
 import com.github.wohaopa.MyCTMLib.predicate.PredicateRegistry;
 import com.github.wohaopa.MyCTMLib.render.context.RenderContext;
-import com.github.wohaopa.MyCTMLib.render.context.RenderInvocationContext;
 import com.github.wohaopa.MyCTMLib.render.debug.DumpUtil;
 import com.github.wohaopa.MyCTMLib.render.debug.RenderPipelineDebugCache;
 import com.github.wohaopa.MyCTMLib.render.pipeline.RenderPipeline;
@@ -712,7 +711,8 @@ public final class CTMRenderEntry {
             // 只在 isDebug()=true 时记录 debug 信息（debugMode + 光标方块）
             if (context.isDebug()) {
                 PipelineDebugTrace trace = context.getDebugTrace();
-                trace.addStep("Position: " + (int) context.getX() + ", " + (int) context.getY() + ", " + (int) context.getZ());
+                trace.addStep(
+                    "Position: " + (int) context.getX() + ", " + (int) context.getY() + ", " + (int) context.getZ());
                 trace.addStep("Face: " + context.getFace());
                 trace.addStep("Icon: " + context.getOriginalIcon());
 
@@ -737,12 +737,21 @@ public final class CTMRenderEntry {
                     trace.setTexRegTexMapSync(true, context.getTextureKey());
                     trace.setTextureKey(context.getTextureKey());
                 }
-                trace.setIconUV(context.getIconMinU(), context.getIconMaxU(), context.getIconMinV(), context.getIconMaxV());
-                trace.setDrawUV(context.getDrawMinU(), context.getDrawMaxU(), context.getDrawMinV(), context.getDrawMaxV());
+                trace.setIconUV(
+                    context.getIconMinU(),
+                    context.getIconMaxU(),
+                    context.getIconMinV(),
+                    context.getIconMaxV());
+                trace.setDrawUV(
+                    context.getDrawMinU(),
+                    context.getDrawMaxU(),
+                    context.getDrawMinV(),
+                    context.getDrawMaxV());
                 trace.setGridInfo(context.getGridW(), context.getGridH());
 
                 ForgeDirection face = context.getFace();
-                RenderPipelineDebugCache.record((int) context.getX(), (int) context.getY(), (int) context.getZ(), face, trace);
+                RenderPipelineDebugCache
+                    .record((int) context.getX(), (int) context.getY(), (int) context.getZ(), face, trace);
 
                 return result;
             } else {
@@ -752,14 +761,14 @@ public final class CTMRenderEntry {
         } catch (Throwable t) {
             // 诊断日志：打印两个 Context 的完整状态
             logContextState(context, t);
-            
+
             // 生成 JSON 诊断文件
             File dumpDir = new File("run/client/diagnostic_dumps");
             String dumpPath = DumpUtil.dumpDiagnostic(context, t, dumpDir);
             if (dumpPath != null) {
                 LOGGER.error("Diagnostic dump written to: {}", dumpPath);
             }
-            
+
             throw t;
         }
     }
@@ -768,8 +777,10 @@ public final class CTMRenderEntry {
         LOGGER.error("============================================================");
         LOGGER.error("MyCTMLib RenderPipeline Exception Caught");
         LOGGER.error("============================================================");
-        LOGGER.error("Exception Type: {}", error.getClass()
-            .getName());
+        LOGGER.error(
+            "Exception Type: {}",
+            error.getClass()
+                .getName());
         LOGGER.error("Exception Message: {}", error.getMessage());
         LOGGER.error("");
 
@@ -823,10 +834,14 @@ public final class CTMRenderEntry {
 
         // 线程信息
         LOGGER.error("=== Thread Info ===");
-        LOGGER.error("  Thread Name: {}", Thread.currentThread()
-            .getName());
-        LOGGER.error("  Thread ID: {}", Thread.currentThread()
-            .getId());
+        LOGGER.error(
+            "  Thread Name: {}",
+            Thread.currentThread()
+                .getName());
+        LOGGER.error(
+            "  Thread ID: {}",
+            Thread.currentThread()
+                .getId());
         LOGGER.error("");
 
         LOGGER.error("============================================================");

@@ -6,7 +6,6 @@ import com.github.wohaopa.MyCTMLib.model.ModelElement;
 import com.github.wohaopa.MyCTMLib.model.ModelFace;
 import com.github.wohaopa.MyCTMLib.render.CTMRenderEntry;
 import com.github.wohaopa.MyCTMLib.render.context.RenderContext;
-import com.github.wohaopa.MyCTMLib.texture.BaseTextureData;
 import com.github.wohaopa.MyCTMLib.texture.ConnectingTextureData;
 import com.github.wohaopa.MyCTMLib.texture.RandomTextureData;
 import com.github.wohaopa.MyCTMLib.texture.TextureKeyNormalizer;
@@ -28,63 +27,69 @@ public final class TextureDomain {
 
     /**
      * 解析材质数据（per-element）
+     * 
      * @return true 如果解析成功
      */
     public static boolean resolveForElement(RenderContext ctx) {
         ModelElement element = ctx.getCurrentElement();
         ModelFace face = element.getFace(ctx.getFace());
-        
+
         if (face == null) return false;
         if (face.getTextureKey() == null) return false;
-        
+
         // Step 1: 解析 textureKey（处理 # 引用）
-        String texturePath = resolveTexturePath(face.getTextureKey(), ctx.getModelData().getTextures());
+        String texturePath = resolveTexturePath(
+            face.getTextureKey(),
+            ctx.getModelData()
+                .getTextures());
         if (texturePath == null) return false;
-        
+
         // Step 2: 转为 canonical key
         String domain = extractDomain(ctx.getModelId());
         String textureKey = TextureKeyNormalizer.toCanonicalTextureKey(domain, texturePath);
         if (textureKey == null) return false;
-        
+
         ctx.setTextureKey(textureKey);
-        
+
         // Step 3: 查询 textureData
         TextureTypeData textureData = CTMRenderEntry.getConnectingData(textureKey);
         if (textureData == null) return false;
-        
+
         ctx.setTextureData(textureData);
-        
+
         // Step 4: 查询 icon
-        net.minecraft.util.IIcon icon = TextureRegistry.getInstance().getIcon(textureKey);
+        net.minecraft.util.IIcon icon = TextureRegistry.getInstance()
+            .getIcon(textureKey);
         if (icon == null) icon = ctx.getOriginalIcon();
-        
+
         ctx.setDrawIcon(icon);
-        
+
         // Step 5: 设置 icon UV
         ctx.setIconMinU(icon.getMinU());
         ctx.setIconMaxU(icon.getMaxU());
         ctx.setIconMinV(icon.getMinV());
         ctx.setIconMaxV(icon.getMaxV());
-        
+
         // Step 6: 计算 grid
         int[] gridSize = calculateGridSize(textureData);
         ctx.setGridW(gridSize[0]);
         ctx.setGridH(gridSize[1]);
-        
+
         return true;
     }
 
     /**
      * 查找重定向纹理（恒等 + _ctm 后缀）
+     * 
      * @return true 如果找到重定向纹理
      */
     public static boolean findTextureReloc(RenderContext ctx) {
         String iconName = ctx.getIconName();
         if (iconName == null) return false;
-        
+
         // 1. 恒等查找
         TextureTypeData data = CTMRenderEntry.getConnectingData(iconName);
-        
+
         // 2. _ctm 后缀查找
         if (data == null) {
             String relocKey = iconName + "_ctm";
@@ -97,22 +102,23 @@ public final class TextureDomain {
         } else {
             ctx.setTextureKey(iconName);
         }
-        
+
         // 设置公共字段
         ctx.setTextureData(data);
-        
-        net.minecraft.util.IIcon icon = TextureRegistry.getInstance().getIcon(iconName);
+
+        net.minecraft.util.IIcon icon = TextureRegistry.getInstance()
+            .getIcon(iconName);
         if (icon == null) icon = ctx.getOriginalIcon();
         ctx.setDrawIcon(icon);
         ctx.setIconMinU(icon.getMinU());
         ctx.setIconMaxU(icon.getMaxU());
         ctx.setIconMinV(icon.getMinV());
         ctx.setIconMaxV(icon.getMaxV());
-        
+
         int[] gridSize = calculateGridSize(data);
         ctx.setGridW(gridSize[0]);
         ctx.setGridH(gridSize[1]);
-        
+
         return true;
     }
 
