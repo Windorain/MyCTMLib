@@ -759,6 +759,10 @@ public class RenderContext {
         return pipelineFailed;
     }
 
+    public String getFailureReason() {
+        return failureReason;
+    }
+
     public void resetPipelineFailed() {
         pipelineFailed = false;
         failureReason = null;

@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import net.minecraft.block.Block;
 import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.util.IIcon;
@@ -19,6 +22,7 @@ import com.github.wohaopa.MyCTMLib.model.ModelRegistry;
 import com.github.wohaopa.MyCTMLib.predicate.ConnectionPredicate;
 import com.github.wohaopa.MyCTMLib.predicate.PredicateRegistry;
 import com.github.wohaopa.MyCTMLib.render.context.RenderContext;
+import com.github.wohaopa.MyCTMLib.render.context.RenderInvocationContext;
 import com.github.wohaopa.MyCTMLib.render.debug.RenderPipelineDebugCache;
 import com.github.wohaopa.MyCTMLib.render.pipeline.RenderPipeline;
 import com.github.wohaopa.MyCTMLib.texture.BaseTextureData;
@@ -40,6 +44,8 @@ import cpw.mods.fml.relauncher.SideOnly;
  */
 @SideOnly(Side.CLIENT)
 public final class CTMRenderEntry {
+
+    private static final Logger LOGGER = LogManager.getLogger("MyCTMLib");
 
     /**
      * 尝试用新管线渲染该面。若应由新管线处理则绘制并返回 true，否则返回 false。
@@ -700,46 +706,126 @@ public final class CTMRenderEntry {
     public static boolean renderPipeline() {
         RenderContext context = RenderContext.get();
 
-        // 只在 isDebug()=true 时记录 debug 信息（debugMode + 光标方块）
-        if (context.isDebug()) {
-            PipelineDebugTrace trace = context.getDebugTrace();
-            trace.addStep("Position: " + (int) context.getX() + ", " + (int) context.getY() + ", " + (int) context.getZ());
-            trace.addStep("Face: " + context.getFace());
-            trace.addStep("Icon: " + context.getOriginalIcon());
+        try {
+            // 只在 isDebug()=true 时记录 debug 信息（debugMode + 光标方块）
+            if (context.isDebug()) {
+                PipelineDebugTrace trace = context.getDebugTrace();
+                trace.addStep("Position: " + (int) context.getX() + ", " + (int) context.getY() + ", " + (int) context.getZ());
+                trace.addStep("Face: " + context.getFace());
+                trace.addStep("Icon: " + context.getOriginalIcon());
 
-            boolean result = PIPELINE.execute(context);
+                boolean result = PIPELINE.execute(context);
 
-            trace.addStep("Branch: " + context.getRenderBranch());
-            trace.addStep("New pipeline drewAny: " + context.isDrewAny());
+                trace.addStep("Branch: " + context.getRenderBranch());
+                trace.addStep("New pipeline drewAny: " + context.isDrewAny());
 
-            // 填充技术细节到 trace，供 HUD 显示
-            trace.setConnectionBits(context.getConnectionMask());
-            trace.setTilePos(context.getTileX(), context.getTileY());
-            if (context.getDrawIcon() != null) {
-                trace.setDrawSpriteInfo(
-                    context.getDrawIcon()
-                        .getIconName(),
-                    context.getDrawIcon()
-                        .getIconWidth(),
-                    context.getDrawIcon()
-                        .getIconHeight());
+                // 填充技术细节到 trace，供 HUD 显示
+                trace.setConnectionBits(context.getConnectionMask());
+                trace.setTilePos(context.getTileX(), context.getTileY());
+                if (context.getDrawIcon() != null) {
+                    trace.setDrawSpriteInfo(
+                        context.getDrawIcon()
+                            .getIconName(),
+                        context.getDrawIcon()
+                            .getIconWidth(),
+                        context.getDrawIcon()
+                            .getIconHeight());
+                }
+                if (context.getTextureKey() != null) {
+                    trace.setTexRegTexMapSync(true, context.getTextureKey());
+                    trace.setTextureKey(context.getTextureKey());
+                }
+                trace.setIconUV(context.getIconMinU(), context.getIconMaxU(), context.getIconMinV(), context.getIconMaxV());
+                trace.setDrawUV(context.getDrawMinU(), context.getDrawMaxU(), context.getDrawMinV(), context.getDrawMaxV());
+                trace.setGridInfo(context.getGridW(), context.getGridH());
+
+                ForgeDirection face = context.getFace();
+                RenderPipelineDebugCache.record((int) context.getX(), (int) context.getY(), (int) context.getZ(), face, trace);
+
+                return result;
+            } else {
+                // debugMode=false 或 非光标方块：直接执行，不创建任何 debug 对象
+                return PIPELINE.execute(context);
             }
-            if (context.getTextureKey() != null) {
-                trace.setTexRegTexMapSync(true, context.getTextureKey());
-                trace.setTextureKey(context.getTextureKey());
-            }
-            trace.setIconUV(context.getIconMinU(), context.getIconMaxU(), context.getIconMinV(), context.getIconMaxV());
-            trace.setDrawUV(context.getDrawMinU(), context.getDrawMaxU(), context.getDrawMinV(), context.getDrawMaxV());
-            trace.setGridInfo(context.getGridW(), context.getGridH());
-
-            ForgeDirection face = context.getFace();
-            RenderPipelineDebugCache.record((int) context.getX(), (int) context.getY(), (int) context.getZ(), face, trace);
-
-            return result;
-        } else {
-            // debugMode=false 或 非光标方块：直接执行，不创建任何 debug 对象
-            return PIPELINE.execute(context);
+        } catch (Throwable t) {
+            // 诊断日志：打印两个 Context 的完整状态
+            logContextState(context, t);
+            throw t;
         }
+    }
+
+    private static void logContextState(RenderContext ctx, Throwable error) {
+        LOGGER.error("============================================================");
+        LOGGER.error("MyCTMLib RenderPipeline Exception Caught");
+        LOGGER.error("============================================================");
+        LOGGER.error("Exception Type: {}", error.getClass()
+            .getName());
+        LOGGER.error("Exception Message: {}", error.getMessage());
+        LOGGER.error("");
+
+        // 打印完整调用栈
+        LOGGER.error("=== Stack Trace ===");
+        for (StackTraceElement element : error.getStackTrace()) {
+            LOGGER.error("  at {}", element);
+        }
+        LOGGER.error("");
+
+        // 打印 RenderInvocationContext 状态
+        LOGGER.error("=== RenderInvocationContext State ===");
+        if (ctx != null) {
+            try {
+                LOGGER.error("  renderBlocks: {}", safeStr(ctx.getRenderBlocks()));
+                LOGGER.error("  blockAccess: {}", safeStr(ctx.getBlockAccess()));
+                LOGGER.error("  block: {}", safeStr(ctx.getBlock()));
+                LOGGER.error("  x: {}", ctx.getX());
+                LOGGER.error("  y: {}", ctx.getY());
+                LOGGER.error("  z: {}", ctx.getZ());
+                LOGGER.error("  meta: {}", ctx.getMeta());
+                LOGGER.error("  face: {}", ctx.getFace());
+                LOGGER.error("  originalIcon: {}", safeStr(ctx.getOriginalIcon()));
+                LOGGER.error("  iconName: {}", ctx.getIconName());
+            } catch (Exception e) {
+                LOGGER.error("  Error reading context: {}", e.getMessage());
+            }
+        } else {
+            LOGGER.error("  RenderContext is NULL!");
+        }
+        LOGGER.error("");
+
+        // 打印 RenderContext 计算字段状态
+        LOGGER.error("=== RenderContext Computed Fields ===");
+        if (ctx != null) {
+            try {
+                LOGGER.error("  renderBranch: {}", ctx.getRenderBranch());
+                LOGGER.error("  textureData: {}", safeStr(ctx.getTextureData()));
+                LOGGER.error("  drawIcon: {}", safeStr(ctx.getDrawIcon()));
+                LOGGER.error("  connectionMask: {}", ctx.getConnectionMask());
+                LOGGER.error("  tileX: {}", ctx.getTileX());
+                LOGGER.error("  tileY: {}", ctx.getTileY());
+                LOGGER.error("  drewAny: {}", ctx.isDrewAny());
+                LOGGER.error("  pipelineFailed: {}", ctx.isPipelineFailed());
+                LOGGER.error("  failureReason: {}", ctx.getFailureReason());
+            } catch (Exception e) {
+                LOGGER.error("  Error reading computed fields: {}", e.getMessage());
+            }
+        }
+        LOGGER.error("");
+
+        // 线程信息
+        LOGGER.error("=== Thread Info ===");
+        LOGGER.error("  Thread Name: {}", Thread.currentThread()
+            .getName());
+        LOGGER.error("  Thread ID: {}", Thread.currentThread()
+            .getId());
+        LOGGER.error("");
+
+        LOGGER.error("============================================================");
+        LOGGER.error("End of Diagnostic Info");
+        LOGGER.error("============================================================");
+    }
+
+    private static String safeStr(Object obj) {
+        return obj != null ? obj.toString() : "null";
     }
 
 }
