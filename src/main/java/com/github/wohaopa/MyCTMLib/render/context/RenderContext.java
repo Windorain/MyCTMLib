@@ -10,12 +10,9 @@ import net.minecraft.util.IIcon;
 import net.minecraft.world.IBlockAccess;
 import net.minecraftforge.common.util.ForgeDirection;
 
-import com.github.wohaopa.MyCTMLib.blockstate.BlockStateRegistry;
 import com.github.wohaopa.MyCTMLib.model.ModelData;
 import com.github.wohaopa.MyCTMLib.model.ModelElement;
-import com.github.wohaopa.MyCTMLib.model.ModelRegistry;
 import com.github.wohaopa.MyCTMLib.predicate.ConnectionPredicate;
-import com.github.wohaopa.MyCTMLib.render.CTMRenderEntry;
 import com.github.wohaopa.MyCTMLib.render.PipelineDebugTrace;
 import com.github.wohaopa.MyCTMLib.render.pipeline.RenderBranch;
 import com.github.wohaopa.MyCTMLib.texture.BaseTextureData;
@@ -58,10 +55,10 @@ public class RenderContext {
     // ========== 决策结果 ==========
     private RenderBranch renderBranch;
 
-    // ========== 懒加载数据 ==========
+    // ========== 数据字段（Domain 方法设置） ==========
     private String modelId;
     private ModelData modelData;
-    private List<ModelElement> elements;
+    private List<ModelElement> elements = Collections.emptyList();
     private ModelElement currentElement;
     private int currentElementIndex;
 
@@ -158,37 +155,29 @@ public class RenderContext {
         this.renderBranch = branch;
     }
 
-    // ========== 懒加载查询（只缓存，不决策） ==========
+    // ========== Model 数据 Getter/Setter ==========
     public String getModelId() {
-        if (modelId == null) {
-            String blockId = getBlockId(getBlock());
-            if (blockId != null) {
-                modelId = BlockStateRegistry.getInstance()
-                    .getModelId(blockId, getMeta());
-            }
-        }
         return modelId;
     }
 
+    public void setModelId(String modelId) {
+        this.modelId = modelId;
+    }
+
     public ModelData getModelData() {
-        if (modelData == null) {
-            String modelId = getModelId();
-            if (modelId != null) {
-                modelData = ModelRegistry.getInstance()
-                    .get(modelId);
-            }
-        }
         return modelData;
     }
 
+    public void setModelData(ModelData modelData) {
+        this.modelData = modelData;
+    }
+
     public List<ModelElement> getElements() {
-        if (elements == null) {
-            ModelData modelData = getModelData();
-            if (modelData != null) {
-                elements = CTMRenderEntry.getElementsWithFace(modelData, getFace());
-            }
-        }
-        return elements != null ? elements : Collections.emptyList();
+        return elements;
+    }
+
+    public void setElements(List<ModelElement> elements) {
+        this.elements = elements;
     }
 
     // ========== 输入数据 Getter（委托给 invocationContext） ==========
@@ -766,11 +755,5 @@ public class RenderContext {
     public void resetPipelineFailed() {
         pipelineFailed = false;
         failureReason = null;
-    }
-
-    // ========== 工具方法 ==========
-    private String getBlockId(Block block) {
-        if (block == null) return null;
-        return CTMRenderEntry.getBlockId(block);
     }
 }

@@ -4,7 +4,6 @@ import com.github.wohaopa.MyCTMLib.render.context.RenderContext;
 import com.github.wohaopa.MyCTMLib.render.domain.BrightnessDomain;
 import com.github.wohaopa.MyCTMLib.render.domain.ColorDomain;
 import com.github.wohaopa.MyCTMLib.render.domain.GeometryDomain;
-import com.github.wohaopa.MyCTMLib.render.domain.IconDomain;
 import com.github.wohaopa.MyCTMLib.render.domain.PositionDomain;
 import com.github.wohaopa.MyCTMLib.render.domain.TileDomain;
 import com.github.wohaopa.MyCTMLib.render.domain.UVDomain;
@@ -20,13 +19,6 @@ public final class ConnectingTilePipeline {
     public static void execute(RenderContext ctx) {
         ctx.trace(() -> "=== ConnectingTilePipeline START ===");
         ctx.trace(() -> "Texture: key=" + ctx.getTextureKey());
-
-        IconDomain.resolve(ctx);
-        ctx.trace(() -> "IconDomain: icon=[" + formatDouble(ctx.getIconMinU())
-            + "," + formatDouble(ctx.getIconMaxU())
-            + "," + formatDouble(ctx.getIconMinV())
-            + "," + formatDouble(ctx.getIconMaxV())
-            + "], grid=" + ctx.getGridW() + "x" + ctx.getGridH());
 
         TileDomain.computeConnecting(ctx);
         ctx.trace(() -> "TileDomain: mask=0x" + String.format("%02X", ctx.getConnectionMask())
