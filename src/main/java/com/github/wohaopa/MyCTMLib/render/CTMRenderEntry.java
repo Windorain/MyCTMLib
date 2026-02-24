@@ -682,55 +682,77 @@ public final class CTMRenderEntry {
 
     private static final RenderPipeline PIPELINE = new RenderPipeline();
 
+    /**
+     * 新管线渲染入口
+     * 
+     * <p>
+     * <strong>性能优化：</strong>只在 {@code context.isDebug()=true} 时创建和填充 debug trace，
+     * 即同时满足以下条件：
+     * </p>
+     * <ul>
+     * <li>{@code MyCTMLib.debugMode = true}</li>
+     * <li>当前渲染的方块是光标指向的方块</li>
+     * </ul>
+     * <p>
+     * 避免在正常运行或渲染非光标方块时产生不必要的对象分配和 HashMap 操作。
+     * </p>
+     */
     public static boolean renderPipeline() {
         RenderContext context = RenderContext.create();
-        context.setDebugTrace(new PipelineDebugTrace());
 
-        PipelineDebugTrace trace = context.getDebugTrace();
-        trace.addStep("Position: " + (int) context.getX() + ", " + (int) context.getY() + ", " + (int) context.getZ());
-        trace.addStep("Face: " + context.getFace());
-        trace.addStep("Icon: " + context.getOriginalIcon());
+        // 只在 isDebug()=true 时创建和填充 trace（debugMode + 光标方块）
+        if (context.isDebug()) {
+            context.setDebugTrace(new PipelineDebugTrace());
 
-        boolean result = PIPELINE.execute(context);
+            PipelineDebugTrace trace = context.getDebugTrace();
+            trace.addStep("Position: " + (int) context.getX() + ", " + (int) context.getY() + ", " + (int) context.getZ());
+            trace.addStep("Face: " + context.getFace());
+            trace.addStep("Icon: " + context.getOriginalIcon());
 
-        trace.addStep("Branch: " + context.getRenderBranch());
-        trace.addStep("New pipeline drewAny: " + context.isDrewAny());
+            boolean result = PIPELINE.execute(context);
 
-        // 填充技术细节到 trace，供 HUD 显示
-        if (context.getConnectionMask() != null) {
-            trace.setConnectionBits(context.getConnectionMask());
-        }
-        if (context.getTileX() != null && context.getTileY() != null) {
-            trace.setTilePos(context.getTileX(), context.getTileY());
-        }
-        if (context.getDrawIcon() != null) {
-            trace.setDrawSpriteInfo(
-                context.getDrawIcon()
-                    .getIconName(),
-                context.getDrawIcon()
-                    .getIconWidth(),
-                context.getDrawIcon()
-                    .getIconHeight());
-        }
-        if (context.getTextureKey() != null) {
-            trace.setTexRegTexMapSync(true, context.getTextureKey());
-            trace.setTextureKey(context.getTextureKey());
-        }
-        if (context.getIconMinU() != null && context.getIconMaxU() != null
-            && context.getIconMinV() != null
-            && context.getIconMaxV() != null) {
-            trace.setIconUV(context.getIconMinU(), context.getIconMaxU(), context.getIconMinV(), context.getIconMaxV());
-        }
-        // drawUV 总是有值（默认为 0.0-1.0），直接设置
-        trace.setDrawUV(context.getDrawMinU(), context.getDrawMaxU(), context.getDrawMinV(), context.getDrawMaxV());
-        if (context.getGridW() != null && context.getGridH() != null) {
-            trace.setGridInfo(context.getGridW(), context.getGridH());
-        }
+            trace.addStep("Branch: " + context.getRenderBranch());
+            trace.addStep("New pipeline drewAny: " + context.isDrewAny());
 
-        ForgeDirection face = context.getFace();
-        RenderPipelineDebugCache.record((int) context.getX(), (int) context.getY(), (int) context.getZ(), face, trace);
+            // 填充技术细节到 trace，供 HUD 显示
+            if (context.getConnectionMask() != null) {
+                trace.setConnectionBits(context.getConnectionMask());
+            }
+            if (context.getTileX() != null && context.getTileY() != null) {
+                trace.setTilePos(context.getTileX(), context.getTileY());
+            }
+            if (context.getDrawIcon() != null) {
+                trace.setDrawSpriteInfo(
+                    context.getDrawIcon()
+                        .getIconName(),
+                    context.getDrawIcon()
+                        .getIconWidth(),
+                    context.getDrawIcon()
+                        .getIconHeight());
+            }
+            if (context.getTextureKey() != null) {
+                trace.setTexRegTexMapSync(true, context.getTextureKey());
+                trace.setTextureKey(context.getTextureKey());
+            }
+            if (context.getIconMinU() != null && context.getIconMaxU() != null
+                && context.getIconMinV() != null
+                && context.getIconMaxV() != null) {
+                trace.setIconUV(context.getIconMinU(), context.getIconMaxU(), context.getIconMinV(), context.getIconMaxV());
+            }
+            // drawUV 总是有值（默认为 0.0-1.0），直接设置
+            trace.setDrawUV(context.getDrawMinU(), context.getDrawMaxU(), context.getDrawMinV(), context.getDrawMaxV());
+            if (context.getGridW() != null && context.getGridH() != null) {
+                trace.setGridInfo(context.getGridW(), context.getGridH());
+            }
 
-        return result;
+            ForgeDirection face = context.getFace();
+            RenderPipelineDebugCache.record((int) context.getX(), (int) context.getY(), (int) context.getZ(), face, trace);
+
+            return result;
+        } else {
+            // debugMode=false 或 非光标方块：直接执行，不创建任何 debug 对象
+            return PIPELINE.execute(context);
+        }
     }
 
 }

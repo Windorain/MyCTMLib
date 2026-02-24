@@ -704,6 +704,46 @@ public class RenderContext {
         this.debugTrace = trace;
     }
 
+    /**
+     * 检查当前渲染的方块是否为调试目标（光标指向的方块）
+     * 
+     * <p>
+     * <strong>判断条件：</strong>
+     * </p>
+     * <ul>
+     * <li>{@code MyCTMLib.debugMode = true}</li>
+     * <li>当前渲染坐标与光标指向的方块坐标一致</li>
+     * </ul>
+     * 
+     * <p>
+     * <strong>用途：</strong>只在渲染光标方块时创建 debug trace，大幅减少性能开销。
+     * 即使 {@code debugMode=true}，其他方块也不会创建 trace。
+     * </p>
+     * 
+     * @return true 当且仅当 debugMode=true 且当前方块是光标指向的方块
+     */
+    public boolean isDebug() {
+        if (!com.github.wohaopa.MyCTMLib.MyCTMLib.debugMode) {
+            return false;
+        }
+
+        // 获取光标位置
+        net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getMinecraft();
+        if (mc.objectMouseOver == null
+            || mc.objectMouseOver.typeOfHit != net.minecraft.util.MovingObjectPosition.MovingObjectType.BLOCK) {
+            return false;
+        }
+
+        int focusX = mc.objectMouseOver.blockX;
+        int focusY = mc.objectMouseOver.blockY;
+        int focusZ = mc.objectMouseOver.blockZ;
+
+        // 比较坐标（context 的 x/y/z 是 double，需要强转为 int）
+        return (int) getX() == focusX
+            && (int) getY() == focusY
+            && (int) getZ() == focusZ;
+    }
+
     public void trace(String msg) {
         if (debugTrace != null) debugTrace.trace(msg);
     }
