@@ -72,11 +72,11 @@ public class RenderPipeline {
             return RenderBranch.MODEL_ELEMENTS;
         }
 
-        String iconName = ctx.getIconName();
-        if (shouldUseTextureReloc(iconName)) {
+        if (TextureDomain.findTextureReloc(ctx)) {
             return RenderBranch.TEXTURE_RELOC;
         }
 
+        String iconName = ctx.getIconName();
         if (shouldUseLegacy(iconName)) {
             return RenderBranch.LEGACY;
         }
@@ -84,26 +84,8 @@ public class RenderPipeline {
         return RenderBranch.NONE;
     }
 
-    private boolean shouldUseTextureReloc(String iconName) {
-        if (iconName == null) return false;
-        return iconName.endsWith("_ctm") || isNumericSuffix(iconName);
-    }
-
     private boolean shouldUseLegacy(String iconName) {
         return iconName != null && Textures.contain(iconName);
-    }
-
-    private boolean isNumericSuffix(String iconName) {
-        int lastUnderscore = iconName.lastIndexOf('_');
-        if (lastUnderscore > 0 && lastUnderscore < iconName.length() - 1) {
-            try {
-                Integer.parseInt(iconName.substring(lastUnderscore + 1));
-                return true;
-            } catch (NumberFormatException e) {
-                return false;
-            }
-        }
-        return false;
     }
 
     private void executeModelBranch(RenderContext ctx) {
@@ -146,7 +128,14 @@ public class RenderPipeline {
     }
 
     private void executeTextureRelocBranch(RenderContext ctx) {
-        BaseTilePipeline.execute(ctx);
+        TextureTypeData data = ctx.getTextureData();
+        if (data instanceof BaseTextureData) {
+            BaseTilePipeline.execute(ctx);
+        } else if (data instanceof RandomTextureData) {
+            RandomTilePipeline.execute(ctx);
+        } else if (data instanceof ConnectingTextureData) {
+            ConnectingTilePipeline.execute(ctx);
+        }
     }
 
     private void executeLegacyBranch(RenderContext ctx) {

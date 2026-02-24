@@ -19,11 +19,8 @@ import com.github.wohaopa.MyCTMLib.texture.layout.LayoutHandlers;
  * 材质数据域（合并原 IconDomain 职责）
  * 
  * 职责：
- * - resolveForElement: 解析材质数据（per-element）
- *   - 解析 textureKey（处理 # 引用）
- *   - 查询 textureData
- *   - 查询 icon + 提取 UV
- *   - 计算 grid 尺寸
+ * - resolveForElement: 解析材质数据（per-element，用于 MODEL_ELEMENTS 分支）
+ * - findTextureReloc: 查找重定向纹理（用于 TEXTURE_RELOC 分支）
  */
 public final class TextureDomain {
 
@@ -71,6 +68,48 @@ public final class TextureDomain {
         
         // Step 6: 计算 grid
         int[] gridSize = calculateGridSize(textureData);
+        ctx.setGridW(gridSize[0]);
+        ctx.setGridH(gridSize[1]);
+        
+        return true;
+    }
+
+    /**
+     * 查找重定向纹理（恒等 + _ctm 后缀）
+     * @return true 如果找到重定向纹理
+     */
+    public static boolean findTextureReloc(RenderContext ctx) {
+        String iconName = ctx.getIconName();
+        if (iconName == null) return false;
+        
+        // 1. 恒等查找
+        TextureTypeData data = CTMRenderEntry.getConnectingData(iconName);
+        
+        // 2. _ctm 后缀查找
+        if (data == null) {
+            String relocKey = iconName + "_ctm";
+            data = CTMRenderEntry.getConnectingData(relocKey);
+            if (data != null) {
+                ctx.setTextureKey(relocKey);
+            } else {
+                return false;
+            }
+        } else {
+            ctx.setTextureKey(iconName);
+        }
+        
+        // 设置公共字段
+        ctx.setTextureData(data);
+        
+        net.minecraft.util.IIcon icon = TextureRegistry.getInstance().getIcon(iconName);
+        if (icon == null) icon = ctx.getOriginalIcon();
+        ctx.setDrawIcon(icon);
+        ctx.setIconMinU(icon.getMinU());
+        ctx.setIconMaxU(icon.getMaxU());
+        ctx.setIconMinV(icon.getMinV());
+        ctx.setIconMaxV(icon.getMaxV());
+        
+        int[] gridSize = calculateGridSize(data);
         ctx.setGridW(gridSize[0]);
         ctx.setGridH(gridSize[1]);
         
