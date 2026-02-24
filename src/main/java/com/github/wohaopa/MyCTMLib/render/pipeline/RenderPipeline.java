@@ -26,21 +26,18 @@ public class RenderPipeline {
 
     public boolean execute(RenderContext ctx) {
         ctx.info(() -> "=== RenderPipeline Started ===");
-        ctx.debug(() -> "INIT: Resetting context");
         ctx.reset();
 
         RenderBranch branch = decideRenderBranch(ctx);
         ctx.setRenderBranch(branch);
         ctx.info(() -> "DECIDE: Using branch: " + branch);
 
-        ctx.debug(() -> "RENDER: Starting render");
         switch (branch) {
             case MODEL_ELEMENTS -> executeModelBranch(ctx);
             case TEXTURE_RELOC -> executeTextureRelocBranch(ctx);
             case LEGACY -> executeLegacyBranch(ctx);
             case ITEM -> executeItemBranch(ctx);
             case ENTITY, NONE -> {
-                ctx.debug(() -> "RENDER: Skipping (ENTITY/NONE branch)");
                 ctx.setDrewAny(false);
             }
         }
@@ -65,32 +62,25 @@ public class RenderPipeline {
     }
 
     private RenderBranch decideRenderBranch(RenderContext ctx) {
-        ctx.trace(() -> "DECIDE: Checking render branch");
-
         if (ctx.isItemRender()) {
-            ctx.debug(() -> "DECIDE: Item render detected");
             return RenderBranch.ITEM;
         }
 
         if (ModelDomain.findModelId(ctx) 
             && ModelDomain.findModelData(ctx) 
             && ModelDomain.findElements(ctx)) {
-            ctx.info(() -> "DECIDE: Selected MODEL_ELEMENTS branch");
             return RenderBranch.MODEL_ELEMENTS;
         }
 
         String iconName = ctx.getIconName();
         if (shouldUseTextureReloc(iconName)) {
-            ctx.debug(() -> "DECIDE: Selected TEXTURE_RELOC branch");
             return RenderBranch.TEXTURE_RELOC;
         }
 
         if (shouldUseLegacy(iconName)) {
-            ctx.debug(() -> "DECIDE: Selected LEGACY branch");
             return RenderBranch.LEGACY;
         }
 
-        ctx.debug(() -> "DECIDE: No matching branch (NONE)");
         return RenderBranch.NONE;
     }
 
@@ -130,14 +120,12 @@ public class RenderPipeline {
             }
         }
         ctx.setConnectionPredicate(predicate);
-        ctx.trace(() -> "MODEL: Using predicate: " + PredicateRegistry.getPredicateDebugName(ctx.getConnectionPredicate(), null));
 
         int index = 0;
         for (ModelElement element : ctx.getElements()) {
             ctx.setCurrentElement(element);
             ctx.setCurrentElementIndex(index++);
             ctx.resetPipelineFailed();
-            ctx.trace(() -> "MODEL: Rendering element " + ctx.getCurrentElementIndex());
 
             if (!TextureDomain.resolveForElement(ctx)) {
                 ctx.warn(() -> "RENDER: Failed to resolve texture for element " + ctx.getCurrentElementIndex());
@@ -145,35 +133,23 @@ public class RenderPipeline {
             }
 
             if (ctx.getTextureData() instanceof BaseTextureData) {
-                ctx.debug(() -> "RENDER: BaseTexture pipeline");
                 BaseTilePipeline.execute(ctx);
             } else if (ctx.getTextureData() instanceof RandomTextureData) {
-                ctx.debug(() -> "RENDER: RandomTexture pipeline");
                 RandomTilePipeline.execute(ctx);
             } else if (ctx.getTextureData() instanceof ConnectingTextureData) {
-                ctx.debug(() -> "RENDER: ConnectingTexture pipeline");
                 ConnectingTilePipeline.execute(ctx);
             } else {
                 ctx.debug(() -> "RENDER: Unknown texture data type: " + ctx.getTextureData());
                 ctx.failPipeline("Unknown texture data type: " + ctx.getTextureData());
             }
-
-            if (ctx.isPipelineFailed()) {
-                ctx.debug(() -> "MODEL: Element " + ctx.getCurrentElementIndex() + " failed");
-            } else {
-                ctx.trace(() -> "MODEL: Element " + ctx.getCurrentElementIndex() + " rendered successfully");
-            }
         }
-
-        ctx.debug(() -> "MODEL: Completed processing all elements");
     }
 
     private void executeTextureRelocBranch(RenderContext ctx) {
-        ctx.info(() -> "TEXTURE_RELOC: Rendering with texture relocation");
+        BaseTilePipeline.execute(ctx);
     }
 
     private void executeLegacyBranch(RenderContext ctx) {
-        ctx.info(() -> "LEGACY: Using legacy renderer");
         boolean result = Textures.renderWorldBlock(
             ctx.getRenderBlocks(),
             ctx.getBlockAccess(),
@@ -184,11 +160,9 @@ public class RenderPipeline {
             ctx.getOriginalIcon(),
             ctx.getFace());
         ctx.setDrewAny(result);
-        ctx.debug(() -> "LEGACY: Result=" + result);
     }
 
     private void executeItemBranch(RenderContext ctx) {
-        ctx.info(() -> "ITEM: Rendering item face");
         BaseTilePipeline.execute(ctx);
     }
 }

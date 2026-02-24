@@ -682,44 +682,56 @@ public class RenderContext {
 
     // ========== Debug 日志（支持懒加载） ==========
     public void trace(String msg) {
-        if (debugTrace != null) debugTrace.trace(msg);
+        if (!isDebug()) return;
+        debugTrace.trace(msg);
     }
 
     public void trace(Supplier<String> msgSupplier) {
-        if (debugTrace != null) debugTrace.trace(msgSupplier.get());
+        if (!isDebug()) return;
+        debugTrace.trace(msgSupplier.get());
     }
 
     public void debug(String msg) {
-        if (debugTrace != null) debugTrace.debug(msg);
+        if (!isDebug()) return;
+        debugTrace.debug(msg);
     }
 
     public void debug(Supplier<String> msgSupplier) {
-        if (debugTrace != null) debugTrace.debug(msgSupplier.get());
+        if (!isDebug()) return;
+        debugTrace.debug(msgSupplier.get());
     }
 
     public void info(String msg) {
-        if (debugTrace != null) debugTrace.info(msg);
+        if (!isDebug()) return;
+        debugTrace.info(msg);
     }
 
     public void info(Supplier<String> msgSupplier) {
-        if (debugTrace != null) debugTrace.info(msgSupplier.get());
+        if (!isDebug()) return;
+        debugTrace.info(msgSupplier.get());
     }
 
     public void warn(String msg) {
-        if (debugTrace != null) debugTrace.warn(msg);
+        if (!isDebug()) return;
+        debugTrace.warn(msg);
     }
 
     public void warn(Supplier<String> msgSupplier) {
-        if (debugTrace != null) debugTrace.warn(msgSupplier.get());
+        if (!isDebug()) return;
+        debugTrace.warn(msgSupplier.get());
     }
 
     public void error(String msg) {
-        if (debugTrace != null) debugTrace.error(msg);
+        if (isDebug()) {
+            debugTrace.error(msg);
+        }
         failPipeline(msg);
     }
 
     public void error(Supplier<String> msgSupplier) {
-        if (debugTrace != null) debugTrace.error(msgSupplier.get());
+        if (isDebug()) {
+            debugTrace.error(msgSupplier.get());
+        }
         failPipeline(msgSupplier.get());
     }
 

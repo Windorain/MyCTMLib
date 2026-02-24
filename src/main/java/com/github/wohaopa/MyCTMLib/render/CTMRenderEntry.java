@@ -1,5 +1,6 @@
 package com.github.wohaopa.MyCTMLib.render;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -23,6 +24,7 @@ import com.github.wohaopa.MyCTMLib.predicate.ConnectionPredicate;
 import com.github.wohaopa.MyCTMLib.predicate.PredicateRegistry;
 import com.github.wohaopa.MyCTMLib.render.context.RenderContext;
 import com.github.wohaopa.MyCTMLib.render.context.RenderInvocationContext;
+import com.github.wohaopa.MyCTMLib.render.debug.DumpUtil;
 import com.github.wohaopa.MyCTMLib.render.debug.RenderPipelineDebugCache;
 import com.github.wohaopa.MyCTMLib.render.pipeline.RenderPipeline;
 import com.github.wohaopa.MyCTMLib.texture.BaseTextureData;
@@ -750,6 +752,14 @@ public final class CTMRenderEntry {
         } catch (Throwable t) {
             // 诊断日志：打印两个 Context 的完整状态
             logContextState(context, t);
+            
+            // 生成 JSON 诊断文件
+            File dumpDir = new File("run/client/diagnostic_dumps");
+            String dumpPath = DumpUtil.dumpDiagnostic(context, t, dumpDir);
+            if (dumpPath != null) {
+                LOGGER.error("Diagnostic dump written to: {}", dumpPath);
+            }
+            
             throw t;
         }
     }
