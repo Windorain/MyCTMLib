@@ -16,9 +16,9 @@ public final class PositionDomain {
      * 计算世界坐标
      */
     public static void calc(RenderContext ctx) {
-        double blockX = ctx.getX();
-        double blockY = ctx.getY();
-        double blockZ = ctx.getZ();
+        double blockX = ctx.getBlockX();
+        double blockY = ctx.getBlockY();
+        double blockZ = ctx.getBlockZ();
 
         ctx.setWorldX(blockX + ctx.getDrawRelMinX());
         ctx.setWorldY(blockY + ctx.getDrawRelMinY());

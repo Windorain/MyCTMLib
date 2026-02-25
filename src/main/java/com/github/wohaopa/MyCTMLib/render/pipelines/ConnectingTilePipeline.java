@@ -22,7 +22,7 @@ public final class ConnectingTilePipeline {
         UVDomain.calc(ctx);
         PositionDomain.calc(ctx);
 
-        if (ctx.isItemRender()) {
+        if (ctx.getBlockAccess() == null) {
             BrightnessDomain.setFullAO(ctx);
             ColorDomain.computeUniform(ctx);
         } else if (ctx.getRenderBlocks().enableAO) {

@@ -708,11 +708,14 @@ public final class CTMRenderEntry {
         RenderContext context = RenderContext.get();
 
         try {
-            // 只在 isDebug()=true 时记录 debug 信息（debugMode + 光标方块）
             if (context.isDebug()) {
                 PipelineDebugTrace trace = context.getDebugTrace();
                 trace.addStep(
-                    "Position: " + (int) context.getX() + ", " + (int) context.getY() + ", " + (int) context.getZ());
+                    "Position: " + (int) context.getBlockX()
+                        + ", "
+                        + (int) context.getBlockY()
+                        + ", "
+                        + (int) context.getBlockZ());
                 trace.addStep("Face: " + context.getFace());
                 trace.addStep("Icon: " + context.getOriginalIcon());
 
@@ -721,7 +724,6 @@ public final class CTMRenderEntry {
                 trace.addStep("Branch: " + context.getRenderBranch());
                 trace.addStep("New pipeline drewAny: " + context.isDrewAny());
 
-                // 填充技术细节到 trace，供 HUD 显示
                 trace.setConnectionBits(context.getConnectionMask());
                 trace.setTilePos(context.getTileX(), context.getTileY());
                 if (context.getDrawIcon() != null) {
@@ -751,7 +753,7 @@ public final class CTMRenderEntry {
 
                 ForgeDirection face = context.getFace();
                 RenderPipelineDebugCache
-                    .record((int) context.getX(), (int) context.getY(), (int) context.getZ(), face, trace);
+                    .record((int) context.getBlockX(), (int) context.getBlockY(), (int) context.getBlockZ(), face, trace);
 
                 return result;
             } else {
@@ -791,20 +793,18 @@ public final class CTMRenderEntry {
         }
         LOGGER.error("");
 
-        // 打印 RenderInvocationContext 状态
-        LOGGER.error("=== RenderInvocationContext State ===");
+        LOGGER.error("=== RenderContext State ===");
         if (ctx != null) {
             try {
                 LOGGER.error("  renderBlocks: {}", safeStr(ctx.getRenderBlocks()));
                 LOGGER.error("  blockAccess: {}", safeStr(ctx.getBlockAccess()));
                 LOGGER.error("  block: {}", safeStr(ctx.getBlock()));
-                LOGGER.error("  x: {}", ctx.getX());
-                LOGGER.error("  y: {}", ctx.getY());
-                LOGGER.error("  z: {}", ctx.getZ());
+                LOGGER.error("  blockX: {}", ctx.getBlockX());
+                LOGGER.error("  blockY: {}", ctx.getBlockY());
+                LOGGER.error("  blockZ: {}", ctx.getBlockZ());
                 LOGGER.error("  meta: {}", ctx.getMeta());
                 LOGGER.error("  face: {}", ctx.getFace());
                 LOGGER.error("  originalIcon: {}", safeStr(ctx.getOriginalIcon()));
-                LOGGER.error("  iconName: {}", ctx.getIconName());
             } catch (Exception e) {
                 LOGGER.error("  Error reading context: {}", e.getMessage());
             }

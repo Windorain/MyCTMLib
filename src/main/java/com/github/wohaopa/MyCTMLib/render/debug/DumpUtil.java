@@ -16,7 +16,6 @@ import org.apache.logging.log4j.Logger;
 
 import com.github.wohaopa.MyCTMLib.MyCTMLib;
 import com.github.wohaopa.MyCTMLib.render.context.RenderContext;
-import com.github.wohaopa.MyCTMLib.render.context.RenderInvocationContext;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
@@ -145,29 +144,12 @@ public class DumpUtil {
             json.addProperty("renderBlocks", safeStr(ctx.getRenderBlocks()));
             json.addProperty("blockAccess", safeStr(ctx.getBlockAccess()));
             json.addProperty("block", safeStr(ctx.getBlock()));
-            json.addProperty("x", ctx.getX());
-            json.addProperty("y", ctx.getY());
-            json.addProperty("z", ctx.getZ());
+            json.addProperty("blockX", ctx.getBlockX());
+            json.addProperty("blockY", ctx.getBlockY());
+            json.addProperty("blockZ", ctx.getBlockZ());
             json.addProperty("meta", ctx.getMeta());
             json.addProperty("face", safeStr(ctx.getFace()));
             json.addProperty("originalIcon", safeStr(ctx.getOriginalIcon()));
-            json.addProperty("iconName", safeStr(ctx.getIconName()));
-            json.addProperty("renderType", safeStr(ctx.getRenderType()));
-
-            // 方法堆栈（如果能访问）
-            try {
-                json.addProperty("stackTop", getStackTop(ctx));
-                JsonArray methodStack = new JsonArray();
-                Object[] stack = getMethodStack(ctx);
-                if (stack != null) {
-                    for (int i = 0; i <= getStackTop(ctx) && i < stack.length; i++) {
-                        methodStack.add(new com.google.gson.JsonPrimitive(safeStr(stack[i])));
-                    }
-                }
-                json.add("methodStack", methodStack);
-            } catch (Exception e) {
-                json.addProperty("methodStackError", e.getMessage());
-            }
 
         } catch (Exception e) {
             json.addProperty("error", "Failed to read context: " + e.getMessage());
@@ -232,7 +214,9 @@ public class DumpUtil {
                 json.addProperty("class", "null");
             }
 
-            json.addProperty("position", String.format("(%.1f, %.1f, %.1f)", ctx.getX(), ctx.getY(), ctx.getZ()));
+            json.addProperty(
+                "position",
+                String.format("(%.1f, %.1f, %.1f)", ctx.getBlockX(), ctx.getBlockY(), ctx.getBlockZ()));
             json.addProperty("meta", ctx.getMeta());
 
             if (block != null) {
@@ -425,26 +409,10 @@ public class DumpUtil {
     // ========== 反射辅助方法（用于访问 RenderInvocationContext 的包私有字段） ==========
 
     private static int getStackTop(RenderContext ctx) {
-        try {
-            RenderInvocationContext invCtx = (RenderInvocationContext) getFieldValue(ctx, "invocationContext");
-            if (invCtx != null) {
-                return (Integer) getFieldValue(invCtx, "stackTop");
-            }
-        } catch (Exception e) {
-            // 忽略
-        }
         return -1;
     }
 
     private static Object[] getMethodStack(RenderContext ctx) {
-        try {
-            RenderInvocationContext invCtx = (RenderInvocationContext) getFieldValue(ctx, "invocationContext");
-            if (invCtx != null) {
-                return (Object[]) getFieldValue(invCtx, "methodStack");
-            }
-        } catch (Exception e) {
-            // 忽略
-        }
         return null;
     }
 

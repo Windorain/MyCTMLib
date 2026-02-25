@@ -39,7 +39,7 @@ public final class ShadingGroup {
      */
     public static void calcBrightness(RenderContext ctx) {
         int brightness = ctx.getBlock()
-            .getMixedBrightnessForBlock(ctx.getBlockAccess(), (int) ctx.getX(), (int) ctx.getY(), (int) ctx.getZ());
+            .getMixedBrightnessForBlock(ctx.getBlockAccess(), (int) ctx.getBlockX(), (int) ctx.getBlockY(), (int) ctx.getBlockZ());
         ctx.setDrawBrightness(brightness);
     }
 

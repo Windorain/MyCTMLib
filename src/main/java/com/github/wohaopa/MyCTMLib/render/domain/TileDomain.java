@@ -40,7 +40,7 @@ public final class TileDomain {
         }
 
         int randomIndex = FastRandom
-            .getRandomIndex(worldSeed, (int) ctx.getX(), (int) ctx.getY(), (int) ctx.getZ(), rtd.getCount());
+            .getRandomIndex(worldSeed, (int) ctx.getBlockX(), (int) ctx.getBlockY(), (int) ctx.getBlockZ(), rtd.getCount());
         ctx.setRandomIndex(randomIndex);
 
         int tileX = randomIndex % rtd.getColumns();
@@ -58,9 +58,9 @@ public final class TileDomain {
 
         int mask = ConnectionState.computeMask(
             ctx.getBlockAccess(),
-            (int) ctx.getX(),
-            (int) ctx.getY(),
-            (int) ctx.getZ(),
+            (int) ctx.getBlockX(),
+            (int) ctx.getBlockY(),
+            (int) ctx.getBlockZ(),
             ctx.getFace(),
             ctx.getBlock(),
             ctx.getMeta(),

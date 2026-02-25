@@ -84,15 +84,14 @@ public final class TextureDomain {
      * @return true 如果找到重定向纹理
      */
     public static boolean findTextureReloc(RenderContext ctx) {
-        String iconName = ctx.getIconName();
-        if (iconName == null) return false;
+        String originalIconName = ctx.getOriginalIcon()
+            .getIconName();
+        String normalizedIconName = TextureKeyNormalizer.normalizeIconName(originalIconName);
 
-        // 1. 恒等查找
-        TextureTypeData data = CTMRenderEntry.getConnectingData(iconName);
+        TextureTypeData data = CTMRenderEntry.getConnectingData(normalizedIconName);
 
-        // 2. _ctm 后缀查找
         if (data == null) {
-            String relocKey = iconName + "_ctm";
+            String relocKey = normalizedIconName + "_ctm";
             data = CTMRenderEntry.getConnectingData(relocKey);
             if (data != null) {
                 ctx.setTextureKey(relocKey);
@@ -100,14 +99,13 @@ public final class TextureDomain {
                 return false;
             }
         } else {
-            ctx.setTextureKey(iconName);
+            ctx.setTextureKey(normalizedIconName);
         }
 
-        // 设置公共字段
         ctx.setTextureData(data);
 
         net.minecraft.util.IIcon icon = TextureRegistry.getInstance()
-            .getIcon(iconName);
+            .getIcon(normalizedIconName);
         if (icon == null) icon = ctx.getOriginalIcon();
         ctx.setDrawIcon(icon);
         ctx.setIconMinU(icon.getMinU());

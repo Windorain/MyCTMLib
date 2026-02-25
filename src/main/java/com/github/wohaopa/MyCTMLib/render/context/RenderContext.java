@@ -1,5 +1,6 @@
 package com.github.wohaopa.MyCTMLib.render.context;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Supplier;
@@ -18,18 +19,8 @@ import com.github.wohaopa.MyCTMLib.render.pipeline.RenderBranch;
 import com.github.wohaopa.MyCTMLib.texture.BaseTextureData;
 import com.github.wohaopa.MyCTMLib.texture.TextureTypeData;
 
-/**
- * 渲染上下文（ThreadLocal 单例）
- * 
- * 职责：
- * - 存储计算结果数据（Domain 方法输出）
- * - 控制标志
- * - Debug 支持
- * - 输入数据委托给 RenderInvocationContext
- */
 public class RenderContext {
 
-    // ========== ThreadLocal 单例 ==========
     private static final ThreadLocal<RenderContext> THREAD_LOCAL = ThreadLocal.withInitial(RenderContext::new);
 
     public static RenderContext get() {
@@ -38,40 +29,30 @@ public class RenderContext {
         return ctx;
     }
 
-    // ========== 最终字段 ==========
-    private final RenderInvocationContext invocationContext;
-    private final PipelineDebugTrace debugTrace = new PipelineDebugTrace();
+    private final int[] faceRenderCount = new int[6];
 
-    // ========== 输入字段（委托给 invocationContext，不存储） ==========
-    // renderBlocks → invocationContext.getRenderBlocks()
-    // blockAccess → invocationContext.getBlockAccess()
-    // block → invocationContext.getBlock()
-    // x/y/z → invocationContext.getX()/getY()/getZ()
-    // meta → invocationContext.getMeta()
-    // face → invocationContext.getCurrentFace()
-    // originalIcon → invocationContext.getCurrentIcon()
+    private IIcon originalIcon;
+    private RenderBlocks renderBlocks;
+    private IBlockAccess blockAccess;
+    private Block block;
+    private double blockX, blockY, blockZ;
+    private int meta;
+    private ForgeDirection face;
 
-    // ========== 决策结果 ==========
     private RenderBranch renderBranch;
 
-    // ========== 数据字段（Domain 方法设置） ==========
     private String modelId;
     private ModelData modelData;
     private List<ModelElement> elements = Collections.emptyList();
     private ModelElement currentElement;
     private int currentElementIndex;
 
-    // 材质相关
     private TextureTypeData textureData;
     private IIcon drawIcon;
     private BaseTextureData baseData;
     private String textureKey;
-
-    // 连接谓词
     private ConnectionPredicate connectionPredicate;
 
-    // ========== 计算字段（基本类型） ==========
-    // Icon 数据域
     private double iconMinU;
     private double iconMaxU;
     private double iconMinV;
@@ -79,14 +60,12 @@ public class RenderContext {
     private int gridW;
     private int gridH;
 
-    // Tile 数据域
     private int tileX;
     private int tileY;
     private int connectionMask;
     private int randomIndex;
     private int[] tilePosition;
 
-    // 几何数据域
     private double drawRelMinX;
     private double drawRelMaxX;
     private double drawRelMinY;
@@ -94,22 +73,18 @@ public class RenderContext {
     private double drawRelMinZ;
     private double drawRelMaxZ;
 
-    // UV 数据域
     private double drawMinU;
     private double drawMaxU;
     private double drawMinV;
     private double drawMaxV;
 
-    // 世界坐标
     private double worldX;
     private double worldY;
     private double worldZ;
 
-    // 着色相关
     private int drawBrightness;
     private int biomeColor;
 
-    // 颜色四角
     private float colorTL_R;
     private float colorTL_G;
     private float colorTL_B;
@@ -123,38 +98,170 @@ public class RenderContext {
     private float colorBR_G;
     private float colorBR_B;
 
-    // 亮度四角
     private int brightnessTL;
     private int brightnessTR;
     private int brightnessBL;
     private int brightnessBR;
 
-    // ========== 控制标志 ==========
     private boolean drewAny;
     private boolean pipelineFailed;
     private String failureReason;
+    private final PipelineDebugTrace debugTrace = new PipelineDebugTrace();
 
-    private RenderContext() {
-        this.invocationContext = RenderInvocationContextHolder.getIfAvailable();
-    }
+    private RenderContext() {}
 
     public void reset() {
         this.drewAny = false;
         this.pipelineFailed = false;
         this.failureReason = null;
         this.debugTrace.clear();
+        this.renderBranch = null;
+        this.modelId = null;
+        this.modelData = null;
+        this.elements = Collections.emptyList();
+        this.currentElement = null;
+        this.currentElementIndex = 0;
+        this.textureData = null;
+        this.drawIcon = null;
+        this.baseData = null;
+        this.textureKey = null;
+        this.connectionPredicate = null;
+        this.iconMinU = 0;
+        this.iconMaxU = 0;
+        this.iconMinV = 0;
+        this.iconMaxV = 0;
+        this.gridW = 0;
+        this.gridH = 0;
+        this.tileX = 0;
+        this.tileY = 0;
+        this.connectionMask = 0;
+        this.randomIndex = 0;
+        this.tilePosition = null;
+        this.drawRelMinX = 0;
+        this.drawRelMaxX = 0;
+        this.drawRelMinY = 0;
+        this.drawRelMaxY = 0;
+        this.drawRelMinZ = 0;
+        this.drawRelMaxZ = 0;
+        this.drawMinU = 0;
+        this.drawMaxU = 0;
+        this.drawMinV = 0;
+        this.drawMaxV = 0;
+        this.worldX = 0;
+        this.worldY = 0;
+        this.worldZ = 0;
+        this.drawBrightness = 0;
+        this.biomeColor = 0;
+        this.colorTL_R = 0;
+        this.colorTL_G = 0;
+        this.colorTL_B = 0;
+        this.colorTR_R = 0;
+        this.colorTR_G = 0;
+        this.colorTR_B = 0;
+        this.colorBL_R = 0;
+        this.colorBL_G = 0;
+        this.colorBL_B = 0;
+        this.colorBR_R = 0;
+        this.colorBR_G = 0;
+        this.colorBR_B = 0;
+        this.brightnessTL = 0;
+        this.brightnessTR = 0;
+        this.brightnessBL = 0;
+        this.brightnessBR = 0;
     }
 
-    // ========== 决策结果存储 ==========
+    public int getFaceRenderCount(ForgeDirection face) {
+        return faceRenderCount[face.ordinal()];
+    }
+
+    public void incrementFaceRenderCount(ForgeDirection face) {
+        faceRenderCount[face.ordinal()]++;
+    }
+
+    public void resetFaceRenderCount() {
+        Arrays.fill(faceRenderCount, 0);
+    }
+
+    public IIcon getOriginalIcon() {
+        return originalIcon;
+    }
+
+    public void setOriginalIcon(IIcon originalIcon) {
+        this.originalIcon = originalIcon;
+    }
+
+    public RenderBlocks getRenderBlocks() {
+        return renderBlocks;
+    }
+
+    public void setRenderBlocks(RenderBlocks renderBlocks) {
+        this.renderBlocks = renderBlocks;
+    }
+
+    public IBlockAccess getBlockAccess() {
+        return blockAccess;
+    }
+
+    public void setBlockAccess(IBlockAccess blockAccess) {
+        this.blockAccess = blockAccess;
+    }
+
+    public Block getBlock() {
+        return block;
+    }
+
+    public void setBlock(Block block) {
+        this.block = block;
+    }
+
+    public double getBlockX() {
+        return blockX;
+    }
+
+    public void setBlockX(double blockX) {
+        this.blockX = blockX;
+    }
+
+    public double getBlockY() {
+        return blockY;
+    }
+
+    public void setBlockY(double blockY) {
+        this.blockY = blockY;
+    }
+
+    public double getBlockZ() {
+        return blockZ;
+    }
+
+    public void setBlockZ(double blockZ) {
+        this.blockZ = blockZ;
+    }
+
+    public int getMeta() {
+        return meta;
+    }
+
+    public void setMeta(int meta) {
+        this.meta = meta;
+    }
+
+    public ForgeDirection getFace() {
+        return face;
+    }
+
+    public void setFace(ForgeDirection face) {
+        this.face = face;
+    }
+
     public RenderBranch getRenderBranch() {
         return renderBranch;
     }
 
-    public void setRenderBranch(RenderBranch branch) {
-        this.renderBranch = branch;
+    public void setRenderBranch(RenderBranch renderBranch) {
+        this.renderBranch = renderBranch;
     }
 
-    // ========== Model 数据 Getter/Setter ==========
     public String getModelId() {
         return modelId;
     }
@@ -179,486 +286,429 @@ public class RenderContext {
         this.elements = elements;
     }
 
-    // ========== 输入数据 Getter（委托给 invocationContext） ==========
-    public RenderBlocks getRenderBlocks() {
-        return invocationContext.getRenderBlocks();
-    }
-
-    public IBlockAccess getBlockAccess() {
-        return invocationContext.getBlockAccess();
-    }
-
-    public Block getBlock() {
-        return invocationContext.getBlock();
-    }
-
-    public double getX() {
-        return invocationContext.getX();
-    }
-
-    public double getY() {
-        return invocationContext.getY();
-    }
-
-    public double getZ() {
-        return invocationContext.getZ();
-    }
-
-    public int getMeta() {
-        return invocationContext.getMeta();
-    }
-
-    public ForgeDirection getFace() {
-        return invocationContext.getCurrentFace();
-    }
-
-    public IIcon getOriginalIcon() {
-        return invocationContext.getCurrentIcon();
-    }
-
-    public String getIconName() {
-        return invocationContext.getIconName();
-    }
-
-    public boolean isItemRender() {
-        RenderType type = invocationContext.getRenderType();
-        return type == RenderType.ITEM || type == RenderType.BLOCK_AS_ITEM;
-    }
-
-    public RenderType getRenderType() {
-        return invocationContext.getRenderType();
-    }
-
-    // ========== 模型/材质相关 Getter/Setter ==========
     public ModelElement getCurrentElement() {
         return currentElement;
     }
 
-    public void setCurrentElement(ModelElement element) {
-        this.currentElement = element;
+    public void setCurrentElement(ModelElement currentElement) {
+        this.currentElement = currentElement;
     }
 
     public int getCurrentElementIndex() {
         return currentElementIndex;
     }
 
-    public void setCurrentElementIndex(int index) {
-        this.currentElementIndex = index;
+    public void setCurrentElementIndex(int currentElementIndex) {
+        this.currentElementIndex = currentElementIndex;
     }
 
     public TextureTypeData getTextureData() {
         return textureData;
     }
 
-    public void setTextureData(TextureTypeData data) {
-        this.textureData = data;
+    public void setTextureData(TextureTypeData textureData) {
+        this.textureData = textureData;
     }
 
     public IIcon getDrawIcon() {
         return drawIcon;
     }
 
-    public void setDrawIcon(IIcon icon) {
-        this.drawIcon = icon;
+    public void setDrawIcon(IIcon drawIcon) {
+        this.drawIcon = drawIcon;
     }
 
     public BaseTextureData getBaseData() {
         return baseData;
     }
 
-    public void setBaseData(BaseTextureData data) {
-        this.baseData = data;
+    public void setBaseData(BaseTextureData baseData) {
+        this.baseData = baseData;
     }
 
     public String getTextureKey() {
         return textureKey;
     }
 
-    public void setTextureKey(String key) {
-        this.textureKey = key;
-    }
-
-    // ========== 纹理坐标相关 Getter/Setter ==========
-    public int getConnectionMask() {
-        return connectionMask;
-    }
-
-    public void setConnectionMask(int mask) {
-        this.connectionMask = mask;
-    }
-
-    public int getRandomIndex() {
-        return randomIndex;
-    }
-
-    public void setRandomIndex(int index) {
-        this.randomIndex = index;
-    }
-
-    public int[] getTilePosition() {
-        return tilePosition;
-    }
-
-    public void setTilePosition(int[] pos) {
-        this.tilePosition = pos;
-    }
-
-    // ========== 原始 UV（只读） ==========
-    public double getIconMinU() {
-        return iconMinU;
-    }
-
-    public double getIconMaxU() {
-        return iconMaxU;
-    }
-
-    public double getIconMinV() {
-        return iconMinV;
-    }
-
-    public double getIconMaxV() {
-        return iconMaxV;
-    }
-
-    public void setIconMinU(double u) {
-        this.iconMinU = u;
-    }
-
-    public void setIconMaxU(double u) {
-        this.iconMaxU = u;
-    }
-
-    public void setIconMinV(double v) {
-        this.iconMinV = v;
-    }
-
-    public void setIconMaxV(double v) {
-        this.iconMaxV = v;
-    }
-
-    // ========== Tile 位置 ==========
-    public int getTileX() {
-        return tileX;
-    }
-
-    public int getTileY() {
-        return tileY;
-    }
-
-    public void setTileX(int x) {
-        this.tileX = x;
-    }
-
-    public void setTileY(int y) {
-        this.tileY = y;
-    }
-
-    // ========== Grid 尺寸 ==========
-    public int getGridW() {
-        return gridW;
-    }
-
-    public int getGridH() {
-        return gridH;
-    }
-
-    public void setGridW(int w) {
-        this.gridW = w;
-    }
-
-    public void setGridH(int h) {
-        this.gridH = h;
-    }
-
-    // ========== UV 相关 Getter/Setter ==========
-    public double getDrawMinU() {
-        return drawMinU;
-    }
-
-    public void setDrawMinU(double u) {
-        this.drawMinU = u;
-    }
-
-    public double getDrawMaxU() {
-        return drawMaxU;
-    }
-
-    public void setDrawMaxU(double u) {
-        this.drawMaxU = u;
-    }
-
-    public double getDrawMinV() {
-        return drawMinV;
-    }
-
-    public void setDrawMinV(double v) {
-        this.drawMinV = v;
-    }
-
-    public double getDrawMaxV() {
-        return drawMaxV;
-    }
-
-    public void setDrawMaxV(double v) {
-        this.drawMaxV = v;
-    }
-
-    // ========== 几何相关 Getter/Setter ==========
-    public double getDrawRelMinX() {
-        return drawRelMinX;
-    }
-
-    public void setDrawRelMinX(double x) {
-        this.drawRelMinX = x;
-    }
-
-    public double getDrawRelMaxX() {
-        return drawRelMaxX;
-    }
-
-    public void setDrawRelMaxX(double x) {
-        this.drawRelMaxX = x;
-    }
-
-    public double getDrawRelMinY() {
-        return drawRelMinY;
-    }
-
-    public void setDrawRelMinY(double y) {
-        this.drawRelMinY = y;
-    }
-
-    public void setDrawRelMaxY(double y) {
-        this.drawRelMaxY = y;
-    }
-
-    public double getDrawRelMaxY() {
-        return drawRelMaxY;
-    }
-
-    public double getDrawRelMinZ() {
-        return drawRelMinZ;
-    }
-
-    public void setDrawRelMinZ(double z) {
-        this.drawRelMinZ = z;
-    }
-
-    public double getDrawRelMaxZ() {
-        return drawRelMaxZ;
-    }
-
-    public void setDrawRelMaxZ(double z) {
-        this.drawRelMaxZ = z;
-    }
-
-    // ========== 世界坐标 Getter/Setter ==========
-    public double getWorldX() {
-        return worldX;
-    }
-
-    public void setWorldX(double x) {
-        this.worldX = x;
-    }
-
-    public double getWorldY() {
-        return worldY;
-    }
-
-    public void setWorldY(double y) {
-        this.worldY = y;
-    }
-
-    public double getWorldZ() {
-        return worldZ;
-    }
-
-    public void setWorldZ(double z) {
-        this.worldZ = z;
-    }
-
-    // ========== 着色相关 Getter/Setter ==========
-    public int getDrawBrightness() {
-        return drawBrightness;
-    }
-
-    public void setDrawBrightness(int brightness) {
-        this.drawBrightness = brightness;
-    }
-
-    public int getBiomeColor() {
-        return biomeColor;
-    }
-
-    public void setBiomeColor(int color) {
-        this.biomeColor = color;
-    }
-
-    public boolean needsBiomeTinting() {
-        return baseData != null && baseData.getTinting() != null;
-    }
-
-    // ========== 颜色四角 Getter/Setter ==========
-    public float getColorTL_R() {
-        return colorTL_R;
-    }
-
-    public void setColorTL_R(float r) {
-        this.colorTL_R = r;
-    }
-
-    public float getColorTL_G() {
-        return colorTL_G;
-    }
-
-    public void setColorTL_G(float g) {
-        this.colorTL_G = g;
-    }
-
-    public float getColorTL_B() {
-        return colorTL_B;
-    }
-
-    public void setColorTL_B(float b) {
-        this.colorTL_B = b;
-    }
-
-    public float getColorTR_R() {
-        return colorTR_R;
-    }
-
-    public void setColorTR_R(float r) {
-        this.colorTR_R = r;
-    }
-
-    public float getColorTR_G() {
-        return colorTR_G;
-    }
-
-    public void setColorTR_G(float g) {
-        this.colorTR_G = g;
-    }
-
-    public float getColorTR_B() {
-        return colorTR_B;
-    }
-
-    public void setColorTR_B(float b) {
-        this.colorTR_B = b;
-    }
-
-    public float getColorBL_R() {
-        return colorBL_R;
-    }
-
-    public void setColorBL_R(float r) {
-        this.colorBL_R = r;
-    }
-
-    public float getColorBL_G() {
-        return colorBL_G;
-    }
-
-    public void setColorBL_G(float g) {
-        this.colorBL_G = g;
-    }
-
-    public float getColorBL_B() {
-        return colorBL_B;
-    }
-
-    public void setColorBL_B(float b) {
-        this.colorBL_B = b;
-    }
-
-    public float getColorBR_R() {
-        return colorBR_R;
-    }
-
-    public void setColorBR_R(float r) {
-        this.colorBR_R = r;
-    }
-
-    public float getColorBR_G() {
-        return colorBR_G;
-    }
-
-    public void setColorBR_G(float g) {
-        this.colorBR_G = g;
-    }
-
-    public float getColorBR_B() {
-        return colorBR_B;
-    }
-
-    public void setColorBR_B(float b) {
-        this.colorBR_B = b;
-    }
-
-    // ========== 亮度四角 Getter/Setter ==========
-    public int getBrightnessTL() {
-        return brightnessTL;
-    }
-
-    public void setBrightnessTL(int b) {
-        this.brightnessTL = b;
-    }
-
-    public int getBrightnessTR() {
-        return brightnessTR;
-    }
-
-    public void setBrightnessTR(int b) {
-        this.brightnessTR = b;
-    }
-
-    public int getBrightnessBL() {
-        return brightnessBL;
-    }
-
-    public void setBrightnessBL(int b) {
-        this.brightnessBL = b;
-    }
-
-    public int getBrightnessBR() {
-        return brightnessBR;
-    }
-
-    public void setBrightnessBR(int b) {
-        this.brightnessBR = b;
+    public void setTextureKey(String textureKey) {
+        this.textureKey = textureKey;
     }
 
     public ConnectionPredicate getConnectionPredicate() {
         return connectionPredicate;
     }
 
-    public void setConnectionPredicate(ConnectionPredicate predicate) {
-        this.connectionPredicate = predicate;
+    public void setConnectionPredicate(ConnectionPredicate connectionPredicate) {
+        this.connectionPredicate = connectionPredicate;
     }
 
-    // ========== Debug ==========
+    public double getIconMinU() {
+        return iconMinU;
+    }
+
+    public void setIconMinU(double iconMinU) {
+        this.iconMinU = iconMinU;
+    }
+
+    public double getIconMaxU() {
+        return iconMaxU;
+    }
+
+    public void setIconMaxU(double iconMaxU) {
+        this.iconMaxU = iconMaxU;
+    }
+
+    public double getIconMinV() {
+        return iconMinV;
+    }
+
+    public void setIconMinV(double iconMinV) {
+        this.iconMinV = iconMinV;
+    }
+
+    public double getIconMaxV() {
+        return iconMaxV;
+    }
+
+    public void setIconMaxV(double iconMaxV) {
+        this.iconMaxV = iconMaxV;
+    }
+
+    public int getGridW() {
+        return gridW;
+    }
+
+    public void setGridW(int gridW) {
+        this.gridW = gridW;
+    }
+
+    public int getGridH() {
+        return gridH;
+    }
+
+    public void setGridH(int gridH) {
+        this.gridH = gridH;
+    }
+
+    public int getTileX() {
+        return tileX;
+    }
+
+    public void setTileX(int tileX) {
+        this.tileX = tileX;
+    }
+
+    public int getTileY() {
+        return tileY;
+    }
+
+    public void setTileY(int tileY) {
+        this.tileY = tileY;
+    }
+
+    public int getConnectionMask() {
+        return connectionMask;
+    }
+
+    public void setConnectionMask(int connectionMask) {
+        this.connectionMask = connectionMask;
+    }
+
+    public int getRandomIndex() {
+        return randomIndex;
+    }
+
+    public void setRandomIndex(int randomIndex) {
+        this.randomIndex = randomIndex;
+    }
+
+    public int[] getTilePosition() {
+        return tilePosition;
+    }
+
+    public void setTilePosition(int[] tilePosition) {
+        this.tilePosition = tilePosition;
+    }
+
+    public double getDrawRelMinX() {
+        return drawRelMinX;
+    }
+
+    public void setDrawRelMinX(double drawRelMinX) {
+        this.drawRelMinX = drawRelMinX;
+    }
+
+    public double getDrawRelMaxX() {
+        return drawRelMaxX;
+    }
+
+    public void setDrawRelMaxX(double drawRelMaxX) {
+        this.drawRelMaxX = drawRelMaxX;
+    }
+
+    public double getDrawRelMinY() {
+        return drawRelMinY;
+    }
+
+    public void setDrawRelMinY(double drawRelMinY) {
+        this.drawRelMinY = drawRelMinY;
+    }
+
+    public double getDrawRelMaxY() {
+        return drawRelMaxY;
+    }
+
+    public void setDrawRelMaxY(double drawRelMaxY) {
+        this.drawRelMaxY = drawRelMaxY;
+    }
+
+    public double getDrawRelMinZ() {
+        return drawRelMinZ;
+    }
+
+    public void setDrawRelMinZ(double drawRelMinZ) {
+        this.drawRelMinZ = drawRelMinZ;
+    }
+
+    public double getDrawRelMaxZ() {
+        return drawRelMaxZ;
+    }
+
+    public void setDrawRelMaxZ(double drawRelMaxZ) {
+        this.drawRelMaxZ = drawRelMaxZ;
+    }
+
+    public double getDrawMinU() {
+        return drawMinU;
+    }
+
+    public void setDrawMinU(double drawMinU) {
+        this.drawMinU = drawMinU;
+    }
+
+    public double getDrawMaxU() {
+        return drawMaxU;
+    }
+
+    public void setDrawMaxU(double drawMaxU) {
+        this.drawMaxU = drawMaxU;
+    }
+
+    public double getDrawMinV() {
+        return drawMinV;
+    }
+
+    public void setDrawMinV(double drawMinV) {
+        this.drawMinV = drawMinV;
+    }
+
+    public double getDrawMaxV() {
+        return drawMaxV;
+    }
+
+    public void setDrawMaxV(double drawMaxV) {
+        this.drawMaxV = drawMaxV;
+    }
+
+    public double getWorldX() {
+        return worldX;
+    }
+
+    public void setWorldX(double worldX) {
+        this.worldX = worldX;
+    }
+
+    public double getWorldY() {
+        return worldY;
+    }
+
+    public void setWorldY(double worldY) {
+        this.worldY = worldY;
+    }
+
+    public double getWorldZ() {
+        return worldZ;
+    }
+
+    public void setWorldZ(double worldZ) {
+        this.worldZ = worldZ;
+    }
+
+    public int getDrawBrightness() {
+        return drawBrightness;
+    }
+
+    public void setDrawBrightness(int drawBrightness) {
+        this.drawBrightness = drawBrightness;
+    }
+
+    public int getBiomeColor() {
+        return biomeColor;
+    }
+
+    public void setBiomeColor(int biomeColor) {
+        this.biomeColor = biomeColor;
+    }
+
+    public float getColorTL_R() {
+        return colorTL_R;
+    }
+
+    public void setColorTL_R(float colorTL_R) {
+        this.colorTL_R = colorTL_R;
+    }
+
+    public float getColorTL_G() {
+        return colorTL_G;
+    }
+
+    public void setColorTL_G(float colorTL_G) {
+        this.colorTL_G = colorTL_G;
+    }
+
+    public float getColorTL_B() {
+        return colorTL_B;
+    }
+
+    public void setColorTL_B(float colorTL_B) {
+        this.colorTL_B = colorTL_B;
+    }
+
+    public float getColorTR_R() {
+        return colorTR_R;
+    }
+
+    public void setColorTR_R(float colorTR_R) {
+        this.colorTR_R = colorTR_R;
+    }
+
+    public float getColorTR_G() {
+        return colorTR_G;
+    }
+
+    public void setColorTR_G(float colorTR_G) {
+        this.colorTR_G = colorTR_G;
+    }
+
+    public float getColorTR_B() {
+        return colorTR_B;
+    }
+
+    public void setColorTR_B(float colorTR_B) {
+        this.colorTR_B = colorTR_B;
+    }
+
+    public float getColorBL_R() {
+        return colorBL_R;
+    }
+
+    public void setColorBL_R(float colorBL_R) {
+        this.colorBL_R = colorBL_R;
+    }
+
+    public float getColorBL_G() {
+        return colorBL_G;
+    }
+
+    public void setColorBL_G(float colorBL_G) {
+        this.colorBL_G = colorBL_G;
+    }
+
+    public float getColorBL_B() {
+        return colorBL_B;
+    }
+
+    public void setColorBL_B(float colorBL_B) {
+        this.colorBL_B = colorBL_B;
+    }
+
+    public float getColorBR_R() {
+        return colorBR_R;
+    }
+
+    public void setColorBR_R(float colorBR_R) {
+        this.colorBR_R = colorBR_R;
+    }
+
+    public float getColorBR_G() {
+        return colorBR_G;
+    }
+
+    public void setColorBR_G(float colorBR_G) {
+        this.colorBR_G = colorBR_G;
+    }
+
+    public float getColorBR_B() {
+        return colorBR_B;
+    }
+
+    public void setColorBR_B(float colorBR_B) {
+        this.colorBR_B = colorBR_B;
+    }
+
+    public int getBrightnessTL() {
+        return brightnessTL;
+    }
+
+    public void setBrightnessTL(int brightnessTL) {
+        this.brightnessTL = brightnessTL;
+    }
+
+    public int getBrightnessTR() {
+        return brightnessTR;
+    }
+
+    public void setBrightnessTR(int brightnessTR) {
+        this.brightnessTR = brightnessTR;
+    }
+
+    public int getBrightnessBL() {
+        return brightnessBL;
+    }
+
+    public void setBrightnessBL(int brightnessBL) {
+        this.brightnessBL = brightnessBL;
+    }
+
+    public int getBrightnessBR() {
+        return brightnessBR;
+    }
+
+    public void setBrightnessBR(int brightnessBR) {
+        this.brightnessBR = brightnessBR;
+    }
+
+    public boolean isDrewAny() {
+        return drewAny;
+    }
+
+    public void setDrewAny(boolean drewAny) {
+        this.drewAny = drewAny;
+    }
+
+    public boolean isPipelineFailed() {
+        return pipelineFailed;
+    }
+
+    public void failPipeline(String reason) {
+        this.pipelineFailed = true;
+        this.failureReason = reason;
+        debug("PIPELINE FAILED: " + reason);
+    }
+
+    public String getFailureReason() {
+        return failureReason;
+    }
+
+    public void resetPipelineFailed() {
+        this.pipelineFailed = false;
+        this.failureReason = null;
+    }
+
     public PipelineDebugTrace getDebugTrace() {
         return debugTrace;
     }
 
-    /**
-     * 检查当前渲染的方块是否为调试目标（光标指向的方块）
-     * 
-     * <p>
-     * <strong>判断条件：</strong>
-     * </p>
-     * <ul>
-     * <li>{@code MyCTMLib.debugMode = true}</li>
-     * <li>当前渲染坐标与光标指向的方块坐标一致</li>
-     * </ul>
-     * 
-     * <p>
-     * <strong>用途：</strong>只在渲染光标方块时创建 debug trace，大幅减少性能开销。
-     * 即使 {@code debugMode=true}，其他方块也不会创建 trace。
-     * </p>
-     * 
-     * @return true 当且仅当 debugMode=true 且当前方块是光标指向的方块
-     */
     public boolean isDebug() {
         if (!com.github.wohaopa.MyCTMLib.MyCTMLib.debugMode) {
             return false;
@@ -674,10 +724,9 @@ public class RenderContext {
         int focusY = mc.objectMouseOver.blockY;
         int focusZ = mc.objectMouseOver.blockZ;
 
-        return (int) getX() == focusX && (int) getY() == focusY && (int) getZ() == focusZ;
+        return (int) getBlockX() == focusX && (int) getBlockY() == focusY && (int) getBlockZ() == focusZ;
     }
 
-    // ========== Debug 日志（支持懒加载） ==========
     public void trace(String msg) {
         if (!isDebug()) return;
         debugTrace.trace(msg);
@@ -737,32 +786,7 @@ public class RenderContext {
         debug(message);
     }
 
-    // ========== 控制标志 ==========
-    public boolean isDrewAny() {
-        return drewAny;
-    }
-
-    public void setDrewAny(boolean drew) {
-        this.drewAny = drew;
-    }
-
-    // ========== 管道失败标志 ==========
-    public void failPipeline(String reason) {
-        pipelineFailed = true;
-        failureReason = reason;
-        debug("PIPELINE FAILED: " + reason);
-    }
-
-    public boolean isPipelineFailed() {
-        return pipelineFailed;
-    }
-
-    public String getFailureReason() {
-        return failureReason;
-    }
-
-    public void resetPipelineFailed() {
-        pipelineFailed = false;
-        failureReason = null;
+    public boolean needsBiomeTinting() {
+        return baseData != null && baseData.getTinting() != null;
     }
 }

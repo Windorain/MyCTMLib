@@ -15,6 +15,7 @@ import com.github.wohaopa.MyCTMLib.render.pipelines.RandomTilePipeline;
 import com.github.wohaopa.MyCTMLib.texture.BaseTextureData;
 import com.github.wohaopa.MyCTMLib.texture.ConnectingTextureData;
 import com.github.wohaopa.MyCTMLib.texture.RandomTextureData;
+import com.github.wohaopa.MyCTMLib.texture.TextureKeyNormalizer;
 import com.github.wohaopa.MyCTMLib.texture.TextureTypeData;
 
 /**
@@ -51,9 +52,9 @@ public class RenderPipeline {
                 ctx.getRenderBlocks(),
                 ctx.getBlockAccess(),
                 ctx.getBlock(),
-                ctx.getX(),
-                ctx.getY(),
-                ctx.getZ(),
+                ctx.getBlockX(),
+                ctx.getBlockY(),
+                ctx.getBlockZ(),
                 ctx.getOriginalIcon(),
                 ctx.getFace());
         }
@@ -62,7 +63,7 @@ public class RenderPipeline {
     }
 
     private RenderBranch decideRenderBranch(RenderContext ctx) {
-        if (ctx.isItemRender()) {
+        if (ctx.getBlockAccess() == null) {
             return RenderBranch.ITEM;
         }
 
@@ -74,7 +75,9 @@ public class RenderPipeline {
             return RenderBranch.TEXTURE_RELOC;
         }
 
-        String iconName = ctx.getIconName();
+        String iconName = TextureKeyNormalizer.normalizeIconName(
+            ctx.getOriginalIcon()
+                .getIconName());
         if (shouldUseLegacy(iconName)) {
             return RenderBranch.LEGACY;
         }
@@ -147,9 +150,9 @@ public class RenderPipeline {
             ctx.getRenderBlocks(),
             ctx.getBlockAccess(),
             ctx.getBlock(),
-            ctx.getX(),
-            ctx.getY(),
-            ctx.getZ(),
+            ctx.getBlockX(),
+            ctx.getBlockY(),
+            ctx.getBlockZ(),
             ctx.getOriginalIcon(),
             ctx.getFace());
         ctx.setDrewAny(result);
