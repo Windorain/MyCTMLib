@@ -2,7 +2,6 @@ package com.github.wohaopa.MyCTMLib.render;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import net.minecraft.block.Block;
@@ -606,15 +605,7 @@ public final class CTMRenderEntry {
     }
 
     public static String getBlockId(Block block) {
-        Iterator<?> it = Block.blockRegistry.getKeys()
-            .iterator();
-        while (it.hasNext()) {
-            Object key = it.next();
-            if (key instanceof String && Block.blockRegistry.getObject(key) == block) {
-                return (String) key;
-            }
-        }
-        return null;
+        return block != null ? (String) Block.blockRegistry.getNameForObject(block) : null;
     }
 
     public static List<ModelElement> getElementsWithFace(ModelData modelData, ForgeDirection face) {
