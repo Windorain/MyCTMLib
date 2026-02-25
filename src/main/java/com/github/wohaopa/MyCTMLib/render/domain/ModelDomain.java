@@ -9,6 +9,8 @@ import com.github.wohaopa.MyCTMLib.model.ModelRegistry;
 import com.github.wohaopa.MyCTMLib.render.CTMRenderEntry;
 import com.github.wohaopa.MyCTMLib.render.context.RenderContext;
 
+import net.minecraft.block.Block;
+
 /**
  * Model 数据域
  * 
@@ -71,7 +73,7 @@ public final class ModelDomain {
         return true;
     }
 
-    private static String getBlockId(net.minecraft.block.Block block) {
+    private static String getBlockId(Block block) {
         return block != null ? CTMRenderEntry.getBlockId(block) : null;
     }
 }

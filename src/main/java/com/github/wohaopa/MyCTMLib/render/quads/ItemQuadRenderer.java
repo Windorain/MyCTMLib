@@ -1,4 +1,4 @@
-package com.github.wohaopa.MyCTMLib.render.pipelines;
+package com.github.wohaopa.MyCTMLib.render.quads;
 
 import com.github.wohaopa.MyCTMLib.render.context.RenderContext;
 import com.github.wohaopa.MyCTMLib.render.domain.BrightnessDomain;
@@ -7,28 +7,32 @@ import com.github.wohaopa.MyCTMLib.render.domain.GeometryDomain;
 import com.github.wohaopa.MyCTMLib.render.domain.PositionDomain;
 import com.github.wohaopa.MyCTMLib.render.domain.TileDomain;
 import com.github.wohaopa.MyCTMLib.render.domain.UVDomain;
-import com.github.wohaopa.MyCTMLib.render.phasegroups.RenderGroup;
 
 /**
- * Base 材质渲染管道
+ * Item _quad 渲染器（Item 分支专用）
+ * 
+ * <p>
+ * 从 RenderBlocks 提取几何数据，适用于 ITEM 分支（物品渲染）。
+ * </p>
  */
-public final class BaseTilePipeline {
+public final class ItemQuadRenderer {
 
-    private BaseTilePipeline() {}
+    private ItemQuadRenderer() {}
 
-    public static void execute(RenderContext ctx) {
+    /**
+     * 渲染 Base 材质面（物品渲染）
+     */
+    public static void renderBase(RenderContext ctx) {
         TileDomain.computeBase(ctx);
-        GeometryDomain.fromElement(ctx);
+        GeometryDomain.fromRenderBlocks(ctx);
         UVDomain.calc(ctx);
         PositionDomain.calc(ctx);
-        if (ctx.getRenderBlocks().enableAO) {
-            BrightnessDomain.setFullAO(ctx);
-            ColorDomain.computeAO(ctx);
-        } else {
-            BrightnessDomain.setFullUniform(ctx);
-            ColorDomain.computeUniform(ctx);
-        }
-        RenderGroup.renderFace(ctx);
+
+        BrightnessDomain.setFullUniform(ctx);
+        ColorDomain.computeUniform(ctx);
+
+        QuadRender.drawFace(ctx);
+
         if (!ctx.isPipelineFailed()) {
             ctx.setDrewAny(true);
         }

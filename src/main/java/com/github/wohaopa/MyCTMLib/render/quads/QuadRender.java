@@ -1,4 +1,4 @@
-package com.github.wohaopa.MyCTMLib.render.phasegroups;
+package com.github.wohaopa.MyCTMLib.render.quads;
 
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraftforge.common.util.ForgeDirection;
@@ -7,13 +7,13 @@ import com.github.wohaopa.MyCTMLib.GTNHIntegrationHelper;
 import com.github.wohaopa.MyCTMLib.render.context.RenderContext;
 
 /**
- * 渲染输出组（纯提交层，零计算）
+ * _quad 渲染（纯提交层，零计算）
  * 
  * <p>
- * 本组方法假设所有输入数据已由上游 Domain 计算完毕。
+ * 本类方法假设所有输入数据已由上游 Domain 计算完毕。
  * </p>
  */
-public final class RenderGroup {
+public final class QuadRender {
 
     private static final int CORNER_TOP_LEFT = 0;
     private static final int CORNER_TOP_RIGHT = 1;
@@ -29,7 +29,7 @@ public final class RenderGroup {
         { CORNER_TOP_LEFT, CORNER_BOTTOM_LEFT, CORNER_BOTTOM_RIGHT, CORNER_TOP_RIGHT }, // EAST
     };
 
-    private RenderGroup() {}
+    private QuadRender() {}
 
     /**
      * 渲染面（纯提交，零计算）
@@ -45,7 +45,7 @@ public final class RenderGroup {
      * <li>ColorDomain 已调用：color 四角</li>
      * </ul>
      */
-    public static void renderFace(RenderContext ctx) {
+    public static void drawFace(RenderContext ctx) {
         Tessellator tes = GTNHIntegrationHelper.getGTNHLibTessellator();
 
         double minU = ctx.getDrawMinU();

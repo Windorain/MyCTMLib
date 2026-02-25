@@ -9,9 +9,9 @@ import com.github.wohaopa.MyCTMLib.render.CTMRenderEntry;
 import com.github.wohaopa.MyCTMLib.render.context.RenderContext;
 import com.github.wohaopa.MyCTMLib.render.domain.ModelDomain;
 import com.github.wohaopa.MyCTMLib.render.domain.TextureDomain;
-import com.github.wohaopa.MyCTMLib.render.pipelines.BaseTilePipeline;
-import com.github.wohaopa.MyCTMLib.render.pipelines.ConnectingTilePipeline;
-import com.github.wohaopa.MyCTMLib.render.pipelines.RandomTilePipeline;
+import com.github.wohaopa.MyCTMLib.render.quads.ElementQuadRenderer;
+import com.github.wohaopa.MyCTMLib.render.quads.ItemQuadRenderer;
+import com.github.wohaopa.MyCTMLib.render.quads.RenderBlocksQuadRenderer;
 import com.github.wohaopa.MyCTMLib.texture.BaseTextureData;
 import com.github.wohaopa.MyCTMLib.texture.ConnectingTextureData;
 import com.github.wohaopa.MyCTMLib.texture.RandomTextureData;
@@ -122,11 +122,11 @@ public class RenderPipeline {
             }
 
             if (ctx.getTextureData() instanceof BaseTextureData) {
-                BaseTilePipeline.execute(ctx);
+                ElementQuadRenderer.renderBase(ctx);
             } else if (ctx.getTextureData() instanceof RandomTextureData) {
-                RandomTilePipeline.execute(ctx);
+                ElementQuadRenderer.renderRandom(ctx);
             } else if (ctx.getTextureData() instanceof ConnectingTextureData) {
-                ConnectingTilePipeline.execute(ctx);
+                ElementQuadRenderer.renderConnecting(ctx);
             } else {
                 ctx.debug(() -> "RENDER: Unknown texture data type: " + ctx.getTextureData());
                 ctx.failPipeline("Unknown texture data type: " + ctx.getTextureData());
@@ -137,11 +137,11 @@ public class RenderPipeline {
     private void executeTextureRelocBranch(RenderContext ctx) {
         TextureTypeData data = ctx.getTextureData();
         if (data instanceof BaseTextureData) {
-            BaseTilePipeline.execute(ctx);
+            RenderBlocksQuadRenderer.renderBase(ctx);
         } else if (data instanceof RandomTextureData) {
-            RandomTilePipeline.execute(ctx);
+            RenderBlocksQuadRenderer.renderRandom(ctx);
         } else if (data instanceof ConnectingTextureData) {
-            ConnectingTilePipeline.execute(ctx);
+            RenderBlocksQuadRenderer.renderConnecting(ctx);
         }
     }
 
@@ -159,6 +159,6 @@ public class RenderPipeline {
     }
 
     private void executeItemBranch(RenderContext ctx) {
-        BaseTilePipeline.execute(ctx);
+        ItemQuadRenderer.renderBase(ctx);
     }
 }
