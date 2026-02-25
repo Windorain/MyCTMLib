@@ -752,8 +752,12 @@ public final class CTMRenderEntry {
                 trace.setGridInfo(context.getGridW(), context.getGridH());
 
                 ForgeDirection face = context.getFace();
-                RenderPipelineDebugCache
-                    .record((int) context.getBlockX(), (int) context.getBlockY(), (int) context.getBlockZ(), face, trace);
+                RenderPipelineDebugCache.record(
+                    (int) context.getBlockX(),
+                    (int) context.getBlockY(),
+                    (int) context.getBlockZ(),
+                    face,
+                    trace);
 
                 return result;
             } else {

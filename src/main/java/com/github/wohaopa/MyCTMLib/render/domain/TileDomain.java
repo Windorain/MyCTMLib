@@ -39,8 +39,12 @@ public final class TileDomain {
             worldSeed = w.getSeed();
         }
 
-        int randomIndex = FastRandom
-            .getRandomIndex(worldSeed, (int) ctx.getBlockX(), (int) ctx.getBlockY(), (int) ctx.getBlockZ(), rtd.getCount());
+        int randomIndex = FastRandom.getRandomIndex(
+            worldSeed,
+            (int) ctx.getBlockX(),
+            (int) ctx.getBlockY(),
+            (int) ctx.getBlockZ(),
+            rtd.getCount());
         ctx.setRandomIndex(randomIndex);
 
         int tileX = randomIndex % rtd.getColumns();

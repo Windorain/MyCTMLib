@@ -22,7 +22,11 @@ public final class BrightnessDomain {
      */
     public static void computeUniform(RenderContext ctx) {
         int brightness = ctx.getBlock()
-            .getMixedBrightnessForBlock(ctx.getBlockAccess(), (int) ctx.getBlockX(), (int) ctx.getBlockY(), (int) ctx.getBlockZ());
+            .getMixedBrightnessForBlock(
+                ctx.getBlockAccess(),
+                (int) ctx.getBlockX(),
+                (int) ctx.getBlockY(),
+                (int) ctx.getBlockZ());
         ctx.setBrightnessTL(brightness);
         ctx.setBrightnessTR(brightness);
         ctx.setBrightnessBL(brightness);

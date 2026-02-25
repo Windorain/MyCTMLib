@@ -2,14 +2,14 @@ package com.github.wohaopa.MyCTMLib.render.domain;
 
 import java.util.List;
 
+import net.minecraft.block.Block;
+
 import com.github.wohaopa.MyCTMLib.blockstate.BlockStateRegistry;
 import com.github.wohaopa.MyCTMLib.model.ModelData;
 import com.github.wohaopa.MyCTMLib.model.ModelElement;
 import com.github.wohaopa.MyCTMLib.model.ModelRegistry;
 import com.github.wohaopa.MyCTMLib.render.CTMRenderEntry;
 import com.github.wohaopa.MyCTMLib.render.context.RenderContext;
-
-import net.minecraft.block.Block;
 
 /**
  * Model 数据域
