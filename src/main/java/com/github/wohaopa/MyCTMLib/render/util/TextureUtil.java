@@ -32,9 +32,7 @@ public final class TextureUtil {
      */
     public static CTMTextureAtlasSprite findTextureReloc(IIcon originalIcon) {
         if (originalIcon == null) return null;
-
-        String normalizedIconName = TextureKeyNormalizer.normalizeIconName(originalIcon.getIconName());
-        return CTMReLoc.getSprite(normalizedIconName);
+        return CTMReLoc.getSprite(originalIcon.getIconName());
     }
 
     /**

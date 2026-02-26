@@ -108,8 +108,6 @@ public class DebugOverlayHandler {
     private void addStatusSummary(List<String> lines, PipelineDebugTrace trace) {
         String branch = null;
         Boolean drewAny = null;
-        Boolean fallbackToTryRender = null;
-        Boolean tryRenderResult = null;
         String degradationReason = trace.getDegradationReason();
 
         for (String step : trace.getSteps()) {
@@ -117,22 +115,14 @@ public class DebugOverlayHandler {
                 branch = step.substring("Branch: ".length());
             } else if (step.startsWith("New pipeline drewAny: ")) {
                 drewAny = Boolean.parseBoolean(step.substring("New pipeline drewAny: ".length()));
-            } else if (step.equals("Falling back to tryRender()")) {
-                fallbackToTryRender = true;
-            } else if (step.startsWith("tryRender() result: ")) {
-                tryRenderResult = Boolean.parseBoolean(step.substring("tryRender() result: ".length()));
             }
         }
 
         String status = "§7UNKNOWN";
         if (Boolean.TRUE.equals(drewAny)) {
             status = "§aSUCCESS§r (drew directly)";
-        } else if (Boolean.TRUE.equals(tryRenderResult)) {
-            status = "§eFALLBACK§r (tryRender succeeded)";
         } else if (degradationReason != null) {
             status = "§4FAILED§r (vanilla fallback)";
-        } else if (fallbackToTryRender != null) {
-            status = "§eFALLBACK§r (to tryRender)";
         }
 
         lines.add("§f§lStatus:§r " + status);
@@ -141,12 +131,6 @@ public class DebugOverlayHandler {
         }
         if (drewAny != null) {
             lines.add("§f§ldrewAny:§r " + drewAny);
-        }
-        if (fallbackToTryRender != null) {
-            lines.add("§f§lFallback to tryRender():§r " + fallbackToTryRender);
-        }
-        if (tryRenderResult != null) {
-            lines.add("§f§ltryRender() result:§r " + tryRenderResult);
         }
         if (degradationReason != null) {
             lines.add("§f§ldegrade:§r " + degradationReason);

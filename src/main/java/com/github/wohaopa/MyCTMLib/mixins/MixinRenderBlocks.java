@@ -13,10 +13,8 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import com.github.wohaopa.MyCTMLib.Textures;
 import com.github.wohaopa.MyCTMLib.render.CTMRenderEntry;
 import com.github.wohaopa.MyCTMLib.render.context.RenderContext;
-import com.github.wohaopa.MyCTMLib.texture.TextureKeyNormalizer;
 
 @Mixin(RenderBlocks.class)
 public abstract class MixinRenderBlocks {
@@ -56,26 +54,6 @@ public abstract class MixinRenderBlocks {
 
         if (CTMRenderEntry.renderPipeline()) {
             ci.cancel();
-            return;
-        }
-
-        String iconName = TextureKeyNormalizer.normalizeIconName(iIcon.getIconName());
-        if (CTMRenderEntry
-            .tryRender((RenderBlocks) (Object) this, blockAccess, block, x, y, z, iIcon, ForgeDirection.DOWN)) {
-            ci.cancel();
-            return;
-        }
-        if (!Textures.contain(iconName)) return;
-        if (Textures.renderWorldBlock(
-            (RenderBlocks) ((Object) this),
-            blockAccess,
-            block,
-            x,
-            y,
-            z,
-            iIcon,
-            ForgeDirection.DOWN)) {
-            ci.cancel();
         }
     }
 
@@ -107,19 +85,6 @@ public abstract class MixinRenderBlocks {
         }
 
         if (CTMRenderEntry.renderPipeline()) {
-            ci.cancel();
-            return;
-        }
-
-        String iconName = TextureKeyNormalizer.normalizeIconName(iIcon.getIconName());
-        if (CTMRenderEntry
-            .tryRender((RenderBlocks) (Object) this, blockAccess, block, x, y, z, iIcon, ForgeDirection.UP)) {
-            ci.cancel();
-            return;
-        }
-        if (!Textures.contain(iconName)) return;
-        if (Textures
-            .renderWorldBlock((RenderBlocks) ((Object) this), blockAccess, block, x, y, z, iIcon, ForgeDirection.UP)) {
             ci.cancel();
         }
     }
@@ -153,26 +118,6 @@ public abstract class MixinRenderBlocks {
 
         if (CTMRenderEntry.renderPipeline()) {
             ci.cancel();
-            return;
-        }
-
-        String iconName = TextureKeyNormalizer.normalizeIconName(iIcon.getIconName());
-        if (CTMRenderEntry
-            .tryRender((RenderBlocks) (Object) this, blockAccess, block, x, y, z, iIcon, ForgeDirection.NORTH)) {
-            ci.cancel();
-            return;
-        }
-        if (!Textures.contain(iconName)) return;
-        if (Textures.renderWorldBlock(
-            (RenderBlocks) ((Object) this),
-            blockAccess,
-            block,
-            x,
-            y,
-            z,
-            iIcon,
-            ForgeDirection.NORTH)) {
-            ci.cancel();
         }
     }
 
@@ -204,26 +149,6 @@ public abstract class MixinRenderBlocks {
         }
 
         if (CTMRenderEntry.renderPipeline()) {
-            ci.cancel();
-            return;
-        }
-
-        String iconName = TextureKeyNormalizer.normalizeIconName(iIcon.getIconName());
-        if (CTMRenderEntry
-            .tryRender((RenderBlocks) (Object) this, blockAccess, block, x, y, z, iIcon, ForgeDirection.SOUTH)) {
-            ci.cancel();
-            return;
-        }
-        if (!Textures.contain(iconName)) return;
-        if (Textures.renderWorldBlock(
-            (RenderBlocks) ((Object) this),
-            blockAccess,
-            block,
-            x,
-            y,
-            z,
-            iIcon,
-            ForgeDirection.SOUTH)) {
             ci.cancel();
         }
     }
@@ -257,26 +182,6 @@ public abstract class MixinRenderBlocks {
 
         if (CTMRenderEntry.renderPipeline()) {
             ci.cancel();
-            return;
-        }
-
-        String iconName = TextureKeyNormalizer.normalizeIconName(iIcon.getIconName());
-        if (CTMRenderEntry
-            .tryRender((RenderBlocks) (Object) this, blockAccess, block, x, y, z, iIcon, ForgeDirection.WEST)) {
-            ci.cancel();
-            return;
-        }
-        if (!Textures.contain(iconName)) return;
-        if (Textures.renderWorldBlock(
-            (RenderBlocks) ((Object) this),
-            blockAccess,
-            block,
-            x,
-            y,
-            z,
-            iIcon,
-            ForgeDirection.WEST)) {
-            ci.cancel();
         }
     }
 
@@ -308,26 +213,6 @@ public abstract class MixinRenderBlocks {
         }
 
         if (CTMRenderEntry.renderPipeline()) {
-            ci.cancel();
-            return;
-        }
-
-        String iconName = TextureKeyNormalizer.normalizeIconName(iIcon.getIconName());
-        if (CTMRenderEntry
-            .tryRender((RenderBlocks) (Object) this, blockAccess, block, x, y, z, iIcon, ForgeDirection.EAST)) {
-            ci.cancel();
-            return;
-        }
-        if (!Textures.contain(iconName)) return;
-        if (Textures.renderWorldBlock(
-            (RenderBlocks) ((Object) this),
-            blockAccess,
-            block,
-            x,
-            y,
-            z,
-            iIcon,
-            ForgeDirection.EAST)) {
             ci.cancel();
         }
     }

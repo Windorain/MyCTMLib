@@ -42,21 +42,7 @@ public class RenderPipeline {
 
         ctx.info(() -> "COMPLETE: drewAny=" + ctx.isDrewAny());
 
-        boolean drewAny = ctx.isDrewAny();
-        if (!drewAny) {
-            ctx.warn(() -> "New pipeline failed, falling back to tryRender()");
-            drewAny = CTMRenderEntry.tryRender(
-                ctx.getRenderBlocks(),
-                ctx.getBlockAccess(),
-                ctx.getBlock(),
-                ctx.getBlockX(),
-                ctx.getBlockY(),
-                ctx.getBlockZ(),
-                ctx.getOriginalIcon(),
-                ctx.getFace());
-        }
-
-        return drewAny;
+        return ctx.isDrewAny();
     }
 
     private RenderBranch decideRenderBranch(RenderContext ctx) {
