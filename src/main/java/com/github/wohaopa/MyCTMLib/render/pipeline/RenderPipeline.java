@@ -15,32 +15,43 @@ import com.github.wohaopa.MyCTMLib.render.util.TextureUtil;
 import com.github.wohaopa.MyCTMLib.texture.CTMTextureAtlasSprite;
 import com.github.wohaopa.MyCTMLib.texture.TextureKeyNormalizer;
 
-/**
- * 渲染管线（线性管道）
- * 
- * 执行流程：INIT → DECIDE → RENDER → COMPLETE
- */
 public class RenderPipeline {
 
+    public boolean execute() {
+        return executeInternal(RenderContext.get(), false);
+    }
+
+    public void executeDryRun(RenderContext ctx) {
+        executeInternal(ctx, true);
+    }
+
     public boolean execute(RenderContext ctx) {
-        ctx.info(() -> "=== RenderPipeline Started ===");
+        return executeInternal(ctx, false);
+    }
+
+    private boolean executeInternal(RenderContext ctx, boolean dryRun) {
+        ctx.getLog().info("=== RenderPipeline Started " + (dryRun ? "(DRY RUN)" : "") + " ===");
         ctx.reset();
 
         RenderBranch branch = decideRenderBranch(ctx);
         ctx.setRenderBranch(branch);
-        ctx.info(() -> "DECIDE: Using branch: " + branch);
+        ctx.getLog().info("DECIDE: Using branch: " + branch);
 
-        switch (branch) {
-            case MODEL_ELEMENTS -> executeModelBranch(ctx);
-            case TEXTURE_RELOC -> executeTextureRelocBranch(ctx);
-            case LEGACY -> executeLegacyBranch(ctx);
-            case ITEM -> executeItemBranch(ctx);
-            case ENTITY, NONE -> {
-                ctx.setDrewAny(false);
+        if (!dryRun) {
+            switch (branch) {
+                case MODEL_ELEMENTS -> executeModelBranch(ctx);
+                case TEXTURE_RELOC -> executeTextureRelocBranch(ctx);
+                case LEGACY -> executeLegacyBranch(ctx);
+                case ITEM -> executeItemBranch(ctx);
+                case ENTITY, NONE -> {
+                    ctx.setDrewAny(false);
+                }
             }
+        } else {
+            ctx.setDrewAny(true);
         }
 
-        ctx.info(() -> "COMPLETE: drewAny=" + ctx.isDrewAny());
+        ctx.getLog().info("COMPLETE: drewAny=" + ctx.isDrewAny());
 
         return ctx.isDrewAny();
     }
@@ -50,7 +61,6 @@ public class RenderPipeline {
             return RenderBranch.ITEM;
         }
 
-        // Model 分支：查询 model 数据
         String modelId = ModelUtil.findModelId(ctx.getBlock(), ctx.getMeta());
         if (modelId != null) {
             ctx.setModelId(modelId);
@@ -65,7 +75,6 @@ public class RenderPipeline {
             }
         }
 
-        // TextureReloc 分支：查找 CTM 重定向
         CTMTextureAtlasSprite ctmSprite = TextureUtil.findTextureReloc(ctx.getOriginalIcon());
         if (ctmSprite != null) {
             ctx.setCtmSprite(ctmSprite);
@@ -76,7 +85,6 @@ public class RenderPipeline {
             return RenderBranch.TEXTURE_RELOC;
         }
 
-        // Legacy 分支
         String iconName = TextureKeyNormalizer.normalizeIconName(ctx.getOriginalIcon().getIconName());
         if (shouldUseLegacy(iconName)) {
             return RenderBranch.LEGACY;
@@ -90,7 +98,7 @@ public class RenderPipeline {
     }
 
     private void executeModelBranch(RenderContext ctx) {
-        ctx.debug(() -> "MODEL: Looping through " + ctx.getElements().size() + " elements");
+        ctx.getLog().debug("MODEL: Looping through " + ctx.getElements().size() + " elements");
 
         ConnectionPredicate predicate = PredicateRegistry.defaultPredicate();
         if (!ctx.getElements().isEmpty()) {
@@ -112,7 +120,7 @@ public class RenderPipeline {
 
             CTMTextureAtlasSprite ctmSprite = TextureUtil.resolveForElement(element, ctx.getFace(), ctx.getModelData());
             if (ctmSprite == null) {
-                ctx.warn(() -> "RENDER: Failed to resolve texture for element " + ctx.getCurrentElementIndex());
+                ctx.getLog().warn("RENDER: Failed to resolve texture for element " + ctx.getCurrentElementIndex());
                 continue;
             }
 

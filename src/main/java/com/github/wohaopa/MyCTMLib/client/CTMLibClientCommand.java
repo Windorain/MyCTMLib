@@ -118,16 +118,7 @@ public class CTMLibClientCommand extends CommandBase {
     }
 
     private void processDumpHUD(ICommandSender sender, String[] args) {
-        String path = args.length >= 3 ? args[2] : "config/ctmlib_hud_dump.json";
-        File f = new File(Minecraft.getMinecraft().mcDataDir, path);
-
-        try {
-            DebugOverlayDumpUtil.dumpCurrentHUDToFile(f);
-            send(sender, EnumChatFormatting.GREEN + "HUD dump written to " + f.getAbsolutePath());
-        } catch (Exception e) {
-            send(sender, EnumChatFormatting.RED + "Failed to dump HUD: " + e.getMessage());
-            com.github.wohaopa.MyCTMLib.MyCTMLib.LOG.warn("HUD dump failed", e);
-        }
+        send(sender, EnumChatFormatting.YELLOW + "HUD dump temporarily disabled");
     }
 
     private static void send(ICommandSender sender, String msg) {

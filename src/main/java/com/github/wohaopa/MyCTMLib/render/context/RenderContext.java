@@ -14,7 +14,7 @@ import net.minecraftforge.common.util.ForgeDirection;
 import com.github.wohaopa.MyCTMLib.model.ModelData;
 import com.github.wohaopa.MyCTMLib.model.ModelElement;
 import com.github.wohaopa.MyCTMLib.predicate.ConnectionPredicate;
-import com.github.wohaopa.MyCTMLib.render.PipelineDebugTrace;
+import com.github.wohaopa.MyCTMLib.render.RenderLog;
 import com.github.wohaopa.MyCTMLib.render.pipeline.RenderBranch;
 import com.github.wohaopa.MyCTMLib.texture.CTMTextureAtlasSprite;
 
@@ -88,62 +88,17 @@ public class RenderContext {
     // ========== 状态 ==========
     @Getter @Setter private boolean drewAny;
     @Getter @Setter private boolean pipelineFailed;
-    @Getter @Setter private String failureReason;
-    @Getter private final PipelineDebugTrace debugTrace = new PipelineDebugTrace();
+    @Getter private final RenderLog log = new RenderLog();
 
     // ========== 面计数 ==========
     private final int[] faceRenderCount = new int[6];
 
-    private RenderContext() {}
+    public RenderContext() {}
 
     public void reset() {
         this.drewAny = false;
         this.pipelineFailed = false;
-        this.failureReason = null;
-        this.debugTrace.clear();
-        this.renderBranch = null;
-        this.modelId = null;
-        this.modelData = null;
-        this.elements = Collections.emptyList();
-        this.currentElement = null;
-        this.currentElementIndex = 0;
-        this.ctmSprite = null;
-        this.connectionPredicate = null;
-        this.iconMinU = 0;
-        this.iconMaxU = 0;
-        this.iconMinV = 0;
-        this.iconMaxV = 0;
-        this.drawRelMinX = 0;
-        this.drawRelMaxX = 0;
-        this.drawRelMinY = 0;
-        this.drawRelMaxY = 0;
-        this.drawRelMinZ = 0;
-        this.drawRelMaxZ = 0;
-        this.drawMinU = 0;
-        this.drawMaxU = 0;
-        this.drawMinV = 0;
-        this.drawMaxV = 0;
-        this.worldX = 0;
-        this.worldY = 0;
-        this.worldZ = 0;
-        this.drawBrightness = 0;
-        this.biomeColor = 0;
-        this.colorTL_R = 0;
-        this.colorTL_G = 0;
-        this.colorTL_B = 0;
-        this.colorTR_R = 0;
-        this.colorTR_G = 0;
-        this.colorTR_B = 0;
-        this.colorBL_R = 0;
-        this.colorBL_G = 0;
-        this.colorBL_B = 0;
-        this.colorBR_R = 0;
-        this.colorBR_G = 0;
-        this.colorBR_B = 0;
-        this.brightnessTL = 0;
-        this.brightnessTR = 0;
-        this.brightnessBL = 0;
-        this.brightnessBR = 0;
+        this.log.clear();
     }
 
     public int getFaceRenderCount(ForgeDirection face) {
@@ -173,72 +128,72 @@ public class RenderContext {
         int focusY = mc.objectMouseOver.blockY;
         int focusZ = mc.objectMouseOver.blockZ;
 
-        return (int) getBlockX() == focusX && (int) getBlockY() == focusY && (int) getBlockZ() == focusZ;
+        return (int) Math.round(getBlockX()) == focusX 
+            && (int) Math.round(getBlockY()) == focusY 
+            && (int) Math.round(getBlockZ()) == focusZ;
     }
 
     public void trace(String msg) {
         if (!isDebug()) return;
-        debugTrace.trace(msg);
+        log.debug(msg);
     }
 
     public void trace(Supplier<String> msgSupplier) {
         if (!isDebug()) return;
-        debugTrace.trace(msgSupplier.get());
+        log.debug(msgSupplier.get());
     }
 
     public void debug(String msg) {
         if (!isDebug()) return;
-        debugTrace.debug(msg);
+        log.debug(msg);
     }
 
     public void debug(Supplier<String> msgSupplier) {
         if (!isDebug()) return;
-        debugTrace.debug(msgSupplier.get());
+        log.debug(msgSupplier.get());
     }
 
     public void info(String msg) {
         if (!isDebug()) return;
-        debugTrace.info(msg);
+        log.info(msg);
     }
 
     public void info(Supplier<String> msgSupplier) {
         if (!isDebug()) return;
-        debugTrace.info(msgSupplier.get());
+        log.info(msgSupplier.get());
     }
 
     public void warn(String msg) {
         if (!isDebug()) return;
-        debugTrace.warn(msg);
+        log.warn(msg);
     }
 
     public void warn(Supplier<String> msgSupplier) {
         if (!isDebug()) return;
-        debugTrace.warn(msgSupplier.get());
+        log.warn(msgSupplier.get());
     }
 
     public void error(String msg) {
         if (isDebug()) {
-            debugTrace.error(msg);
+            log.error(msg);
         }
         failPipeline(msg);
     }
 
     public void error(Supplier<String> msgSupplier) {
         if (isDebug()) {
-            debugTrace.error(msgSupplier.get());
+            log.error(msgSupplier.get());
         }
         failPipeline(msgSupplier.get());
     }
 
     public void failPipeline(String reason) {
         this.pipelineFailed = true;
-        this.failureReason = reason;
-        debug("PIPELINE FAILED: " + reason);
+        log.debug("PIPELINE FAILED: " + reason);
     }
 
     public void resetPipelineFailed() {
         this.pipelineFailed = false;
-        this.failureReason = null;
     }
 
     public boolean needsBiomeTinting() {
