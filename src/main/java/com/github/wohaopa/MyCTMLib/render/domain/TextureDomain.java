@@ -3,8 +3,8 @@ package com.github.wohaopa.MyCTMLib.render.domain;
 import com.github.wohaopa.MyCTMLib.model.ModelFace;
 import com.github.wohaopa.MyCTMLib.render.context.RenderContext;
 import com.github.wohaopa.MyCTMLib.render.util.TextureUtil;
-import com.github.wohaopa.MyCTMLib.texture.CTMTextureAtlasSprite;
 import com.github.wohaopa.MyCTMLib.texture.CTMReLoc;
+import com.github.wohaopa.MyCTMLib.texture.CTMTextureAtlasSprite;
 import com.github.wohaopa.MyCTMLib.texture.TextureKeyNormalizer;
 
 public final class TextureDomain {
@@ -14,7 +14,9 @@ public final class TextureDomain {
     public static boolean resolveReloc(RenderContext ctx) {
         CTMTextureAtlasSprite ctmSprite = TextureUtil.findTextureReloc(ctx.getOriginalIcon());
         if (ctmSprite == null) {
-            ctx.warn("TEXTURE: No CTM sprite found for icon: " + (ctx.getOriginalIcon() != null ? ctx.getOriginalIcon().getIconName() : "null"));
+            ctx.warn(
+                "TEXTURE: No CTM sprite found for icon: " + (ctx.getOriginalIcon() != null ? ctx.getOriginalIcon()
+                    .getIconName() : "null"));
             return false;
         }
 
@@ -33,14 +35,17 @@ public final class TextureDomain {
             return false;
         }
 
-        ModelFace faceData = ctx.getCurrentElement().getFace(ctx.getFace());
+        ModelFace faceData = ctx.getCurrentElement()
+            .getFace(ctx.getFace());
         if (faceData == null || faceData.getTextureKey() == null) {
             ctx.warn("TEXTURE: faceData or textureKey is null");
             return false;
         }
 
         String texturePath = TextureKeyNormalizer.resolveTexturePath(
-            faceData.getTextureKey(), ctx.getModelData().getTextures());
+            faceData.getTextureKey(),
+            ctx.getModelData()
+                .getTextures());
         if (texturePath == null) {
             ctx.warn("TEXTURE: Failed to resolve texturePath");
             return false;

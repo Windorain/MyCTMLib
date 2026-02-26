@@ -26,15 +26,6 @@ import net.minecraft.client.resources.data.IMetadataSection;
 import net.minecraft.util.IIcon;
 import net.minecraft.util.ResourceLocation;
 
-import com.github.wohaopa.MyCTMLib.texture.BaseTextureData;
-import com.github.wohaopa.MyCTMLib.texture.CTMTextureAtlasSprite;
-import com.github.wohaopa.MyCTMLib.texture.ConnectingTextureData;
-import com.github.wohaopa.MyCTMLib.texture.RandomTextureData;
-import com.github.wohaopa.MyCTMLib.texture.TextureTypeData;
-import com.github.wohaopa.MyCTMLib.texture.layout.ConnectingLayout;
-import com.github.wohaopa.MyCTMLib.texture.layout.LayoutHandler;
-import com.github.wohaopa.MyCTMLib.texture.layout.LayoutHandlers;
-
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -55,9 +46,15 @@ import com.github.wohaopa.MyCTMLib.model.ModelRegistry;
 import com.github.wohaopa.MyCTMLib.resource.BlockTextureDumpUtil;
 import com.github.wohaopa.MyCTMLib.resource.DebugErrorCollector;
 import com.github.wohaopa.MyCTMLib.texture.BaseTextureData;
+import com.github.wohaopa.MyCTMLib.texture.CTMTextureAtlasSprite;
+import com.github.wohaopa.MyCTMLib.texture.ConnectingTextureData;
+import com.github.wohaopa.MyCTMLib.texture.RandomTextureData;
 import com.github.wohaopa.MyCTMLib.texture.TextureKeyNormalizer;
 import com.github.wohaopa.MyCTMLib.texture.TextureMetadataSection;
 import com.github.wohaopa.MyCTMLib.texture.TextureRegistry;
+import com.github.wohaopa.MyCTMLib.texture.TextureTypeData;
+import com.github.wohaopa.MyCTMLib.texture.layout.LayoutHandler;
+import com.github.wohaopa.MyCTMLib.texture.layout.LayoutHandlers;
 import com.google.gson.JsonObject;
 
 import cpw.mods.fml.client.FMLClientHandler;
@@ -131,7 +128,7 @@ public abstract class MixinTextureMap extends AbstractTexture implements ITickab
                     // 创建新的 CTMTextureAtlasSprite（使用 _ctm 后缀）
                     String ctmName = textureName + "_ctm";
                     CTMTextureAtlasSprite ctmSprite = new CTMTextureAtlasSprite(ctmName);
-                    
+
                     // 设置 CTM 字段
                     if (ctmlibData instanceof ConnectingTextureData ctd) {
                         LayoutHandler handler = LayoutHandlers.get(ctd.getLayout());
@@ -148,10 +145,10 @@ public abstract class MixinTextureMap extends AbstractTexture implements ITickab
                         ctmSprite.setEmissive(btd.isEmissive());
                         ctmSprite.setTinting(btd.getTinting());
                     }
-                    
+
                     mapRegisteredSprites.put(ctmName, ctmSprite);
                     registerCanonicalToMapKey(ctmName);
-                    
+
                     // 同时创建原版 sprite 保持兼容
                     TextureAtlasSprite sprite = new NewTextureAtlasSprite(textureName);
                     if (ctmlibData instanceof BaseTextureData baseData) {

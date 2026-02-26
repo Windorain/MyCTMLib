@@ -71,21 +71,30 @@ public class DebugOverlayHandler {
 
         lines.add("§f§l========== RENDER CONTEXT ==========");
         lines.add("Block: " + safeStr(ctx.getBlock()));
-        lines.add("Position: (" + (int) Math.round(ctx.getBlockX()) + ", " +
-                              (int) Math.round(ctx.getBlockY()) + ", " +
-                              (int) Math.round(ctx.getBlockZ()) + ")");
+        lines.add(
+            "Position: (" + (int) Math.round(ctx.getBlockX())
+                + ", "
+                + (int) Math.round(ctx.getBlockY())
+                + ", "
+                + (int) Math.round(ctx.getBlockZ())
+                + ")");
         lines.add("Face: " + ctx.getFace());
         lines.add("Meta: " + ctx.getMeta());
         lines.add("§a§lBranch:§r " + safeStr(ctx.getRenderBranch()));
         lines.add("drewAny: " + ctx.isDrewAny());
         if (ctx.getCtmSprite() != null) {
-            lines.add("CTM Sprite: " + ctx.getCtmSprite().getIconName());
+            lines.add(
+                "CTM Sprite: " + ctx.getCtmSprite()
+                    .getIconName());
         }
 
-        if (!ctx.getLog().isEmpty()) {
+        if (!ctx.getLog()
+            .isEmpty()) {
             lines.add("");
             lines.add("§f§l========== LOG ==========");
-            lines.addAll(ctx.getLog().getLines());
+            lines.addAll(
+                ctx.getLog()
+                    .getLines());
         }
 
         int lineHeight = mc.fontRenderer.FONT_HEIGHT;

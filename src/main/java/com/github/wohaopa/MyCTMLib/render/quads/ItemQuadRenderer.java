@@ -24,7 +24,7 @@ public final class ItemQuadRenderer {
     public static void renderBase(RenderContext ctx) {
         assert ctx.getRenderBlocks() != null;
         assert ctx.getCtmSprite() != null;
-        
+
         GeometryDomain.fromRenderBlocks(ctx);
         UVDomain.calc(ctx, 0, 0);
         PositionDomain.calc(ctx);

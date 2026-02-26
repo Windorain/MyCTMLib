@@ -31,7 +31,7 @@ public class RenderPipeline {
     private boolean executeInternal(RenderContext ctx, boolean dryRun) {
         ctx.reset();
         ctx.setDryRun(dryRun);
-        
+
         ctx.info("=== RenderPipeline Started " + (dryRun ? "(DRY RUN)" : "") + " ===");
 
         RenderBranch branch = decideRenderBranch(ctx);
@@ -69,7 +69,9 @@ public class RenderPipeline {
             return RenderBranch.TEXTURE_RELOC;
         }
 
-        String iconName = TextureKeyNormalizer.normalizeIconName(ctx.getOriginalIcon().getIconName());
+        String iconName = TextureKeyNormalizer.normalizeIconName(
+            ctx.getOriginalIcon()
+                .getIconName());
         if (shouldUseLegacy(iconName)) {
             ctx.info("DECIDE: Using LEGACY branch for icon: " + iconName);
             return RenderBranch.LEGACY;
@@ -84,15 +86,21 @@ public class RenderPipeline {
     }
 
     private void executeModelBranch(RenderContext ctx) {
-        ctx.info("MODEL: Looping through " + ctx.getElements().size() + " elements");
+        ctx.info(
+            "MODEL: Looping through " + ctx.getElements()
+                .size() + " elements");
 
         ConnectionPredicate predicate = PredicateRegistry.defaultPredicate();
-        if (!ctx.getElements().isEmpty()) {
-            ModelFace firstFace = ctx.getElements().get(0).getFace(ctx.getFace());
+        if (!ctx.getElements()
+            .isEmpty()) {
+            ModelFace firstFace = ctx.getElements()
+                .get(0)
+                .getFace(ctx.getFace());
             if (firstFace != null && firstFace.getConnectionKey() != null) {
                 ConnectionPredicate p = PredicateRegistry.getPredicate(
                     firstFace.getConnectionKey(),
-                    ctx.getModelData().getConnections());
+                    ctx.getModelData()
+                        .getConnections());
                 if (p != null) {
                     predicate = p;
                     ctx.info("MODEL: Using custom connection predicate: " + firstFace.getConnectionKey());
@@ -118,7 +126,11 @@ public class RenderPipeline {
                 ctx.info("MODEL: Element " + ctx.getCurrentElementIndex() + " using connecting render");
                 ElementQuadRenderer.renderConnecting(ctx);
             } else if (ctmSprite.getRandomCount() > 0) {
-                ctx.info("MODEL: Element " + ctx.getCurrentElementIndex() + " using random render (count=" + ctmSprite.getRandomCount() + ")");
+                ctx.info(
+                    "MODEL: Element " + ctx.getCurrentElementIndex()
+                        + " using random render (count="
+                        + ctmSprite.getRandomCount()
+                        + ")");
                 ElementQuadRenderer.renderRandom(ctx);
             } else {
                 ctx.info("MODEL: Element " + ctx.getCurrentElementIndex() + " using base render");

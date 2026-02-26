@@ -32,63 +32,134 @@ public class RenderContext {
     }
 
     // ========== 输入参数 ==========
-    @Getter @Setter private IIcon originalIcon;
-    @Getter @Setter private RenderBlocks renderBlocks;
-    @Getter @Setter private IBlockAccess blockAccess;
-    @Getter @Setter private Block block;
-    @Getter @Setter private double blockX, blockY, blockZ;
-    @Getter @Setter private int meta;
-    @Getter @Setter private ForgeDirection face;
+    @Getter
+    @Setter
+    private IIcon originalIcon;
+    @Getter
+    @Setter
+    private RenderBlocks renderBlocks;
+    @Getter
+    @Setter
+    private IBlockAccess blockAccess;
+    @Getter
+    @Setter
+    private Block block;
+    @Getter
+    @Setter
+    private double blockX, blockY, blockZ;
+    @Getter
+    @Setter
+    private int meta;
+    @Getter
+    @Setter
+    private ForgeDirection face;
 
     // ========== 分支决策 ==========
-    @Getter @Setter private RenderBranch renderBranch;
+    @Getter
+    @Setter
+    private RenderBranch renderBranch;
 
     // ========== Model 分支 ==========
-    @Getter @Setter private String modelId;
-    @Getter @Setter private ModelData modelData;
-    @Getter @Setter private List<ModelElement> elements = Collections.emptyList();
-    @Getter @Setter private ModelElement currentElement;
-    @Getter @Setter private int currentElementIndex;
-    @Getter @Setter private ConnectionPredicate connectionPredicate;
+    @Getter
+    @Setter
+    private String modelId;
+    @Getter
+    @Setter
+    private ModelData modelData;
+    @Getter
+    @Setter
+    private List<ModelElement> elements = Collections.emptyList();
+    @Getter
+    @Setter
+    private ModelElement currentElement;
+    @Getter
+    @Setter
+    private int currentElementIndex;
+    @Getter
+    @Setter
+    private ConnectionPredicate connectionPredicate;
 
     // ========== CTM 重定向 ==========
-    @Getter @Setter private CTMTextureAtlasSprite ctmSprite;
+    @Getter
+    @Setter
+    private CTMTextureAtlasSprite ctmSprite;
 
     // ========== UV 缓存 ==========
-    @Getter @Setter private double iconMinU;
-    @Getter @Setter private double iconMaxU;
-    @Getter @Setter private double iconMinV;
-    @Getter @Setter private double iconMaxV;
+    @Getter
+    @Setter
+    private double iconMinU;
+    @Getter
+    @Setter
+    private double iconMaxU;
+    @Getter
+    @Setter
+    private double iconMinV;
+    @Getter
+    @Setter
+    private double iconMaxV;
 
     // ========== 几何缓存（最终参数）==========
-    @Getter @Setter private double drawRelMinX, drawRelMaxX;
-    @Getter @Setter private double drawRelMinY, drawRelMaxY;
-    @Getter @Setter private double drawRelMinZ, drawRelMaxZ;
+    @Getter
+    @Setter
+    private double drawRelMinX, drawRelMaxX;
+    @Getter
+    @Setter
+    private double drawRelMinY, drawRelMaxY;
+    @Getter
+    @Setter
+    private double drawRelMinZ, drawRelMaxZ;
 
     // ========== 绘制 UV（最终参数）==========
-    @Getter @Setter private double drawMinU, drawMaxU;
-    @Getter @Setter private double drawMinV, drawMaxV;
+    @Getter
+    @Setter
+    private double drawMinU, drawMaxU;
+    @Getter
+    @Setter
+    private double drawMinV, drawMaxV;
 
     // ========== 世界坐标（最终参数）==========
-    @Getter @Setter private double worldX, worldY, worldZ;
+    @Getter
+    @Setter
+    private double worldX, worldY, worldZ;
 
     // ========== 亮度（最终参数）==========
-    @Getter @Setter private int drawBrightness;
-    @Getter @Setter private int brightnessTL, brightnessTR, brightnessBL, brightnessBR;
+    @Getter
+    @Setter
+    private int drawBrightness;
+    @Getter
+    @Setter
+    private int brightnessTL, brightnessTR, brightnessBL, brightnessBR;
 
     // ========== 颜色（最终参数）==========
-    @Getter @Setter private float colorTL_R, colorTL_G, colorTL_B;
-    @Getter @Setter private float colorTR_R, colorTR_G, colorTR_B;
-    @Getter @Setter private float colorBL_R, colorBL_G, colorBL_B;
-    @Getter @Setter private float colorBR_R, colorBR_G, colorBR_B;
+    @Getter
+    @Setter
+    private float colorTL_R, colorTL_G, colorTL_B;
+    @Getter
+    @Setter
+    private float colorTR_R, colorTR_G, colorTR_B;
+    @Getter
+    @Setter
+    private float colorBL_R, colorBL_G, colorBL_B;
+    @Getter
+    @Setter
+    private float colorBR_R, colorBR_G, colorBR_B;
 
     // ========== 生物群系着色 ==========
-    @Getter @Setter private int biomeColor;
+    @Getter
+    @Setter
+    private int biomeColor;
 
     // ========== 状态 ==========
-    @Getter @Setter private boolean drewAny;
-    @Getter @Setter private boolean pipelineFailed;
-    @Getter @Setter private boolean dryRun;
+    @Getter
+    @Setter
+    private boolean drewAny;
+    @Getter
+    @Setter
+    private boolean pipelineFailed;
+    @Getter
+    @Setter
+    private boolean dryRun;
+    @Getter
     private final RenderLog log = new RenderLog();
 
     // ========== 面计数 ==========

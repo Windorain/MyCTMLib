@@ -28,11 +28,13 @@ public final class RenderBlocksQuadRenderer {
         assert ctx.getRenderBlocks() != null;
         assert ctx.getBlockAccess() != null;
         assert ctx.getConnectionPredicate() != null;
-        
+
         CTMTextureAtlasSprite ctmSprite = ctx.getCtmSprite();
         int[] tilePos = TileUtil.computeConnecting(
             ctx.getBlockAccess(),
-            ctx.getBlockX(), ctx.getBlockY(), ctx.getBlockZ(),
+            ctx.getBlockX(),
+            ctx.getBlockY(),
+            ctx.getBlockZ(),
             ctx.getFace(),
             ctx.getBlock(),
             ctx.getMeta(),
@@ -63,7 +65,7 @@ public final class RenderBlocksQuadRenderer {
      */
     public static void renderBase(RenderContext ctx) {
         assert ctx.getRenderBlocks() != null;
-        
+
         GeometryDomain.fromRenderBlocks(ctx);
         UVDomain.calc(ctx, 0, 0);
         PositionDomain.calc(ctx);
@@ -90,11 +92,13 @@ public final class RenderBlocksQuadRenderer {
         assert ctx.getCtmSprite() != null;
         assert ctx.getRenderBlocks() != null;
         assert ctx.getBlockAccess() != null;
-        
+
         CTMTextureAtlasSprite ctmSprite = ctx.getCtmSprite();
         int[] tilePos = TileUtil.computeRandom(
             ctx.getBlockAccess(),
-            ctx.getBlockX(), ctx.getBlockY(), ctx.getBlockZ(),
+            ctx.getBlockX(),
+            ctx.getBlockY(),
+            ctx.getBlockZ(),
             ctmSprite.getRandomCount(),
             ctmSprite.getGridWidth(),
             ctmSprite.getGridHeight());

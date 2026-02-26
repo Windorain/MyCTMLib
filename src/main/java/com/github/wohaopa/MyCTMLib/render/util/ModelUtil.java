@@ -30,14 +30,15 @@ public final class ModelUtil {
      * 查询 modelId
      * 
      * @param block 方块
-     * @param meta 元数据
+     * @param meta  元数据
      * @return modelId，找不到返回 null
      */
     public static String findModelId(Block block, int meta) {
         String blockId = getBlockId(block);
         if (blockId == null) return null;
 
-        return BlockStateRegistry.getInstance().getModelId(blockId, meta);
+        return BlockStateRegistry.getInstance()
+            .getModelId(blockId, meta);
     }
 
     /**
@@ -48,14 +49,15 @@ public final class ModelUtil {
      */
     public static ModelData findModelData(String modelId) {
         if (modelId == null) return null;
-        return ModelRegistry.getInstance().get(modelId);
+        return ModelRegistry.getInstance()
+            .get(modelId);
     }
 
     /**
      * 查询 elements
      * 
      * @param modelData model 数据
-     * @param face 面方向
+     * @param face      面方向
      * @return elements 列表，找不到或为空返回 null
      */
     public static List<ModelElement> findElements(ModelData modelData, ForgeDirection face) {

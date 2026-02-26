@@ -6,8 +6,8 @@ import net.minecraftforge.common.util.ForgeDirection;
 import com.github.wohaopa.MyCTMLib.model.ModelData;
 import com.github.wohaopa.MyCTMLib.model.ModelElement;
 import com.github.wohaopa.MyCTMLib.model.ModelFace;
-import com.github.wohaopa.MyCTMLib.texture.CTMTextureAtlasSprite;
 import com.github.wohaopa.MyCTMLib.texture.CTMReLoc;
+import com.github.wohaopa.MyCTMLib.texture.CTMTextureAtlasSprite;
 import com.github.wohaopa.MyCTMLib.texture.TextureKeyNormalizer;
 
 /**
@@ -38,22 +38,20 @@ public final class TextureUtil {
     /**
      * 解析 Model 元素的材质
      * 
-     * @param element Model 元素
-     * @param face 面方向
+     * @param element   Model 元素
+     * @param face      面方向
      * @param modelData Model 数据
      * @return CTMTextureAtlasSprite，解析失败返回 null
      */
-    public static CTMTextureAtlasSprite resolveForElement(ModelElement element,
-                                                           ForgeDirection face,
-                                                           ModelData modelData) {
+    public static CTMTextureAtlasSprite resolveForElement(ModelElement element, ForgeDirection face,
+        ModelData modelData) {
         if (element == null || modelData == null) return null;
 
         ModelFace faceData = element.getFace(face);
         if (faceData == null || faceData.getTextureKey() == null) return null;
 
         // Step 1: 解析 texturePath（处理 # 引用）
-        String texturePath = TextureKeyNormalizer.resolveTexturePath(
-            faceData.getTextureKey(), modelData.getTextures());
+        String texturePath = TextureKeyNormalizer.resolveTexturePath(faceData.getTextureKey(), modelData.getTextures());
         if (texturePath == null) return null;
 
         // Step 2: 转为 canonical key

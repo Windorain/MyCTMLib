@@ -1,32 +1,21 @@
 package com.github.wohaopa.MyCTMLib.render;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
 import net.minecraft.block.Block;
 import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.util.IIcon;
-import net.minecraft.world.IBlockAccess;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.github.wohaopa.MyCTMLib.Textures;
-import com.github.wohaopa.MyCTMLib.blockstate.BlockStateRegistry;
 import com.github.wohaopa.MyCTMLib.model.ModelData;
 import com.github.wohaopa.MyCTMLib.model.ModelElement;
-import com.github.wohaopa.MyCTMLib.model.ModelFace;
-import com.github.wohaopa.MyCTMLib.model.ModelRegistry;
-import com.github.wohaopa.MyCTMLib.predicate.ConnectionPredicate;
-import com.github.wohaopa.MyCTMLib.predicate.PredicateRegistry;
 import com.github.wohaopa.MyCTMLib.render.context.RenderContext;
 import com.github.wohaopa.MyCTMLib.render.pipeline.RenderPipeline;
-import com.github.wohaopa.MyCTMLib.texture.BaseTextureData;
 import com.github.wohaopa.MyCTMLib.texture.ConnectingTextureData;
-import com.github.wohaopa.MyCTMLib.texture.RandomTextureData;
-import com.github.wohaopa.MyCTMLib.texture.CTMTextureAtlasSprite;
 import com.github.wohaopa.MyCTMLib.texture.TextureKeyNormalizer;
 import com.github.wohaopa.MyCTMLib.texture.TextureRegistry;
 import com.github.wohaopa.MyCTMLib.texture.TextureTypeData;
@@ -41,7 +30,6 @@ import cpw.mods.fml.relauncher.SideOnly;
 public final class CTMRenderEntry {
 
     private static final Logger LOGGER = LogManager.getLogger("MyCTMLib");
-
 
     public static String getBlockId(Block block) {
         return block != null ? (String) Block.blockRegistry.getNameForObject(block) : null;
@@ -110,7 +98,8 @@ public final class CTMRenderEntry {
 
     public static boolean renderPipeline() {
         RenderContext context = RenderContext.get();
-        context.getLog().clear();
+        context.getLog()
+            .clear();
 
         try {
             return PIPELINE.execute(context);

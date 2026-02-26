@@ -1,13 +1,15 @@
 package com.github.wohaopa.MyCTMLib.texture;
 
-import com.github.wohaopa.MyCTMLib.mixins.AccessorTextureMap;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import java.util.Map;
+
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureMap;
 
-import java.util.Map;
+import com.github.wohaopa.MyCTMLib.mixins.AccessorTextureMap;
+
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 
 /**
  * CTM 材质重定向表
@@ -23,13 +25,12 @@ import java.util.Map;
  */
 @SideOnly(Side.CLIENT)
 public class CTMReLoc {
-    
+
     /**
      * 重定向表：基础名称 → CTMTextureAtlasSprite
      */
-    private static final Object2ObjectOpenHashMap<String, CTMTextureAtlasSprite> relocTable 
-        = new Object2ObjectOpenHashMap<>();
-    
+    private static final Object2ObjectOpenHashMap<String, CTMTextureAtlasSprite> relocTable = new Object2ObjectOpenHashMap<>();
+
     /**
      * 构建重定向表
      * 在 TextureStitchEvent.Pre 时调用
@@ -39,20 +40,20 @@ public class CTMReLoc {
     static void build(TextureMap textureMap) {
         // 清空旧表（支持资源重载）
         relocTable.clear();
-        
+
         // 获取所有已注册的纹理（通过 Accessor）
-        Map<String, TextureAtlasSprite> sprites = ((AccessorTextureMap)textureMap).getMapRegisteredSprites();
-        
+        Map<String, TextureAtlasSprite> sprites = ((AccessorTextureMap) textureMap).getMapRegisteredSprites();
+
         // 遍历所有纹理
         for (Map.Entry<String, TextureAtlasSprite> entry : sprites.entrySet()) {
             String name = entry.getKey();
             TextureAtlasSprite sprite = entry.getValue();
-            
+
             // 识别 CTMTextureAtlasSprite（带 _ctm 后缀）
             if (sprite instanceof CTMTextureAtlasSprite ctm) {
                 // 提取基础名称（去掉 _ctm 后缀）
                 String baseName = stripCtmSuffix(name);
-                
+
                 // 如果基础名称存在，建立重定向
                 if (baseName != null && sprites.containsKey(baseName)) {
                     relocTable.put(baseName, ctm);
@@ -60,7 +61,7 @@ public class CTMReLoc {
             }
         }
     }
-    
+
     /**
      * 去掉 _ctm 后缀
      * 
@@ -76,7 +77,7 @@ public class CTMReLoc {
         }
         return null;
     }
-    
+
     /**
      * 查询重定向的 CTM sprite
      * 
@@ -86,7 +87,7 @@ public class CTMReLoc {
     public static CTMTextureAtlasSprite getSprite(String textureName) {
         return relocTable.get(textureName);
     }
-    
+
     /**
      * 检查是否有 CTM 重定向
      * 
