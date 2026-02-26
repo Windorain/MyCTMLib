@@ -26,6 +26,15 @@ import net.minecraft.client.resources.data.IMetadataSection;
 import net.minecraft.util.IIcon;
 import net.minecraft.util.ResourceLocation;
 
+import com.github.wohaopa.MyCTMLib.texture.BaseTextureData;
+import com.github.wohaopa.MyCTMLib.texture.CTMTextureAtlasSprite;
+import com.github.wohaopa.MyCTMLib.texture.ConnectingTextureData;
+import com.github.wohaopa.MyCTMLib.texture.RandomTextureData;
+import com.github.wohaopa.MyCTMLib.texture.TextureTypeData;
+import com.github.wohaopa.MyCTMLib.texture.layout.ConnectingLayout;
+import com.github.wohaopa.MyCTMLib.texture.layout.LayoutHandler;
+import com.github.wohaopa.MyCTMLib.texture.layout.LayoutHandlers;
+
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -98,13 +107,15 @@ public abstract class MixinTextureMap extends AbstractTexture implements ITickab
 
             // 新管线：若存在 ctmlib section 则写入 TextureRegistry（用 canonicalKey），并替换 sprite 为整张连接图
             boolean hadCtmlib = false;
+            TextureTypeData ctmlibData = null;
             try {
                 IMetadataSection ctmlibSec = resource.getMetadata("ctmlib");
                 if (ctmlibSec != null && ctmlibSec instanceof TextureMetadataSection) {
                     String canonicalKey = TextureKeyNormalizer.toCanonicalTextureKey(textureName);
                     if (canonicalKey != null) {
+                        ctmlibData = ((TextureMetadataSection) ctmlibSec).getData();
                         TextureRegistry.getInstance()
-                            .put(canonicalKey, ((TextureMetadataSection) ctmlibSec).getData());
+                            .put(canonicalKey, ctmlibData);
                     }
                     hadCtmlib = true;
                 }
@@ -116,14 +127,35 @@ public abstract class MixinTextureMap extends AbstractTexture implements ITickab
             }
 
             if (!(resource instanceof SimpleResource simple)) {
-                if (hadCtmlib) {
-                    IMetadataSection ctmlibSec = resource.getMetadata("ctmlib");
+                if (hadCtmlib && ctmlibData != null) {
+                    // 创建新的 CTMTextureAtlasSprite（使用 _ctm 后缀）
+                    String ctmName = textureName + "_ctm";
+                    CTMTextureAtlasSprite ctmSprite = new CTMTextureAtlasSprite(ctmName);
+                    
+                    // 设置 CTM 字段
+                    if (ctmlibData instanceof ConnectingTextureData ctd) {
+                        LayoutHandler handler = LayoutHandlers.get(ctd.getLayout());
+                        ctmSprite.setGridWidth(handler.getWidth());
+                        ctmSprite.setGridHeight(handler.getHeight());
+                        ctmSprite.setLayoutStyle(ctd.getLayout());
+                    } else if (ctmlibData instanceof RandomTextureData rtd) {
+                        ctmSprite.setGridWidth(rtd.getColumns());
+                        ctmSprite.setGridHeight(rtd.getRows());
+                        ctmSprite.setRandomCount(rtd.getCount());
+                        ctmSprite.setRandomSeed(rtd.getSeed() != null ? rtd.getSeed() : 0L);
+                    } else if (ctmlibData instanceof BaseTextureData btd) {
+                        ctmSprite.setRenderType(btd.getRenderType());
+                        ctmSprite.setEmissive(btd.isEmissive());
+                        ctmSprite.setTinting(btd.getTinting());
+                    }
+                    
+                    mapRegisteredSprites.put(ctmName, ctmSprite);
+                    registerCanonicalToMapKey(ctmName);
+                    
+                    // 同时创建原版 sprite 保持兼容
                     TextureAtlasSprite sprite = new NewTextureAtlasSprite(textureName);
-                    if (ctmlibSec instanceof TextureMetadataSection tms) {
-                        com.github.wohaopa.MyCTMLib.texture.TextureTypeData ttd = tms.getData();
-                        if (ttd instanceof BaseTextureData baseData && sprite instanceof NewTextureAtlasSprite ntas) {
-                            ntas.setData(baseData);
-                        }
+                    if (ctmlibData instanceof BaseTextureData baseData) {
+                        ((NewTextureAtlasSprite) sprite).setData(baseData);
                     }
                     mapRegisteredSprites.put(textureName, sprite);
                     registerCanonicalToMapKey(textureName);

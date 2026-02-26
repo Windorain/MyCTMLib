@@ -4,6 +4,7 @@ import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.common.MinecraftForge;
 
 import com.github.wohaopa.MyCTMLib.CommonProxy;
+import com.github.wohaopa.MyCTMLib.texture.CTMReLoc;
 
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.relauncher.Side;
@@ -18,5 +19,6 @@ public class ClientProxy extends CommonProxy {
         ClientCommandHandler.instance.registerCommand(new CTMLibClientCommand());
         MinecraftForge.EVENT_BUS.register(new DebugOverlayHandler());
         MinecraftForge.EVENT_BUS.register(new TextureStitchEventHandler());
+        MinecraftForge.EVENT_BUS.register(new CTMReLoc());
     }
 }
