@@ -46,6 +46,9 @@ public final class QuadRender {
      * </ul>
      */
     public static void drawFace(RenderContext ctx) {
+        if (ctx.isDryRun()) {
+            return;
+        }
         Tessellator tes = GTNHIntegrationHelper.getGTNHLibTessellator();
 
         double minU = ctx.getDrawMinU();

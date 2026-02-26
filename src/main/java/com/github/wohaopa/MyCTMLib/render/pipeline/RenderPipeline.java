@@ -5,13 +5,12 @@ import com.github.wohaopa.MyCTMLib.model.ModelElement;
 import com.github.wohaopa.MyCTMLib.model.ModelFace;
 import com.github.wohaopa.MyCTMLib.predicate.ConnectionPredicate;
 import com.github.wohaopa.MyCTMLib.predicate.PredicateRegistry;
-import com.github.wohaopa.MyCTMLib.render.CTMRenderEntry;
 import com.github.wohaopa.MyCTMLib.render.context.RenderContext;
+import com.github.wohaopa.MyCTMLib.render.domain.ModelDomain;
+import com.github.wohaopa.MyCTMLib.render.domain.TextureDomain;
 import com.github.wohaopa.MyCTMLib.render.quads.ElementQuadRenderer;
 import com.github.wohaopa.MyCTMLib.render.quads.ItemQuadRenderer;
 import com.github.wohaopa.MyCTMLib.render.quads.RenderBlocksQuadRenderer;
-import com.github.wohaopa.MyCTMLib.render.util.ModelUtil;
-import com.github.wohaopa.MyCTMLib.render.util.TextureUtil;
 import com.github.wohaopa.MyCTMLib.texture.CTMTextureAtlasSprite;
 import com.github.wohaopa.MyCTMLib.texture.TextureKeyNormalizer;
 
@@ -30,66 +29,53 @@ public class RenderPipeline {
     }
 
     private boolean executeInternal(RenderContext ctx, boolean dryRun) {
-        ctx.getLog().info("=== RenderPipeline Started " + (dryRun ? "(DRY RUN)" : "") + " ===");
         ctx.reset();
+        ctx.setDryRun(dryRun);
+        
+        ctx.info("=== RenderPipeline Started " + (dryRun ? "(DRY RUN)" : "") + " ===");
 
         RenderBranch branch = decideRenderBranch(ctx);
         ctx.setRenderBranch(branch);
-        ctx.getLog().info("DECIDE: Using branch: " + branch);
+        ctx.info("DECIDE: Using branch: " + branch);
 
-        if (!dryRun) {
-            switch (branch) {
-                case MODEL_ELEMENTS -> executeModelBranch(ctx);
-                case TEXTURE_RELOC -> executeTextureRelocBranch(ctx);
-                case LEGACY -> executeLegacyBranch(ctx);
-                case ITEM -> executeItemBranch(ctx);
-                case ENTITY, NONE -> {
-                    ctx.setDrewAny(false);
-                }
+        switch (branch) {
+            case MODEL_ELEMENTS -> executeModelBranch(ctx);
+            case TEXTURE_RELOC -> executeTextureRelocBranch(ctx);
+            case LEGACY -> executeLegacyBranch(ctx);
+            case ITEM -> executeItemBranch(ctx);
+            case ENTITY, NONE -> {
+                ctx.setDrewAny(false);
             }
-        } else {
-            ctx.setDrewAny(true);
         }
 
-        ctx.getLog().info("COMPLETE: drewAny=" + ctx.isDrewAny());
+        ctx.info("COMPLETE: drewAny=" + ctx.isDrewAny());
 
         return ctx.isDrewAny();
     }
 
     private RenderBranch decideRenderBranch(RenderContext ctx) {
         if (ctx.getBlockAccess() == null) {
+            ctx.info("DECIDE: blockAccess is null, using ITEM branch");
             return RenderBranch.ITEM;
         }
 
-        String modelId = ModelUtil.findModelId(ctx.getBlock(), ctx.getMeta());
-        if (modelId != null) {
-            ctx.setModelId(modelId);
-            var modelData = ModelUtil.findModelData(modelId);
-            if (modelData != null) {
-                ctx.setModelData(modelData);
-                var elements = ModelUtil.findElements(modelData, ctx.getFace());
-                if (elements != null) {
-                    ctx.setElements(elements);
-                    return RenderBranch.MODEL_ELEMENTS;
-                }
-            }
+        if (ModelDomain.resolve(ctx)) {
+            ctx.info("DECIDE: Using MODEL_ELEMENTS branch");
+            return RenderBranch.MODEL_ELEMENTS;
         }
 
-        CTMTextureAtlasSprite ctmSprite = TextureUtil.findTextureReloc(ctx.getOriginalIcon());
-        if (ctmSprite != null) {
-            ctx.setCtmSprite(ctmSprite);
-            ctx.setIconMinU(ctmSprite.getMinU());
-            ctx.setIconMaxU(ctmSprite.getMaxU());
-            ctx.setIconMinV(ctmSprite.getMinV());
-            ctx.setIconMaxV(ctmSprite.getMaxV());
+        if (TextureDomain.resolveReloc(ctx)) {
+            ctx.info("DECIDE: Using TEXTURE_RELOC branch");
             return RenderBranch.TEXTURE_RELOC;
         }
 
         String iconName = TextureKeyNormalizer.normalizeIconName(ctx.getOriginalIcon().getIconName());
         if (shouldUseLegacy(iconName)) {
+            ctx.info("DECIDE: Using LEGACY branch for icon: " + iconName);
             return RenderBranch.LEGACY;
         }
 
+        ctx.info("DECIDE: No branch matched, using NONE");
         return RenderBranch.NONE;
     }
 
@@ -98,7 +84,7 @@ public class RenderPipeline {
     }
 
     private void executeModelBranch(RenderContext ctx) {
-        ctx.getLog().debug("MODEL: Looping through " + ctx.getElements().size() + " elements");
+        ctx.info("MODEL: Looping through " + ctx.getElements().size() + " elements");
 
         ConnectionPredicate predicate = PredicateRegistry.defaultPredicate();
         if (!ctx.getElements().isEmpty()) {
@@ -107,7 +93,10 @@ public class RenderPipeline {
                 ConnectionPredicate p = PredicateRegistry.getPredicate(
                     firstFace.getConnectionKey(),
                     ctx.getModelData().getConnections());
-                if (p != null) predicate = p;
+                if (p != null) {
+                    predicate = p;
+                    ctx.info("MODEL: Using custom connection predicate: " + firstFace.getConnectionKey());
+                }
             }
         }
         ctx.setConnectionPredicate(predicate);
@@ -118,23 +107,21 @@ public class RenderPipeline {
             ctx.setCurrentElementIndex(index++);
             ctx.resetPipelineFailed();
 
-            CTMTextureAtlasSprite ctmSprite = TextureUtil.resolveForElement(element, ctx.getFace(), ctx.getModelData());
-            if (ctmSprite == null) {
-                ctx.getLog().warn("RENDER: Failed to resolve texture for element " + ctx.getCurrentElementIndex());
+            if (!TextureDomain.resolveForElement(ctx)) {
                 continue;
             }
 
-            ctx.setCtmSprite(ctmSprite);
-            ctx.setIconMinU(ctmSprite.getMinU());
-            ctx.setIconMaxU(ctmSprite.getMaxU());
-            ctx.setIconMinV(ctmSprite.getMinV());
-            ctx.setIconMaxV(ctmSprite.getMaxV());
+            CTMTextureAtlasSprite ctmSprite = ctx.getCtmSprite();
+            ctx.info("MODEL: Element " + ctx.getCurrentElementIndex() + " using sprite: " + ctmSprite.getIconName());
 
             if (ctmSprite.getLayoutStyle() != null) {
+                ctx.info("MODEL: Element " + ctx.getCurrentElementIndex() + " using connecting render");
                 ElementQuadRenderer.renderConnecting(ctx);
             } else if (ctmSprite.getRandomCount() > 0) {
+                ctx.info("MODEL: Element " + ctx.getCurrentElementIndex() + " using random render (count=" + ctmSprite.getRandomCount() + ")");
                 ElementQuadRenderer.renderRandom(ctx);
             } else {
+                ctx.info("MODEL: Element " + ctx.getCurrentElementIndex() + " using base render");
                 ElementQuadRenderer.renderBase(ctx);
             }
         }
@@ -142,18 +129,22 @@ public class RenderPipeline {
 
     private void executeTextureRelocBranch(RenderContext ctx) {
         CTMTextureAtlasSprite ctmSprite = ctx.getCtmSprite();
-        if (ctmSprite == null) return;
+        ctx.info("TEXTURE_RELOC: Using sprite: " + ctmSprite.getIconName());
 
         if (ctmSprite.getLayoutStyle() != null) {
+            ctx.info("TEXTURE_RELOC: Using connecting render");
             RenderBlocksQuadRenderer.renderConnecting(ctx);
         } else if (ctmSprite.getRandomCount() > 0) {
+            ctx.info("TEXTURE_RELOC: Using random render (count=" + ctmSprite.getRandomCount() + ")");
             RenderBlocksQuadRenderer.renderRandom(ctx);
         } else {
+            ctx.info("TEXTURE_RELOC: Using base render");
             RenderBlocksQuadRenderer.renderBase(ctx);
         }
     }
 
     private void executeLegacyBranch(RenderContext ctx) {
+        ctx.info("LEGACY: Calling Textures.renderWorldBlock");
         boolean result = Textures.renderWorldBlock(
             ctx.getRenderBlocks(),
             ctx.getBlockAccess(),
@@ -163,10 +154,12 @@ public class RenderPipeline {
             ctx.getBlockZ(),
             ctx.getOriginalIcon(),
             ctx.getFace());
+        ctx.info("LEGACY: renderWorldBlock returned: " + result);
         ctx.setDrewAny(result);
     }
 
     private void executeItemBranch(RenderContext ctx) {
+        ctx.info("ITEM: Calling ItemQuadRenderer.renderBase");
         ItemQuadRenderer.renderBase(ctx);
     }
 }

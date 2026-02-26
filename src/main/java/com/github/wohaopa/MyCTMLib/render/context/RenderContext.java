@@ -88,7 +88,8 @@ public class RenderContext {
     // ========== 状态 ==========
     @Getter @Setter private boolean drewAny;
     @Getter @Setter private boolean pipelineFailed;
-    @Getter private final RenderLog log = new RenderLog();
+    @Getter @Setter private boolean dryRun;
+    private final RenderLog log = new RenderLog();
 
     // ========== 面计数 ==========
     private final int[] faceRenderCount = new int[6];
@@ -98,6 +99,7 @@ public class RenderContext {
     public void reset() {
         this.drewAny = false;
         this.pipelineFailed = false;
+        this.dryRun = false;
         this.log.clear();
     }
 
@@ -113,75 +115,55 @@ public class RenderContext {
         Arrays.fill(faceRenderCount, 0);
     }
 
-    public boolean isDebug() {
-        if (!com.github.wohaopa.MyCTMLib.MyCTMLib.debugMode) {
-            return false;
-        }
-
-        net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getMinecraft();
-        if (mc.objectMouseOver == null
-            || mc.objectMouseOver.typeOfHit != net.minecraft.util.MovingObjectPosition.MovingObjectType.BLOCK) {
-            return false;
-        }
-
-        int focusX = mc.objectMouseOver.blockX;
-        int focusY = mc.objectMouseOver.blockY;
-        int focusZ = mc.objectMouseOver.blockZ;
-
-        return (int) Math.round(getBlockX()) == focusX 
-            && (int) Math.round(getBlockY()) == focusY 
-            && (int) Math.round(getBlockZ()) == focusZ;
-    }
-
     public void trace(String msg) {
-        if (!isDebug()) return;
+        if (!isDryRun()) return;
         log.debug(msg);
     }
 
     public void trace(Supplier<String> msgSupplier) {
-        if (!isDebug()) return;
+        if (!isDryRun()) return;
         log.debug(msgSupplier.get());
     }
 
     public void debug(String msg) {
-        if (!isDebug()) return;
+        if (!isDryRun()) return;
         log.debug(msg);
     }
 
     public void debug(Supplier<String> msgSupplier) {
-        if (!isDebug()) return;
+        if (!isDryRun()) return;
         log.debug(msgSupplier.get());
     }
 
     public void info(String msg) {
-        if (!isDebug()) return;
+        if (!isDryRun()) return;
         log.info(msg);
     }
 
     public void info(Supplier<String> msgSupplier) {
-        if (!isDebug()) return;
+        if (!isDryRun()) return;
         log.info(msgSupplier.get());
     }
 
     public void warn(String msg) {
-        if (!isDebug()) return;
+        if (!isDryRun()) return;
         log.warn(msg);
     }
 
     public void warn(Supplier<String> msgSupplier) {
-        if (!isDebug()) return;
+        if (!isDryRun()) return;
         log.warn(msgSupplier.get());
     }
 
     public void error(String msg) {
-        if (isDebug()) {
+        if (isDryRun()) {
             log.error(msg);
         }
         failPipeline(msg);
     }
 
     public void error(Supplier<String> msgSupplier) {
-        if (isDebug()) {
+        if (isDryRun()) {
             log.error(msgSupplier.get());
         }
         failPipeline(msgSupplier.get());

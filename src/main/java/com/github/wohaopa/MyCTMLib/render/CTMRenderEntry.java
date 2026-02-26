@@ -113,12 +113,7 @@ public final class CTMRenderEntry {
         context.getLog().clear();
 
         try {
-            if (context.isDebug()) {
-                boolean result = PIPELINE.execute(context);
-                return result;
-            } else {
-                return PIPELINE.execute(context);
-            }
+            return PIPELINE.execute(context);
         } catch (Throwable t) {
             logContextState(context, t);
             throw t;

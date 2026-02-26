@@ -22,6 +22,9 @@ public final class ItemQuadRenderer {
      * 渲染 Base 材质面（物品渲染）
      */
     public static void renderBase(RenderContext ctx) {
+        assert ctx.getRenderBlocks() != null;
+        assert ctx.getCtmSprite() != null;
+        
         GeometryDomain.fromRenderBlocks(ctx);
         UVDomain.calc(ctx, 0, 0);
         PositionDomain.calc(ctx);

@@ -24,6 +24,11 @@ public final class ElementQuadRenderer {
      * 渲染 Connecting 材质面
      */
     public static void renderConnecting(RenderContext ctx) {
+        assert ctx.getCtmSprite() != null;
+        assert ctx.getRenderBlocks() != null;
+        assert ctx.getBlockAccess() != null;
+        assert ctx.getConnectionPredicate() != null;
+        
         CTMTextureAtlasSprite ctmSprite = ctx.getCtmSprite();
         int[] tilePos = TileUtil.computeConnecting(
             ctx.getBlockAccess(),
@@ -57,6 +62,8 @@ public final class ElementQuadRenderer {
      * 渲染 Base 材质面
      */
     public static void renderBase(RenderContext ctx) {
+        assert ctx.getRenderBlocks() != null;
+        
         GeometryDomain.fromElement(ctx);
         UVDomain.calc(ctx, 0, 0);
         PositionDomain.calc(ctx);
@@ -80,6 +87,10 @@ public final class ElementQuadRenderer {
      * 渲染 Random 材质面
      */
     public static void renderRandom(RenderContext ctx) {
+        assert ctx.getCtmSprite() != null;
+        assert ctx.getRenderBlocks() != null;
+        assert ctx.getBlockAccess() != null;
+        
         CTMTextureAtlasSprite ctmSprite = ctx.getCtmSprite();
         int[] tilePos = TileUtil.computeRandom(
             ctx.getBlockAccess(),
