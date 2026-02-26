@@ -5,11 +5,12 @@ import com.github.wohaopa.MyCTMLib.render.domain.BrightnessDomain;
 import com.github.wohaopa.MyCTMLib.render.domain.ColorDomain;
 import com.github.wohaopa.MyCTMLib.render.domain.GeometryDomain;
 import com.github.wohaopa.MyCTMLib.render.domain.PositionDomain;
-import com.github.wohaopa.MyCTMLib.render.domain.TileDomain;
 import com.github.wohaopa.MyCTMLib.render.domain.UVDomain;
+import com.github.wohaopa.MyCTMLib.render.util.TileUtil;
+import com.github.wohaopa.MyCTMLib.texture.CTMTextureAtlasSprite;
 
 /**
- * RenderBlocks _quad 渲染器（TextureReloc 分支专用）
+ * RenderBlocks quad 渲染器（TextureReloc 分支专用）
  * 
  * <p>
  * 从 RenderBlocks 提取几何数据，适用于 TEXTURE_RELOC 分支。
@@ -23,9 +24,18 @@ public final class RenderBlocksQuadRenderer {
      * 渲染 Connecting 材质面
      */
     public static void renderConnecting(RenderContext ctx) {
-        TileDomain.computeConnecting(ctx);
+        CTMTextureAtlasSprite ctmSprite = ctx.getCtmSprite();
+        int[] tilePos = TileUtil.computeConnecting(
+            ctx.getBlockAccess(),
+            ctx.getBlockX(), ctx.getBlockY(), ctx.getBlockZ(),
+            ctx.getFace(),
+            ctx.getBlock(),
+            ctx.getMeta(),
+            ctx.getConnectionPredicate(),
+            ctmSprite.getLayoutStyle());
+
         GeometryDomain.fromRenderBlocks(ctx);
-        UVDomain.calc(ctx);
+        UVDomain.calc(ctx, tilePos[0], tilePos[1]);
         PositionDomain.calc(ctx);
 
         if (ctx.getRenderBlocks().enableAO) {
@@ -47,9 +57,8 @@ public final class RenderBlocksQuadRenderer {
      * 渲染 Base 材质面
      */
     public static void renderBase(RenderContext ctx) {
-        TileDomain.computeBase(ctx);
         GeometryDomain.fromRenderBlocks(ctx);
-        UVDomain.calc(ctx);
+        UVDomain.calc(ctx, 0, 0);
         PositionDomain.calc(ctx);
 
         if (ctx.getRenderBlocks().enableAO) {
@@ -71,9 +80,16 @@ public final class RenderBlocksQuadRenderer {
      * 渲染 Random 材质面
      */
     public static void renderRandom(RenderContext ctx) {
-        TileDomain.computeRandom(ctx);
+        CTMTextureAtlasSprite ctmSprite = ctx.getCtmSprite();
+        int[] tilePos = TileUtil.computeRandom(
+            ctx.getBlockAccess(),
+            ctx.getBlockX(), ctx.getBlockY(), ctx.getBlockZ(),
+            ctmSprite.getRandomCount(),
+            ctmSprite.getGridWidth(),
+            ctmSprite.getGridHeight());
+
         GeometryDomain.fromRenderBlocks(ctx);
-        UVDomain.calc(ctx);
+        UVDomain.calc(ctx, tilePos[0], tilePos[1]);
         PositionDomain.calc(ctx);
 
         if (ctx.getRenderBlocks().enableAO) {

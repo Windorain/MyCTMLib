@@ -7,16 +7,13 @@ import com.github.wohaopa.MyCTMLib.predicate.ConnectionPredicate;
 import com.github.wohaopa.MyCTMLib.predicate.PredicateRegistry;
 import com.github.wohaopa.MyCTMLib.render.CTMRenderEntry;
 import com.github.wohaopa.MyCTMLib.render.context.RenderContext;
-import com.github.wohaopa.MyCTMLib.render.domain.ModelDomain;
-import com.github.wohaopa.MyCTMLib.render.domain.TextureDomain;
 import com.github.wohaopa.MyCTMLib.render.quads.ElementQuadRenderer;
 import com.github.wohaopa.MyCTMLib.render.quads.ItemQuadRenderer;
 import com.github.wohaopa.MyCTMLib.render.quads.RenderBlocksQuadRenderer;
-import com.github.wohaopa.MyCTMLib.texture.BaseTextureData;
-import com.github.wohaopa.MyCTMLib.texture.ConnectingTextureData;
-import com.github.wohaopa.MyCTMLib.texture.RandomTextureData;
+import com.github.wohaopa.MyCTMLib.render.util.ModelUtil;
+import com.github.wohaopa.MyCTMLib.render.util.TextureUtil;
+import com.github.wohaopa.MyCTMLib.texture.CTMTextureAtlasSprite;
 import com.github.wohaopa.MyCTMLib.texture.TextureKeyNormalizer;
-import com.github.wohaopa.MyCTMLib.texture.TextureTypeData;
 
 /**
  * 渲染管线（线性管道）
@@ -67,17 +64,34 @@ public class RenderPipeline {
             return RenderBranch.ITEM;
         }
 
-        if (ModelDomain.findModelId(ctx) && ModelDomain.findModelData(ctx) && ModelDomain.findElements(ctx)) {
-            return RenderBranch.MODEL_ELEMENTS;
+        // Model 分支：查询 model 数据
+        String modelId = ModelUtil.findModelId(ctx.getBlock(), ctx.getMeta());
+        if (modelId != null) {
+            ctx.setModelId(modelId);
+            var modelData = ModelUtil.findModelData(modelId);
+            if (modelData != null) {
+                ctx.setModelData(modelData);
+                var elements = ModelUtil.findElements(modelData, ctx.getFace());
+                if (elements != null) {
+                    ctx.setElements(elements);
+                    return RenderBranch.MODEL_ELEMENTS;
+                }
+            }
         }
 
-        if (TextureDomain.findTextureReloc(ctx)) {
+        // TextureReloc 分支：查找 CTM 重定向
+        CTMTextureAtlasSprite ctmSprite = TextureUtil.findTextureReloc(ctx.getOriginalIcon());
+        if (ctmSprite != null) {
+            ctx.setCtmSprite(ctmSprite);
+            ctx.setIconMinU(ctmSprite.getMinU());
+            ctx.setIconMaxU(ctmSprite.getMaxU());
+            ctx.setIconMinV(ctmSprite.getMinV());
+            ctx.setIconMaxV(ctmSprite.getMaxV());
             return RenderBranch.TEXTURE_RELOC;
         }
 
-        String iconName = TextureKeyNormalizer.normalizeIconName(
-            ctx.getOriginalIcon()
-                .getIconName());
+        // Legacy 分支
+        String iconName = TextureKeyNormalizer.normalizeIconName(ctx.getOriginalIcon().getIconName());
         if (shouldUseLegacy(iconName)) {
             return RenderBranch.LEGACY;
         }
@@ -90,21 +104,15 @@ public class RenderPipeline {
     }
 
     private void executeModelBranch(RenderContext ctx) {
-        ctx.debug(
-            () -> "MODEL: Looping through " + ctx.getElements()
-                .size() + " elements");
+        ctx.debug(() -> "MODEL: Looping through " + ctx.getElements().size() + " elements");
 
         ConnectionPredicate predicate = PredicateRegistry.defaultPredicate();
-        if (!ctx.getElements()
-            .isEmpty()) {
-            ModelFace firstFace = ctx.getElements()
-                .get(0)
-                .getFace(ctx.getFace());
+        if (!ctx.getElements().isEmpty()) {
+            ModelFace firstFace = ctx.getElements().get(0).getFace(ctx.getFace());
             if (firstFace != null && firstFace.getConnectionKey() != null) {
                 ConnectionPredicate p = PredicateRegistry.getPredicate(
                     firstFace.getConnectionKey(),
-                    ctx.getModelData()
-                        .getConnections());
+                    ctx.getModelData().getConnections());
                 if (p != null) predicate = p;
             }
         }
@@ -116,32 +124,38 @@ public class RenderPipeline {
             ctx.setCurrentElementIndex(index++);
             ctx.resetPipelineFailed();
 
-            if (!TextureDomain.resolveForElement(ctx)) {
+            CTMTextureAtlasSprite ctmSprite = TextureUtil.resolveForElement(element, ctx.getFace(), ctx.getModelData());
+            if (ctmSprite == null) {
                 ctx.warn(() -> "RENDER: Failed to resolve texture for element " + ctx.getCurrentElementIndex());
                 continue;
             }
 
-            if (ctx.getTextureData() instanceof BaseTextureData) {
-                ElementQuadRenderer.renderBase(ctx);
-            } else if (ctx.getTextureData() instanceof RandomTextureData) {
-                ElementQuadRenderer.renderRandom(ctx);
-            } else if (ctx.getTextureData() instanceof ConnectingTextureData) {
+            ctx.setCtmSprite(ctmSprite);
+            ctx.setIconMinU(ctmSprite.getMinU());
+            ctx.setIconMaxU(ctmSprite.getMaxU());
+            ctx.setIconMinV(ctmSprite.getMinV());
+            ctx.setIconMaxV(ctmSprite.getMaxV());
+
+            if (ctmSprite.getLayoutStyle() != null) {
                 ElementQuadRenderer.renderConnecting(ctx);
+            } else if (ctmSprite.getRandomCount() > 0) {
+                ElementQuadRenderer.renderRandom(ctx);
             } else {
-                ctx.debug(() -> "RENDER: Unknown texture data type: " + ctx.getTextureData());
-                ctx.failPipeline("Unknown texture data type: " + ctx.getTextureData());
+                ElementQuadRenderer.renderBase(ctx);
             }
         }
     }
 
     private void executeTextureRelocBranch(RenderContext ctx) {
-        TextureTypeData data = ctx.getTextureData();
-        if (data instanceof BaseTextureData) {
-            RenderBlocksQuadRenderer.renderBase(ctx);
-        } else if (data instanceof RandomTextureData) {
-            RenderBlocksQuadRenderer.renderRandom(ctx);
-        } else if (data instanceof ConnectingTextureData) {
+        CTMTextureAtlasSprite ctmSprite = ctx.getCtmSprite();
+        if (ctmSprite == null) return;
+
+        if (ctmSprite.getLayoutStyle() != null) {
             RenderBlocksQuadRenderer.renderConnecting(ctx);
+        } else if (ctmSprite.getRandomCount() > 0) {
+            RenderBlocksQuadRenderer.renderRandom(ctx);
+        } else {
+            RenderBlocksQuadRenderer.renderBase(ctx);
         }
     }
 

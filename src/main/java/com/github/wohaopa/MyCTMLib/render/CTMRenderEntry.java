@@ -28,6 +28,7 @@ import com.github.wohaopa.MyCTMLib.render.pipeline.RenderPipeline;
 import com.github.wohaopa.MyCTMLib.texture.BaseTextureData;
 import com.github.wohaopa.MyCTMLib.texture.ConnectingTextureData;
 import com.github.wohaopa.MyCTMLib.texture.RandomTextureData;
+import com.github.wohaopa.MyCTMLib.texture.CTMTextureAtlasSprite;
 import com.github.wohaopa.MyCTMLib.texture.TextureKeyNormalizer;
 import com.github.wohaopa.MyCTMLib.texture.TextureRegistry;
 import com.github.wohaopa.MyCTMLib.texture.TextureTypeData;
@@ -715,32 +716,18 @@ public final class CTMRenderEntry {
                 trace.addStep("Branch: " + context.getRenderBranch());
                 trace.addStep("New pipeline drewAny: " + context.isDrewAny());
 
-                trace.setConnectionBits(context.getConnectionMask());
-                trace.setTilePos(context.getTileX(), context.getTileY());
-                if (context.getDrawIcon() != null) {
+                trace.setConnectionBits(0);
+                trace.setTilePos(0, 0);
+                CTMTextureAtlasSprite ctmSprite = context.getCtmSprite();
+                if (ctmSprite != null) {
                     trace.setDrawSpriteInfo(
-                        context.getDrawIcon()
-                            .getIconName(),
-                        context.getDrawIcon()
-                            .getIconWidth(),
-                        context.getDrawIcon()
-                            .getIconHeight());
+                        ctmSprite.getIconName(),
+                        ctmSprite.getIconWidth(),
+                        ctmSprite.getIconHeight());
+                    trace.setTexRegTexMapSync(true, ctmSprite.getIconName());
+                    trace.setTextureKey(ctmSprite.getIconName());
+                    trace.setGridInfo(ctmSprite.getGridWidth(), ctmSprite.getGridHeight());
                 }
-                if (context.getTextureKey() != null) {
-                    trace.setTexRegTexMapSync(true, context.getTextureKey());
-                    trace.setTextureKey(context.getTextureKey());
-                }
-                trace.setIconUV(
-                    context.getIconMinU(),
-                    context.getIconMaxU(),
-                    context.getIconMinV(),
-                    context.getIconMaxV());
-                trace.setDrawUV(
-                    context.getDrawMinU(),
-                    context.getDrawMaxU(),
-                    context.getDrawMinV(),
-                    context.getDrawMaxV());
-                trace.setGridInfo(context.getGridW(), context.getGridH());
 
                 ForgeDirection face = context.getFace();
                 RenderPipelineDebugCache.record(
@@ -813,11 +800,7 @@ public final class CTMRenderEntry {
         if (ctx != null) {
             try {
                 LOGGER.error("  renderBranch: {}", ctx.getRenderBranch());
-                LOGGER.error("  textureData: {}", safeStr(ctx.getTextureData()));
-                LOGGER.error("  drawIcon: {}", safeStr(ctx.getDrawIcon()));
-                LOGGER.error("  connectionMask: {}", ctx.getConnectionMask());
-                LOGGER.error("  tileX: {}", ctx.getTileX());
-                LOGGER.error("  tileY: {}", ctx.getTileY());
+                LOGGER.error("  ctmSprite: {}", safeStr(ctx.getCtmSprite()));
                 LOGGER.error("  drewAny: {}", ctx.isDrewAny());
                 LOGGER.error("  pipelineFailed: {}", ctx.isPipelineFailed());
                 LOGGER.error("  failureReason: {}", ctx.getFailureReason());

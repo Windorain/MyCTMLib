@@ -3,6 +3,7 @@ package com.github.wohaopa.MyCTMLib.render.domain;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import com.github.wohaopa.MyCTMLib.render.context.RenderContext;
+import com.github.wohaopa.MyCTMLib.texture.CTMTextureAtlasSprite;
 
 /**
  * UV 坐标数据域
@@ -17,16 +18,20 @@ public final class UVDomain {
 
     /**
      * 计算最终 UV 坐标
+     * 
+     * @param ctx 渲染上下文
+     * @param tileX 瓦片 X 坐标
+     * @param tileY 瓦片 Y 坐标
      */
-    public static void calc(RenderContext ctx) {
+    public static void calc(RenderContext ctx, int tileX, int tileY) {
+        CTMTextureAtlasSprite ctmSprite = ctx.getCtmSprite();
+        int gridW = ctmSprite.getGridWidth();
+        int gridH = ctmSprite.getGridHeight();
+
         double iconMinU = ctx.getIconMinU();
         double iconMaxU = ctx.getIconMaxU();
         double iconMinV = ctx.getIconMinV();
         double iconMaxV = ctx.getIconMaxV();
-        int tileX = ctx.getTileX();
-        int tileY = ctx.getTileY();
-        int gridW = ctx.getGridW();
-        int gridH = ctx.getGridH();
 
         // 步骤 1: 计算基础 UV（texture 切片）
         double baseMinU = iconMinU + (iconMaxU - iconMinU) * tileX / gridW;

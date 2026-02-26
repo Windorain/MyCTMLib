@@ -171,18 +171,16 @@ public class DumpUtil {
 
         try {
             json.addProperty("renderBranch", safeStr(ctx.getRenderBranch()));
-            json.addProperty("textureData", safeStr(ctx.getTextureData()));
-            json.addProperty("drawIcon", safeStr(ctx.getDrawIcon()));
-            json.addProperty("connectionMask", ctx.getConnectionMask());
-            json.addProperty("tileX", ctx.getTileX());
-            json.addProperty("tileY", ctx.getTileY());
+            json.addProperty("ctmSprite", safeStr(ctx.getCtmSprite()));
             json.addProperty("drewAny", ctx.isDrewAny());
             json.addProperty("pipelineFailed", ctx.isPipelineFailed());
             json.addProperty("failureReason", ctx.getFailureReason());
 
             // 懒加载字段
             json.addProperty("modelId", safeStr(ctx.getModelId()));
-            json.addProperty("textureKey", safeStr(ctx.getTextureKey()));
+            if (ctx.getCtmSprite() != null) {
+                json.addProperty("ctmSpriteName", ctx.getCtmSprite().getIconName());
+            }
 
         } catch (Exception e) {
             json.addProperty("error", "Failed to read context: " + e.getMessage());
