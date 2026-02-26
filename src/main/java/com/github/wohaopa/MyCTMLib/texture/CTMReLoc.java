@@ -1,13 +1,11 @@
 package com.github.wohaopa.MyCTMLib.texture;
 
 import com.github.wohaopa.MyCTMLib.mixins.AccessorTextureMap;
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureMap;
-import net.minecraftforge.client.event.TextureStitchEvent;
 
 import java.util.Map;
 
@@ -35,19 +33,10 @@ public class CTMReLoc {
     /**
      * 构建重定向表
      * 在 TextureStitchEvent.Pre 时调用
-     */
-    @SubscribeEvent
-    public static void onTextureStitchPre(TextureStitchEvent.Pre event) {
-        build(event.map);
-    }
-    
-    /**
-     * 构建重定向表
      * 
-     * 遍历所有已注册的纹理，识别 _ctm 后缀的 CTM 纹理，
-     * 建立基础名称到 CTM sprite 的映射
+     * @param textureMap 纹理贴图
      */
-    private static void build(TextureMap textureMap) {
+    static void build(TextureMap textureMap) {
         // 清空旧表（支持资源重载）
         relocTable.clear();
         
