@@ -5,6 +5,7 @@ import com.github.wohaopa.MyCTMLib.render.domain.BrightnessDomain;
 import com.github.wohaopa.MyCTMLib.render.domain.ColorDomain;
 import com.github.wohaopa.MyCTMLib.render.domain.GeometryDomain;
 import com.github.wohaopa.MyCTMLib.render.domain.PositionDomain;
+import com.github.wohaopa.MyCTMLib.render.domain.TileDomain;
 import com.github.wohaopa.MyCTMLib.render.domain.UVDomain;
 
 /**
@@ -25,8 +26,9 @@ public final class ItemQuadRenderer {
         assert ctx.getRenderBlocks() != null;
         assert ctx.getCtmSprite() != null;
 
+        TileDomain.computeBase(ctx);
         GeometryDomain.fromRenderBlocks(ctx);
-        UVDomain.calc(ctx, 0, 0);
+        UVDomain.calc(ctx);
         PositionDomain.calc(ctx);
 
         BrightnessDomain.setFullUniform(ctx);

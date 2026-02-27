@@ -98,6 +98,14 @@ public class RenderContext {
     @Setter
     private double iconMaxV;
 
+    // ========== Tile 缓存 ==========
+    @Getter
+    @Setter
+    private int connectionMask;
+    @Getter
+    @Setter
+    private int tileX, tileY;
+
     // ========== 几何缓存（最终参数）==========
     @Getter
     @Setter

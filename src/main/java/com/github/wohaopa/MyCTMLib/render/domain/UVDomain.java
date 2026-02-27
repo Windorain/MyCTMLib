@@ -20,15 +20,15 @@ public final class UVDomain {
      * 计算最终 UV 坐标
      * 
      * @param ctx   渲染上下文
-     * @param tileX 瓦片 X 坐标
-     * @param tileY 瓦片 Y 坐标
      */
-    public static void calc(RenderContext ctx, int tileX, int tileY) {
+    public static void calc(RenderContext ctx) {
         assert ctx.getCtmSprite() != null;
 
         CTMTextureAtlasSprite ctmSprite = ctx.getCtmSprite();
         int gridW = ctmSprite.getGridWidth();
         int gridH = ctmSprite.getGridHeight();
+        int tileX = ctx.getTileX();
+        int tileY = ctx.getTileY();
 
         double iconMinU = ctx.getIconMinU();
         double iconMaxU = ctx.getIconMaxU();

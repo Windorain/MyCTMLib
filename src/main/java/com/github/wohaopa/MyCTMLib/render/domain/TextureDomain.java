@@ -3,9 +3,11 @@ package com.github.wohaopa.MyCTMLib.render.domain;
 import com.github.wohaopa.MyCTMLib.model.ModelFace;
 import com.github.wohaopa.MyCTMLib.render.context.RenderContext;
 import com.github.wohaopa.MyCTMLib.render.util.TextureUtil;
-import com.github.wohaopa.MyCTMLib.texture.CTMReLoc;
 import com.github.wohaopa.MyCTMLib.texture.CTMTextureAtlasSprite;
 import com.github.wohaopa.MyCTMLib.texture.TextureKeyNormalizer;
+import com.github.wohaopa.MyCTMLib.texture.TextureRegistry;
+
+import net.minecraft.util.IIcon;
 
 public final class TextureDomain {
 
@@ -59,8 +61,8 @@ public final class TextureDomain {
             return false;
         }
 
-        CTMTextureAtlasSprite ctmSprite = CTMReLoc.getSprite(textureKey);
-        if (ctmSprite == null) {
+        IIcon icon = TextureRegistry.getInstance().getIcon(textureKey);
+        if (!(icon instanceof CTMTextureAtlasSprite ctmSprite)) {
             ctx.warn("TEXTURE: No CTM sprite found for key: " + textureKey);
             return false;
         }

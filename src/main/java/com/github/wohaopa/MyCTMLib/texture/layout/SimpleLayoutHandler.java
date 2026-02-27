@@ -10,7 +10,7 @@ public class SimpleLayoutHandler implements LayoutHandler {
     private static final int TOP = 1, RIGHT = 2, BOTTOM = 4, LEFT = 8;
 
     // 预计算查找表：16 种连接状态 → tile position
-    private static final int[][] TILE_TABLE = { { 0, 0 }, // 0b0000: no connections
+    public static final int[][] TILE_TABLE = { { 0, 0 }, // 0b0000: no connections
         { 3, 0 }, // 0b0001: LEFT
         { 3, 1 }, // 0b0010: TOP
         { 3, 3 }, // 0b0011: LEFT | TOP

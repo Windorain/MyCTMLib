@@ -14,7 +14,7 @@ public class FullLayoutHandler implements LayoutHandler {
     // 预计算查找表：256 种连接状态 → tile position (byte 编码节省内存)
     // 索引 = connectionMask
     // 值 = {tileX, tileY}
-    private static final byte[][] TILE_TABLE = new byte[256][2];
+    public static final byte[][] TILE_TABLE = new byte[256][2];
 
     static {
         // 初始化时计算所有 256 种情况
