@@ -1,18 +1,18 @@
 package com.github.wohaopa.MyCTMLib.render.pipeline;
 
-import com.github.wohaopa.MyCTMLib.Textures;
-import com.github.wohaopa.MyCTMLib.model.ModelElement;
-import com.github.wohaopa.MyCTMLib.model.ModelFace;
-import com.github.wohaopa.MyCTMLib.predicate.ConnectionPredicate;
-import com.github.wohaopa.MyCTMLib.predicate.PredicateRegistry;
+import java.util.List;
+
+import net.minecraftforge.common.util.ForgeDirection;
+
+import com.github.wohaopa.MyCTMLib.model.ModelRegistry;
+import com.github.wohaopa.MyCTMLib.render.util.ModelUtil;
+import com.github.wohaopa.MyCTMLib.model.baked.BakedModel;
+import com.github.wohaopa.MyCTMLib.model.baked.BakedQuad;
 import com.github.wohaopa.MyCTMLib.render.context.RenderContext;
-import com.github.wohaopa.MyCTMLib.render.domain.ModelDomain;
 import com.github.wohaopa.MyCTMLib.render.domain.TextureDomain;
-import com.github.wohaopa.MyCTMLib.render.quads.ElementQuadRenderer;
-import com.github.wohaopa.MyCTMLib.render.quads.ItemQuadRenderer;
+import com.github.wohaopa.MyCTMLib.render.quads.BakedQuadRenderer;
 import com.github.wohaopa.MyCTMLib.render.quads.RenderBlocksQuadRenderer;
 import com.github.wohaopa.MyCTMLib.texture.CTMTextureAtlasSprite;
-import com.github.wohaopa.MyCTMLib.texture.TextureKeyNormalizer;
 
 public class RenderPipeline {
 
@@ -31,147 +31,104 @@ public class RenderPipeline {
     private boolean executeInternal(RenderContext ctx, boolean dryRun) {
         ctx.reset();
         ctx.setDryRun(dryRun);
-
         ctx.info("=== RenderPipeline Started " + (dryRun ? "(DRY RUN)" : "") + " ===");
+        ctx.info("RenderLevel: " + ctx.getRenderLevel());
 
-        RenderBranch branch = decideRenderBranch(ctx);
-        ctx.setRenderBranch(branch);
-        ctx.info("DECIDE: Using branch: " + branch);
-
-        switch (branch) {
-            case MODEL_ELEMENTS -> executeModelBranch(ctx);
-            case TEXTURE_RELOC -> executeTextureRelocBranch(ctx);
-            case LEGACY -> executeLegacyBranch(ctx);
-            case ITEM -> executeItemBranch(ctx);
-            case ENTITY, NONE -> {
-                ctx.setDrewAny(false);
+        boolean result = false;
+        RenderLevel level = ctx.getRenderLevel();
+        if (level == null) {
+            ctx.warn("RenderLevel is null");
+            result = false;
+        } else {
+            switch (level) {
+                case BLOCK:
+                    result = executeBlockModelBranch(ctx);
+                    break;
+                case FACE:
+                    result = executeTextureRelocBranch(ctx);
+                    break;
+                default:
+                    ctx.warn("Unknown RenderLevel: " + level);
+                    result = false;
             }
         }
 
-        ctx.info("COMPLETE: drewAny=" + ctx.isDrewAny());
+        ctx.info("COMPLETE: drewAny=" + ctx.isDrewAny() + ", result=" + result);
+        return result;
+    }
+
+    private boolean executeBlockModelBranch(RenderContext ctx) {
+        ctx.info("BLOCK: Executing block model branch");
+
+        String modelId = ModelUtil.findModelId(ctx.getBlock(), ctx.getMeta());
+        if (modelId == null) {
+            ctx.warn("BLOCK: No modelId found");
+            return false;
+        }
+        ctx.info("BLOCK: Found modelId: " + modelId);
+
+        BakedModel bakedModel = ModelRegistry.getInstance().getBakedModel(modelId);
+        if (bakedModel == null) {
+            ctx.warn("BLOCK: No BakedModel found for: " + modelId);
+            return false;
+        }
+        ctx.setBakedModel(bakedModel);
+        ctx.info("BLOCK: Using BakedModel with " + bakedModel.getAllQuads().size() + " quads");
+
+        for (ForgeDirection face : ForgeDirection.VALID_DIRECTIONS) {
+            ctx.setFace(face);
+            List<BakedQuad> quads = bakedModel.getQuads(face);
+            ctx.info("BLOCK: Rendering face " + face + " with " + quads.size() + " quads");
+            
+            for (BakedQuad quad : quads) {
+                renderBakedQuad(quad, ctx);
+            }
+        }
 
         return ctx.isDrewAny();
     }
 
-    private RenderBranch decideRenderBranch(RenderContext ctx) {
-        if (ctx.getBlockAccess() == null) {
-            ctx.info("DECIDE: blockAccess is null, using ITEM branch");
-            return RenderBranch.ITEM;
+    private boolean executeTextureRelocBranch(RenderContext ctx) {
+        ctx.info("FACE: Executing texture relocation branch");
+
+        if (!TextureDomain.resolveReloc(ctx)) {
+            ctx.warn("FACE: Texture relocation resolve failed");
+            return false;
         }
 
-        if (ModelDomain.resolve(ctx)) {
-            ctx.info("DECIDE: Using MODEL_ELEMENTS branch");
-            return RenderBranch.MODEL_ELEMENTS;
-        }
-
-        if (TextureDomain.resolveReloc(ctx)) {
-            ctx.info("DECIDE: Using TEXTURE_RELOC branch");
-            return RenderBranch.TEXTURE_RELOC;
-        }
-
-        String iconName = TextureKeyNormalizer.normalizeIconName(
-            ctx.getOriginalIcon()
-                .getIconName());
-        if (shouldUseLegacy(iconName)) {
-            ctx.info("DECIDE: Using LEGACY branch for icon: " + iconName);
-            return RenderBranch.LEGACY;
-        }
-
-        ctx.info("DECIDE: No branch matched, using NONE");
-        return RenderBranch.NONE;
-    }
-
-    private boolean shouldUseLegacy(String iconName) {
-        return iconName != null && Textures.contain(iconName);
-    }
-
-    private void executeModelBranch(RenderContext ctx) {
-        ctx.info(
-            "MODEL: Looping through " + ctx.getElements()
-                .size() + " elements");
-
-        ConnectionPredicate predicate = PredicateRegistry.defaultPredicate();
-        if (!ctx.getElements()
-            .isEmpty()) {
-            ModelFace firstFace = ctx.getElements()
-                .get(0)
-                .getFace(ctx.getFace());
-            if (firstFace != null && firstFace.getConnectionKey() != null) {
-                ConnectionPredicate p = PredicateRegistry.getPredicate(
-                    firstFace.getConnectionKey(),
-                    ctx.getModelData()
-                        .getConnections());
-                if (p != null) {
-                    predicate = p;
-                    ctx.info("MODEL: Using custom connection predicate: " + firstFace.getConnectionKey());
-                }
-            }
-        }
-        ctx.setConnectionPredicate(predicate);
-
-        int index = 0;
-        for (ModelElement element : ctx.getElements()) {
-            ctx.setCurrentElement(element);
-            ctx.setCurrentElementIndex(index++);
-            ctx.resetPipelineFailed();
-
-            if (!TextureDomain.resolveForElement(ctx)) {
-                continue;
-            }
-
-            CTMTextureAtlasSprite ctmSprite = ctx.getCtmSprite();
-            ctx.info("MODEL: Element " + ctx.getCurrentElementIndex() + " using sprite: " + ctmSprite.getIconName());
-
-            if (ctmSprite.getLayoutStyle() != null) {
-                ctx.info("MODEL: Element " + ctx.getCurrentElementIndex() + " using connecting render");
-                ElementQuadRenderer.renderConnecting(ctx);
-            } else if (ctmSprite.getRandomCount() > 0) {
-                ctx.info(
-                    "MODEL: Element " + ctx.getCurrentElementIndex()
-                        + " using random render (count="
-                        + ctmSprite.getRandomCount()
-                        + ")");
-                ElementQuadRenderer.renderRandom(ctx);
-            } else {
-                ctx.info("MODEL: Element " + ctx.getCurrentElementIndex() + " using base render");
-                ElementQuadRenderer.renderBase(ctx);
-            }
-        }
-    }
-
-    private void executeTextureRelocBranch(RenderContext ctx) {
         CTMTextureAtlasSprite ctmSprite = ctx.getCtmSprite();
-        ctx.info("TEXTURE_RELOC: Using sprite: " + ctmSprite.getIconName());
+        ctx.info("FACE: Using sprite: " + ctmSprite.getIconName());
 
         if (ctmSprite.getLayoutStyle() != null) {
-            ctx.info("TEXTURE_RELOC: Using connecting render");
+            ctx.info("FACE: Using connecting render");
             RenderBlocksQuadRenderer.renderConnecting(ctx);
         } else if (ctmSprite.getRandomCount() > 0) {
-            ctx.info("TEXTURE_RELOC: Using random render (count=" + ctmSprite.getRandomCount() + ")");
+            ctx.info("FACE: Using random render (count=" + ctmSprite.getRandomCount() + ")");
             RenderBlocksQuadRenderer.renderRandom(ctx);
         } else {
-            ctx.info("TEXTURE_RELOC: Using base render");
+            ctx.info("FACE: Using base render");
             RenderBlocksQuadRenderer.renderBase(ctx);
         }
+
+        return ctx.isDrewAny();
     }
 
-    private void executeLegacyBranch(RenderContext ctx) {
-        ctx.info("LEGACY: Calling Textures.renderWorldBlock");
-        boolean result = Textures.renderWorldBlock(
-            ctx.getRenderBlocks(),
-            ctx.getBlockAccess(),
-            ctx.getBlock(),
-            ctx.getBlockX(),
-            ctx.getBlockY(),
-            ctx.getBlockZ(),
-            ctx.getOriginalIcon(),
-            ctx.getFace());
-        ctx.info("LEGACY: renderWorldBlock returned: " + result);
-        ctx.setDrewAny(result);
-    }
+    private void renderBakedQuad(BakedQuad quad, RenderContext ctx) {
+        CTMTextureAtlasSprite sprite = quad.getSprite();
+        if (sprite == null) {
+            ctx.warn("BakedQuad has no sprite, skipping");
+            return;
+        }
 
-    private void executeItemBranch(RenderContext ctx) {
-        ctx.info("ITEM: Calling ItemQuadRenderer.renderBase");
-        ItemQuadRenderer.renderBase(ctx);
+        if (sprite.getLayoutStyle() != null) {
+            ctx.trace(() -> "Rendering connecting quad for face " + ctx.getFace());
+            BakedQuadRenderer.renderConnecting(quad, ctx);
+        } else if (sprite.getRandomCount() > 0) {
+            ctx.trace(() -> "Rendering random quad for face " + ctx.getFace());
+            BakedQuadRenderer.renderRandom(quad, ctx);
+        } else {
+            ctx.trace(() -> "Rendering base quad for face " + ctx.getFace());
+            BakedQuadRenderer.renderBase(quad, ctx);
+        }
     }
 }

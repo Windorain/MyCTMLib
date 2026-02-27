@@ -13,9 +13,11 @@ import net.minecraftforge.common.util.ForgeDirection;
 
 import com.github.wohaopa.MyCTMLib.model.ModelData;
 import com.github.wohaopa.MyCTMLib.model.ModelElement;
+import com.github.wohaopa.MyCTMLib.model.baked.BakedModel;
 import com.github.wohaopa.MyCTMLib.predicate.ConnectionPredicate;
 import com.github.wohaopa.MyCTMLib.render.RenderLog;
 import com.github.wohaopa.MyCTMLib.render.pipeline.RenderBranch;
+import com.github.wohaopa.MyCTMLib.render.pipeline.RenderLevel;
 import com.github.wohaopa.MyCTMLib.texture.CTMTextureAtlasSprite;
 
 import lombok.Getter;
@@ -58,6 +60,12 @@ public class RenderContext {
     @Getter
     @Setter
     private RenderBranch renderBranch;
+    @Getter
+    @Setter
+    private RenderLevel renderLevel;
+    @Getter
+    @Setter
+    private BakedModel bakedModel;
 
     // ========== Model 分支 ==========
     @Getter

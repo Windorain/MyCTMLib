@@ -6,6 +6,7 @@ import java.util.List;
 import net.minecraft.block.Block;
 import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.util.IIcon;
+import net.minecraft.world.IBlockAccess;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import org.apache.logging.log4j.LogManager;
@@ -14,6 +15,7 @@ import org.apache.logging.log4j.Logger;
 import com.github.wohaopa.MyCTMLib.model.ModelData;
 import com.github.wohaopa.MyCTMLib.model.ModelElement;
 import com.github.wohaopa.MyCTMLib.render.context.RenderContext;
+import com.github.wohaopa.MyCTMLib.render.pipeline.RenderLevel;
 import com.github.wohaopa.MyCTMLib.render.pipeline.RenderPipeline;
 import com.github.wohaopa.MyCTMLib.texture.ConnectingTextureData;
 import com.github.wohaopa.MyCTMLib.texture.TextureKeyNormalizer;
@@ -105,6 +107,58 @@ public final class CTMRenderEntry {
             return PIPELINE.execute(context);
         } catch (Throwable t) {
             logContextState(context, t);
+            throw t;
+        }
+    }
+
+    public static boolean renderPipeline(RenderBlocks renderBlocks,
+                                          IBlockAccess blockAccess,
+                                          Block block,
+                                          double x, double y, double z,
+                                          int meta) {
+        RenderContext ctx = RenderContext.get();
+        ctx.getLog().clear();
+        try {
+            ctx.setRenderLevel(RenderLevel.BLOCK);
+            ctx.setRenderBlocks(renderBlocks);
+            ctx.setBlockAccess(blockAccess);
+            ctx.setBlock(block);
+            ctx.setBlockX(x);
+            ctx.setBlockY(y);
+            ctx.setBlockZ(z);
+            ctx.setMeta(meta);
+            ctx.setFace(ForgeDirection.UNKNOWN);
+            ctx.setOriginalIcon(null);
+            return PIPELINE.execute(ctx);
+        } catch (Throwable t) {
+            logContextState(ctx, t);
+            throw t;
+        }
+    }
+
+    public static boolean renderPipeline(RenderBlocks renderBlocks,
+                                          IBlockAccess blockAccess,
+                                          Block block,
+                                          double x, double y, double z,
+                                          int meta,
+                                          ForgeDirection face,
+                                          IIcon icon) {
+        RenderContext ctx = RenderContext.get();
+        ctx.getLog().clear();
+        try {
+            ctx.setRenderLevel(RenderLevel.FACE);
+            ctx.setRenderBlocks(renderBlocks);
+            ctx.setBlockAccess(blockAccess);
+            ctx.setBlock(block);
+            ctx.setBlockX(x);
+            ctx.setBlockY(y);
+            ctx.setBlockZ(z);
+            ctx.setMeta(meta);
+            ctx.setFace(face);
+            ctx.setOriginalIcon(icon);
+            return PIPELINE.execute(ctx);
+        } catch (Throwable t) {
+            logContextState(ctx, t);
             throw t;
         }
     }

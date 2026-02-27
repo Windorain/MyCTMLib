@@ -25,34 +25,43 @@ public abstract class MixinRenderBlocks {
     @Shadow
     public abstract boolean hasOverrideBlockTexture();
 
+    @Inject(method = "renderBlockByRenderType", at = @At("HEAD"), cancellable = true)
+    private void onRenderBlockByRenderType(Block block, int x, int y, int z, CallbackInfoReturnable<Boolean> cir) {
+        int meta = this.blockAccess != null ? this.blockAccess.getBlockMetadata(x, y, z) : 0;
+        
+        if (CTMRenderEntry.renderPipeline(
+                (RenderBlocks) (Object) this,
+                this.blockAccess,
+                block,
+                x, y, z,
+                meta)) {
+            cir.setReturnValue(true);
+            cir.cancel();
+        }
+    }
+
     @Inject(method = "renderFaceYNeg", at = @At("HEAD"), cancellable = true)
     private void renderFaceYNeg(Block block, double x, double y, double z, IIcon iIcon, CallbackInfo ci) {
         if (iIcon == null) return;
         if (this.hasOverrideBlockTexture()) return;
 
-        RenderContext ctx = RenderContext.get();
-        ctx.incrementFaceRenderCount(ForgeDirection.DOWN);
-        ctx.setOriginalIcon(iIcon);
-        ctx.setRenderBlocks((RenderBlocks) (Object) this);
-        ctx.setBlockAccess(this.blockAccess);
-        ctx.setBlock(block);
-        ctx.setBlockX(x);
-        ctx.setBlockY(y);
-        ctx.setBlockZ(z);
-        ctx.setFace(ForgeDirection.DOWN);
-        if (this.blockAccess != null) {
-            ctx.setMeta(this.blockAccess.getBlockMetadata((int) x, (int) y, (int) z));
-        }
+        int meta = this.blockAccess != null ? this.blockAccess.getBlockMetadata((int) x, (int) y, (int) z) : 0;
 
         if (blockAccess == null) {
-            if (CTMRenderEntry
-                .tryRenderItemFace((RenderBlocks) (Object) this, block, x, y, z, iIcon, ForgeDirection.DOWN)) {
+            if (CTMRenderEntry.tryRenderItemFace((RenderBlocks) (Object) this, block, x, y, z, iIcon, ForgeDirection.DOWN)) {
                 ci.cancel();
             }
             return;
         }
 
-        if (CTMRenderEntry.renderPipeline()) {
+        if (CTMRenderEntry.renderPipeline(
+                (RenderBlocks) (Object) this,
+                this.blockAccess,
+                block,
+                x, y, z,
+                meta,
+                ForgeDirection.DOWN,
+                iIcon)) {
             ci.cancel();
         }
     }
@@ -62,29 +71,23 @@ public abstract class MixinRenderBlocks {
         if (iIcon == null) return;
         if (this.hasOverrideBlockTexture()) return;
 
-        RenderContext ctx = RenderContext.get();
-        ctx.incrementFaceRenderCount(ForgeDirection.UP);
-        ctx.setOriginalIcon(iIcon);
-        ctx.setRenderBlocks((RenderBlocks) (Object) this);
-        ctx.setBlockAccess(this.blockAccess);
-        ctx.setBlock(block);
-        ctx.setBlockX(x);
-        ctx.setBlockY(y);
-        ctx.setBlockZ(z);
-        ctx.setFace(ForgeDirection.UP);
-        if (this.blockAccess != null) {
-            ctx.setMeta(this.blockAccess.getBlockMetadata((int) x, (int) y, (int) z));
-        }
+        int meta = this.blockAccess != null ? this.blockAccess.getBlockMetadata((int) x, (int) y, (int) z) : 0;
 
         if (blockAccess == null) {
-            if (CTMRenderEntry
-                .tryRenderItemFace((RenderBlocks) (Object) this, block, x, y, z, iIcon, ForgeDirection.UP)) {
+            if (CTMRenderEntry.tryRenderItemFace((RenderBlocks) (Object) this, block, x, y, z, iIcon, ForgeDirection.UP)) {
                 ci.cancel();
             }
             return;
         }
 
-        if (CTMRenderEntry.renderPipeline()) {
+        if (CTMRenderEntry.renderPipeline(
+                (RenderBlocks) (Object) this,
+                this.blockAccess,
+                block,
+                x, y, z,
+                meta,
+                ForgeDirection.UP,
+                iIcon)) {
             ci.cancel();
         }
     }
@@ -94,29 +97,23 @@ public abstract class MixinRenderBlocks {
         if (iIcon == null) return;
         if (this.hasOverrideBlockTexture()) return;
 
-        RenderContext ctx = RenderContext.get();
-        ctx.incrementFaceRenderCount(ForgeDirection.NORTH);
-        ctx.setOriginalIcon(iIcon);
-        ctx.setRenderBlocks((RenderBlocks) (Object) this);
-        ctx.setBlockAccess(this.blockAccess);
-        ctx.setBlock(block);
-        ctx.setBlockX(x);
-        ctx.setBlockY(y);
-        ctx.setBlockZ(z);
-        ctx.setFace(ForgeDirection.NORTH);
-        if (this.blockAccess != null) {
-            ctx.setMeta(this.blockAccess.getBlockMetadata((int) x, (int) y, (int) z));
-        }
+        int meta = this.blockAccess != null ? this.blockAccess.getBlockMetadata((int) x, (int) y, (int) z) : 0;
 
         if (blockAccess == null) {
-            if (CTMRenderEntry
-                .tryRenderItemFace((RenderBlocks) (Object) this, block, x, y, z, iIcon, ForgeDirection.NORTH)) {
+            if (CTMRenderEntry.tryRenderItemFace((RenderBlocks) (Object) this, block, x, y, z, iIcon, ForgeDirection.NORTH)) {
                 ci.cancel();
             }
             return;
         }
 
-        if (CTMRenderEntry.renderPipeline()) {
+        if (CTMRenderEntry.renderPipeline(
+                (RenderBlocks) (Object) this,
+                this.blockAccess,
+                block,
+                x, y, z,
+                meta,
+                ForgeDirection.NORTH,
+                iIcon)) {
             ci.cancel();
         }
     }
@@ -126,29 +123,23 @@ public abstract class MixinRenderBlocks {
         if (iIcon == null) return;
         if (this.hasOverrideBlockTexture()) return;
 
-        RenderContext ctx = RenderContext.get();
-        ctx.incrementFaceRenderCount(ForgeDirection.SOUTH);
-        ctx.setOriginalIcon(iIcon);
-        ctx.setRenderBlocks((RenderBlocks) (Object) this);
-        ctx.setBlockAccess(this.blockAccess);
-        ctx.setBlock(block);
-        ctx.setBlockX(x);
-        ctx.setBlockY(y);
-        ctx.setBlockZ(z);
-        ctx.setFace(ForgeDirection.SOUTH);
-        if (this.blockAccess != null) {
-            ctx.setMeta(this.blockAccess.getBlockMetadata((int) x, (int) y, (int) z));
-        }
+        int meta = this.blockAccess != null ? this.blockAccess.getBlockMetadata((int) x, (int) y, (int) z) : 0;
 
         if (blockAccess == null) {
-            if (CTMRenderEntry
-                .tryRenderItemFace((RenderBlocks) (Object) this, block, x, y, z, iIcon, ForgeDirection.SOUTH)) {
+            if (CTMRenderEntry.tryRenderItemFace((RenderBlocks) (Object) this, block, x, y, z, iIcon, ForgeDirection.SOUTH)) {
                 ci.cancel();
             }
             return;
         }
 
-        if (CTMRenderEntry.renderPipeline()) {
+        if (CTMRenderEntry.renderPipeline(
+                (RenderBlocks) (Object) this,
+                this.blockAccess,
+                block,
+                x, y, z,
+                meta,
+                ForgeDirection.SOUTH,
+                iIcon)) {
             ci.cancel();
         }
     }
@@ -158,29 +149,23 @@ public abstract class MixinRenderBlocks {
         if (iIcon == null) return;
         if (this.hasOverrideBlockTexture()) return;
 
-        RenderContext ctx = RenderContext.get();
-        ctx.incrementFaceRenderCount(ForgeDirection.WEST);
-        ctx.setOriginalIcon(iIcon);
-        ctx.setRenderBlocks((RenderBlocks) (Object) this);
-        ctx.setBlockAccess(this.blockAccess);
-        ctx.setBlock(block);
-        ctx.setBlockX(x);
-        ctx.setBlockY(y);
-        ctx.setBlockZ(z);
-        ctx.setFace(ForgeDirection.WEST);
-        if (this.blockAccess != null) {
-            ctx.setMeta(this.blockAccess.getBlockMetadata((int) x, (int) y, (int) z));
-        }
+        int meta = this.blockAccess != null ? this.blockAccess.getBlockMetadata((int) x, (int) y, (int) z) : 0;
 
         if (blockAccess == null) {
-            if (CTMRenderEntry
-                .tryRenderItemFace((RenderBlocks) (Object) this, block, x, y, z, iIcon, ForgeDirection.WEST)) {
+            if (CTMRenderEntry.tryRenderItemFace((RenderBlocks) (Object) this, block, x, y, z, iIcon, ForgeDirection.WEST)) {
                 ci.cancel();
             }
             return;
         }
 
-        if (CTMRenderEntry.renderPipeline()) {
+        if (CTMRenderEntry.renderPipeline(
+                (RenderBlocks) (Object) this,
+                this.blockAccess,
+                block,
+                x, y, z,
+                meta,
+                ForgeDirection.WEST,
+                iIcon)) {
             ci.cancel();
         }
     }
@@ -190,45 +175,24 @@ public abstract class MixinRenderBlocks {
         if (iIcon == null) return;
         if (this.hasOverrideBlockTexture()) return;
 
-        RenderContext ctx = RenderContext.get();
-        ctx.incrementFaceRenderCount(ForgeDirection.EAST);
-        ctx.setOriginalIcon(iIcon);
-        ctx.setRenderBlocks((RenderBlocks) (Object) this);
-        ctx.setBlockAccess(this.blockAccess);
-        ctx.setBlock(block);
-        ctx.setBlockX(x);
-        ctx.setBlockY(y);
-        ctx.setBlockZ(z);
-        ctx.setFace(ForgeDirection.EAST);
-        if (this.blockAccess != null) {
-            ctx.setMeta(this.blockAccess.getBlockMetadata((int) x, (int) y, (int) z));
-        }
+        int meta = this.blockAccess != null ? this.blockAccess.getBlockMetadata((int) x, (int) y, (int) z) : 0;
 
         if (blockAccess == null) {
-            if (CTMRenderEntry
-                .tryRenderItemFace((RenderBlocks) (Object) this, block, x, y, z, iIcon, ForgeDirection.EAST)) {
+            if (CTMRenderEntry.tryRenderItemFace((RenderBlocks) (Object) this, block, x, y, z, iIcon, ForgeDirection.EAST)) {
                 ci.cancel();
             }
             return;
         }
 
-        if (CTMRenderEntry.renderPipeline()) {
+        if (CTMRenderEntry.renderPipeline(
+                (RenderBlocks) (Object) this,
+                this.blockAccess,
+                block,
+                x, y, z,
+                meta,
+                ForgeDirection.EAST,
+                iIcon)) {
             ci.cancel();
-        }
-    }
-
-    @Inject(method = "renderBlockByRenderType", at = @At("HEAD"))
-    private void onRenderBlockByRenderTypeStart(Block block, int x, int y, int z, CallbackInfoReturnable<Boolean> cir) {
-        RenderContext ctx = RenderContext.get();
-        ctx.resetFaceRenderCount();
-        ctx.setRenderBlocks((RenderBlocks) (Object) this);
-        ctx.setBlockAccess(this.blockAccess);
-        ctx.setBlock(block);
-        ctx.setBlockX(x);
-        ctx.setBlockY(y);
-        ctx.setBlockZ(z);
-        if (this.blockAccess != null) {
-            ctx.setMeta(this.blockAccess.getBlockMetadata(x, y, z));
         }
     }
 
