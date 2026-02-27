@@ -6,33 +6,73 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+
 import com.github.wohaopa.MyCTMLib.MyCTMLib;
+import com.github.wohaopa.MyCTMLib.ctmkey.CTMKey;
+import com.github.wohaopa.MyCTMLib.model.baked.BakedModel;
+import com.github.wohaopa.MyCTMLib.model.baked.ModelBaker;
 import com.github.wohaopa.MyCTMLib.texture.TextureKeyNormalizer;
 
-/**
- * modelId → ModelData 的注册表。
- * 可选：纹理路径 → (modelId, faceInfo) 的回退索引，供无 BlockState 时按纹理名查模型。
- */
 public class ModelRegistry {
 
     private static final ModelRegistry INSTANCE = new ModelRegistry();
 
+    @Deprecated
     private final Map<String, ModelData> modelById = new ConcurrentHashMap<>();
-    /** texturePath (normalized) -> list of (modelId, faceDirection) for fallback lookup */
+
+    @Deprecated
     private final Map<String, List<TextureModelEntry>> textureToModel = new ConcurrentHashMap<>();
+
+    private final Object2ObjectOpenHashMap<CTMKey, BakedModel> bakedModelByKey = new Object2ObjectOpenHashMap<>();
+
+    private final Object2ObjectOpenHashMap<String, BakedModel> bakedModelById = new Object2ObjectOpenHashMap<>();
 
     public static ModelRegistry getInstance() {
         return INSTANCE;
     }
 
+    @Deprecated
     public void put(String modelId, ModelData data) {
-        modelById.put(TextureKeyNormalizer.normalizeDomain(modelId), data);
+        String normalizedId = TextureKeyNormalizer.normalizeDomain(modelId);
+        modelById.put(normalizedId, data);
+
+        try {
+            BakedModel baked = ModelBaker.bake(data);
+            bakedModelById.put(normalizedId, baked);
+
+            CTMKey key = CTMKey.parse(normalizedId);
+            if (key == null) {
+                key = CTMKey.of(extractDomain(normalizedId), CTMKey.Type.MODEL, extractPath(normalizedId));
+            }
+            if (key != null) {
+                bakedModelByKey.put(key, baked);
+            }
+        } catch (Exception e) {
+            if (MyCTMLib.debugMode) {
+                MyCTMLib.LOG.warn("[CTMLibFusion] Failed to bake model: " + modelId, e);
+            }
+        }
     }
 
+    @Deprecated
     public ModelData get(String modelId) {
         return modelById.get(TextureKeyNormalizer.normalizeDomain(modelId));
     }
 
+    public void put(CTMKey key, BakedModel model) {
+        bakedModelByKey.put(key, model);
+    }
+
+    public BakedModel get(CTMKey key) {
+        return bakedModelByKey.get(key);
+    }
+
+    public BakedModel getBakedModel(String modelId) {
+        return bakedModelById.get(TextureKeyNormalizer.normalizeDomain(modelId));
+    }
+
+    @Deprecated
     public void putTextureFallback(String texturePath, String modelId, int faceOrdinal) {
         TextureModelEntry e = new TextureModelEntry(modelId, faceOrdinal);
         textureToModel
@@ -40,6 +80,7 @@ public class ModelRegistry {
             .add(e);
     }
 
+    @Deprecated
     public List<TextureModelEntry> getModelsForTexture(String texturePath) {
         List<TextureModelEntry> list = textureToModel.get(TextureKeyNormalizer.normalizeDomain(texturePath));
         return list != null ? Collections.unmodifiableList(list) : Collections.emptyList();
@@ -48,19 +89,38 @@ public class ModelRegistry {
     public void clear() {
         modelById.clear();
         textureToModel.clear();
+        bakedModelByKey.clear();
+        bakedModelById.clear();
     }
 
-    /** 供 RegistryDumpUtil 导出，返回不可修改的 modelId → ModelData 副本。 */
+    @Deprecated
     public Map<String, ModelData> getModelByIdForDump() {
         return Collections.unmodifiableMap(new LinkedHashMap<>(modelById));
     }
 
-    /** debug 模式下仅打出 size 摘要，避免刷屏。 */
     public void dumpForDebug() {
         if (!MyCTMLib.debugMode) return;
-        MyCTMLib.LOG.info("[CTMLibFusion] ModelRegistry size={}", modelById.size());
+        MyCTMLib.LOG.info("[CTMLibFusion] ModelRegistry size={}, bakedSize={}", 
+            modelById.size(), bakedModelById.size());
     }
 
+    private String extractDomain(String modelId) {
+        int colon = modelId.indexOf(':');
+        if (colon >= 0) {
+            return modelId.substring(0, colon).toLowerCase(java.util.Locale.ROOT);
+        }
+        return "minecraft";
+    }
+
+    private String extractPath(String modelId) {
+        int colon = modelId.indexOf(':');
+        if (colon >= 0) {
+            return modelId.substring(colon + 1);
+        }
+        return modelId;
+    }
+
+    @Deprecated
     public static class TextureModelEntry {
 
         public final String modelId;

@@ -13,7 +13,10 @@ import com.google.gson.JsonParseException;
 /**
  * 从 ModelData.connections 的 JsonObject 或 "#key" 引用反序列化得到 ConnectionPredicate。
  * JSON 使用 "condition" 字段：is_same_block、match_block（需 "block": "modid:block_id"）、is_same_texture。
+ *
+ * @deprecated Use baked model system instead. The deserialize() method is still available for ModelBaker.
  */
+@Deprecated
 public final class PredicateRegistry {
 
     /**
@@ -22,12 +25,19 @@ public final class PredicateRegistry {
      * @param key         谓词键（如 "default"、"blue"）
      * @param connections ModelData.getConnections()
      * @return 解析后的谓词，若不存在或解析失败返回 null
+     *
+     * @deprecated Use baked model system instead.
      */
+    @Deprecated
     public static ConnectionPredicate getPredicate(String key, Map<String, Object> connections) {
         if (key == null || connections == null) return null;
         return getPredicate(key, connections, new HashSet<String>());
     }
 
+    /**
+     * @deprecated Use baked model system instead.
+     */
+    @Deprecated
     private static ConnectionPredicate getPredicate(String key, Map<String, Object> connections,
         Set<String> resolving) {
         if (resolving.contains(key)) return null;
