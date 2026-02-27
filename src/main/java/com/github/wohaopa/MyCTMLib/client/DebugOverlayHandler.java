@@ -13,6 +13,7 @@ import net.minecraftforge.common.util.ForgeDirection;
 
 import com.github.wohaopa.MyCTMLib.MyCTMLib;
 import com.github.wohaopa.MyCTMLib.render.context.RenderContext;
+import com.github.wohaopa.MyCTMLib.render.pipeline.RenderLevel;
 import com.github.wohaopa.MyCTMLib.render.pipeline.RenderPipeline;
 
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
@@ -80,7 +81,10 @@ public class DebugOverlayHandler {
                 + ")");
         lines.add("Face: " + ctx.getFace());
         lines.add("Meta: " + ctx.getMeta());
-        lines.add("§a§lBranch:§r " + safeStr(ctx.getRenderBranch()));
+        lines.add("§a§lRenderLevel:§r " + safeStr(ctx.getRenderLevel()));
+        if (ctx.getBakedModel() != null) {
+            lines.add("§a§lBakedModel:§r " + ctx.getBakedModel().getAllQuads().size() + " quads");
+        }
         lines.add("drewAny: " + ctx.isDrewAny());
         if (ctx.getCtmSprite() != null) {
             lines.add(

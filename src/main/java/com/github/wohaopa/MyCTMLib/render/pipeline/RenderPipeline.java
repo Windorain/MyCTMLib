@@ -21,6 +21,16 @@ public class RenderPipeline {
     }
 
     public void executeDryRun(RenderContext ctx) {
+        if (ctx.getRenderLevel() == null) {
+            String modelId = ModelUtil.findModelId(ctx.getBlock(), ctx.getMeta());
+            if (modelId != null) {
+                ctx.setRenderLevel(RenderLevel.BLOCK);
+                ctx.info("DRY-RUN: Auto-selected RenderLevel.BLOCK (modelId found: " + modelId + ")");
+            } else {
+                ctx.setRenderLevel(RenderLevel.FACE);
+                ctx.info("DRY-RUN: Auto-selected RenderLevel.FACE (no modelId found)");
+            }
+        }
         executeInternal(ctx, true);
     }
 
