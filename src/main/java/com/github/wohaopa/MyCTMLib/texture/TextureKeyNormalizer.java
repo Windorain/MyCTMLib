@@ -11,7 +11,10 @@ import java.util.Set;
 /**
  * 纹理键规范化工具。统一模型纹理路径与 TextureRegistry 查找键的格式。
  * 规范格式：domain:blocks/name 或 domain:items/name，与 textures/blocks/xxx.png 或 textures/items/xxx.png 对应。
+ *
+ * @deprecated Use {@link com.github.wohaopa.MyCTMLib.ctmkey.CTMKey} instead.
  */
+@Deprecated
 public final class TextureKeyNormalizer {
 
     private TextureKeyNormalizer() {}
