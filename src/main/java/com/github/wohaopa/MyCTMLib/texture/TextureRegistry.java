@@ -12,6 +12,7 @@ import net.minecraft.util.IIcon;
 
 import com.github.wohaopa.MyCTMLib.MyCTMLib;
 import com.github.wohaopa.MyCTMLib.ctmkey.CTMKey;
+import com.github.wohaopa.MyCTMLib.ctmkey.CTMKeyUtil;
 import com.github.wohaopa.MyCTMLib.mixins.AccessorTextureMap;
 
 /**
@@ -25,12 +26,12 @@ public class TextureRegistry {
 
     private static final TextureRegistry INSTANCE = new TextureRegistry();
     private final Map<String, TextureTypeData> pathToData = new ConcurrentHashMap<>();
-    private final Map<TextureKeyNormalizer.TextureCategory, Map<String, String>> canonicalToMapKey = new EnumMap<>(
-        TextureKeyNormalizer.TextureCategory.class);
+    private final Map<CTMKey.TextureCategory, Map<String, String>> canonicalToMapKey = new EnumMap<>(
+        CTMKey.TextureCategory.class);
 
     {
-        canonicalToMapKey.put(TextureKeyNormalizer.TextureCategory.BLOCKS, new ConcurrentHashMap<>());
-        canonicalToMapKey.put(TextureKeyNormalizer.TextureCategory.ITEMS, new ConcurrentHashMap<>());
+        canonicalToMapKey.put(CTMKey.TextureCategory.BLOCKS, new ConcurrentHashMap<>());
+        canonicalToMapKey.put(CTMKey.TextureCategory.ITEMS, new ConcurrentHashMap<>());
     }
 
     public static TextureRegistry getInstance() {
@@ -65,7 +66,7 @@ public class TextureRegistry {
      * 登记 canonicalKey → mapKey（按图集分类）。在每次向 mapRegisteredSprites put 时调用，便于 getIcon 单键查找。
      */
     public void putCanonicalToMapKey(String canonicalKey, String mapKey,
-        TextureKeyNormalizer.TextureCategory category) {
+        CTMKey.TextureCategory category) {
         if (canonicalKey == null || mapKey == null || category == null) return;
         Map<String, String> per = canonicalToMapKey.get(category);
         if (per != null) per.put(canonicalKey, mapKey);
@@ -76,20 +77,18 @@ public class TextureRegistry {
      * 优先用登记表 canonical→mapKey 单键查找；无记录时回退 getLookupCandidates。
      */
     public IIcon getIcon(String texturePath) {
-        return getIcon(texturePath, TextureKeyNormalizer.TextureCategory.BLOCKS);
+        return getIcon(texturePath, CTMKey.TextureCategory.BLOCKS);
     }
 
-    /**
-     * 根据 category 选择 blocks 或 items TextureMap 查询。
-     */
-    public IIcon getIcon(String texturePath, TextureKeyNormalizer.TextureCategory category) {
+    public IIcon getIcon(String texturePath, CTMKey.TextureCategory category) {
         if (texturePath == null) return null;
-        CTMKey.TextureCategory ctmCategory = convertCategory(category);
-        CTMKey key = CTMKey.from(CTMKey.Format.TEXTURE_KEY, texturePath, ctmCategory);
+        CTMKey key = CTMKey.from(CTMKey.Format.TEXTURE_KEY, texturePath, category);
         if (key == null) return null;
         String canonicalKey = key.toCanonicalString();
         if (get(canonicalKey) == null) return null;
-        net.minecraft.util.ResourceLocation texMapLoc = TextureKeyNormalizer.getTextureMapLocation(category);
+        net.minecraft.util.ResourceLocation texMapLoc = CTMKey.TextureCategory.ITEMS == category
+            ? net.minecraft.client.renderer.texture.TextureMap.locationItemsTexture
+            : net.minecraft.client.renderer.texture.TextureMap.locationBlocksTexture;
         Object texObj = Minecraft.getMinecraft()
             .getTextureManager()
             .getTexture(texMapLoc);
@@ -102,10 +101,6 @@ public class TextureRegistry {
                 TextureAtlasSprite sprite = map.get(mapKey);
                 if (sprite != null) return sprite;
             }
-        }
-        for (String candidate : TextureKeyNormalizer.getLookupCandidates(canonicalKey)) {
-            TextureAtlasSprite sprite = map.get(candidate);
-            if (sprite != null) return sprite;
         }
         return null;
     }
@@ -134,14 +129,5 @@ public class TextureRegistry {
     public void dumpForDebug() {
         if (!MyCTMLib.debugMode) return;
         MyCTMLib.LOG.info("[CTMLibFusion] TextureRegistry size={}", pathToData.size());
-    }
-
-    private CTMKey.TextureCategory convertCategory(TextureKeyNormalizer.TextureCategory category) {
-        if (category == null) return CTMKey.TextureCategory.BLOCKS;
-        switch (category) {
-            case ITEMS: return CTMKey.TextureCategory.ITEMS;
-            case BLOCKS: return CTMKey.TextureCategory.BLOCKS;
-            default: return CTMKey.TextureCategory.BLOCKS;
-        }
     }
 }

@@ -7,10 +7,11 @@ import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraftforge.client.event.TextureStitchEvent;
 
 import com.github.wohaopa.MyCTMLib.resource.CTMLibResourceLoader;
+import com.github.wohaopa.MyCTMLib.ctmkey.CTMKey;
+import com.github.wohaopa.MyCTMLib.ctmkey.CTMKeyUtil;
 import com.github.wohaopa.MyCTMLib.texture.BaseTextureData;
 import com.github.wohaopa.MyCTMLib.texture.ConnectingTextureData;
 import com.github.wohaopa.MyCTMLib.texture.RandomTextureData;
-import com.github.wohaopa.MyCTMLib.texture.TextureKeyNormalizer;
 import com.github.wohaopa.MyCTMLib.texture.TextureRegistry;
 import com.github.wohaopa.MyCTMLib.texture.TextureTypeData;
 
@@ -43,9 +44,9 @@ public class TextureStitchEventHandler {
             if (!(e.getValue() instanceof ConnectingTextureData) && !(e.getValue() instanceof RandomTextureData)
                 && !(e.getValue() instanceof BaseTextureData)) continue;
             String key = e.getKey();
-            TextureKeyNormalizer.TextureCategory cat = TextureKeyNormalizer.getTextureCategory(key);
-            if (isBlocks && cat != TextureKeyNormalizer.TextureCategory.BLOCKS) continue;
-            if (isItems && cat != TextureKeyNormalizer.TextureCategory.ITEMS) continue;
+            CTMKey.TextureCategory cat = CTMKeyUtil.getTextureCategory(key);
+            if (isBlocks && cat != CTMKey.TextureCategory.BLOCKS) continue;
+            if (isItems && cat != CTMKey.TextureCategory.ITEMS) continue;
 
             try {
                 map.registerIcon(toRegisterIconName(key, isBlocks, isItems));

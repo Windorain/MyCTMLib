@@ -1,12 +1,11 @@
 package com.github.wohaopa.MyCTMLib.predicate;
 
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
 import net.minecraft.block.Block;
-
-import com.github.wohaopa.MyCTMLib.texture.TextureKeyNormalizer;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 
@@ -89,10 +88,9 @@ public final class PredicateRegistry {
                 .getAsString();
             Block block = (Block) Block.blockRegistry.getObject(blockId);
             if (block == null) {
-                String norm = TextureKeyNormalizer.normalizeDomain(blockId);
+                String norm = blockId.toLowerCase(Locale.ROOT);
                 for (Object k : Block.blockRegistry.getKeys()) {
-                    if (k instanceof String && TextureKeyNormalizer.normalizeDomain((String) k)
-                        .equals(norm)) {
+                    if (k instanceof String && ((String) k).toLowerCase(Locale.ROOT).equals(norm)) {
                         block = (Block) Block.blockRegistry.getObject((String) k);
                         break;
                     }

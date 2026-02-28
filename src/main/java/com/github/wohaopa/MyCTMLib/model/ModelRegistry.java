@@ -3,6 +3,7 @@ package com.github.wohaopa.MyCTMLib.model;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -10,7 +11,6 @@ import com.github.wohaopa.MyCTMLib.MyCTMLib;
 import com.github.wohaopa.MyCTMLib.ctmkey.CTMKey;
 import com.github.wohaopa.MyCTMLib.model.baked.BakedModel;
 import com.github.wohaopa.MyCTMLib.model.baked.ModelBaker;
-import com.github.wohaopa.MyCTMLib.texture.TextureKeyNormalizer;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 
@@ -34,7 +34,7 @@ public class ModelRegistry {
 
     @Deprecated
     public void put(String modelId, ModelData data) {
-        String normalizedId = TextureKeyNormalizer.normalizeDomain(modelId);
+        String normalizedId = modelId.toLowerCase(Locale.ROOT);
         modelById.put(normalizedId, data);
 
             try {
@@ -54,7 +54,7 @@ public class ModelRegistry {
 
     @Deprecated
     public ModelData get(String modelId) {
-        return modelById.get(TextureKeyNormalizer.normalizeDomain(modelId));
+        return modelById.get(modelId.toLowerCase(Locale.ROOT));
     }
 
     public void put(CTMKey key, BakedModel model) {
@@ -66,20 +66,20 @@ public class ModelRegistry {
     }
 
     public BakedModel getBakedModel(String modelId) {
-        return bakedModelById.get(TextureKeyNormalizer.normalizeDomain(modelId));
+        return bakedModelById.get(modelId.toLowerCase(Locale.ROOT));
     }
 
     @Deprecated
     public void putTextureFallback(String texturePath, String modelId, int faceOrdinal) {
         TextureModelEntry e = new TextureModelEntry(modelId, faceOrdinal);
         textureToModel
-            .computeIfAbsent(TextureKeyNormalizer.normalizeDomain(texturePath), k -> new java.util.ArrayList<>())
+            .computeIfAbsent(texturePath.toLowerCase(Locale.ROOT), k -> new java.util.ArrayList<>())
             .add(e);
     }
 
     @Deprecated
     public List<TextureModelEntry> getModelsForTexture(String texturePath) {
-        List<TextureModelEntry> list = textureToModel.get(TextureKeyNormalizer.normalizeDomain(texturePath));
+        List<TextureModelEntry> list = textureToModel.get(texturePath.toLowerCase(Locale.ROOT));
         return list != null ? Collections.unmodifiableList(list) : Collections.emptyList();
     }
 

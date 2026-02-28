@@ -2,12 +2,12 @@ package com.github.wohaopa.MyCTMLib.blockstate;
 
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.github.wohaopa.MyCTMLib.MyCTMLib;
-import com.github.wohaopa.MyCTMLib.texture.TextureKeyNormalizer;
 
 /**
  * 方块状态 → 模型 ID 的注册表。
@@ -31,15 +31,11 @@ public class BlockStateRegistry {
      */
     public void put(String blockId, Map<String, String> variantToModel) {
         if (variantToModel == null || variantToModel.isEmpty()) return;
-        blockToVariants.put(TextureKeyNormalizer.normalizeDomain(blockId), Collections.unmodifiableMap(variantToModel));
+        blockToVariants.put(blockId.toLowerCase(Locale.ROOT), Collections.unmodifiableMap(variantToModel));
     }
 
-    /**
-     * 根据方块 ID 和 metadata 解析得到模型 ID。
-     * 先查 variantKey = ""，再查 variantKey = String.valueOf(meta)。
-     */
     public String getModelId(String blockId, int meta) {
-        Map<String, String> variants = blockToVariants.get(TextureKeyNormalizer.normalizeDomain(blockId));
+        Map<String, String> variants = blockToVariants.get(blockId.toLowerCase(Locale.ROOT));
         if (variants == null) return null;
         String key = String.valueOf(meta);
         if (variants.containsKey(key)) return variants.get(key);

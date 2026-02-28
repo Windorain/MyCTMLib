@@ -50,7 +50,6 @@ import com.github.wohaopa.MyCTMLib.texture.BaseTextureData;
 import com.github.wohaopa.MyCTMLib.texture.CTMTextureAtlasSprite;
 import com.github.wohaopa.MyCTMLib.texture.ConnectingTextureData;
 import com.github.wohaopa.MyCTMLib.texture.RandomTextureData;
-import com.github.wohaopa.MyCTMLib.texture.TextureKeyNormalizer;
 import com.github.wohaopa.MyCTMLib.texture.TextureMetadataSection;
 import com.github.wohaopa.MyCTMLib.texture.TextureRegistry;
 import com.github.wohaopa.MyCTMLib.texture.TextureTypeData;
@@ -80,17 +79,12 @@ public abstract class MixinTextureMap extends AbstractTexture implements ITickab
             : CTMKey.TextureCategory.BLOCKS;
     }
 
-    private TextureKeyNormalizer.TextureCategory getAtlasCategoryForRegistry() {
-        return (basePath != null && (basePath.contains("items"))) ? TextureKeyNormalizer.TextureCategory.ITEMS
-            : TextureKeyNormalizer.TextureCategory.BLOCKS;
-    }
-
     private void registerCanonicalToMapKey(String mapKey) {
         if (mapKey == null) return;
         CTMKey key = CTMKey.from(CTMKey.Format.TEXTURE_KEY, mapKey, getAtlasCategory());
         if (key == null) return;
         TextureRegistry.getInstance()
-            .putCanonicalToMapKey(key.toCanonicalString(), mapKey, getAtlasCategoryForRegistry());
+            .putCanonicalToMapKey(key.toCanonicalString(), mapKey, getAtlasCategory());
     }
 
     @Inject(

@@ -221,7 +221,13 @@ public final class CTMKey implements Comparable<CTMKey>, Serializable {
          * 完整资源路径格式
          * <p>用于文件系统路径解析，如 {@code "assets/minecraft/textures/blocks/stone.png"}</p>
          */
-        FULL_PATH
+        FULL_PATH,
+
+        /**
+         * 纹理资源路径格式
+         * <p>用于 ResourceLocation 路径，如 {@code "minecraft:textures/blocks/stone"} 或 {@code "textures/blocks/stone"}</p>
+         */
+        TEXTURE_RESOURCE_LOCATION
     }
 
     /**
@@ -403,6 +409,28 @@ public final class CTMKey implements Comparable<CTMKey>, Serializable {
                 }
                 break;
 
+            case TEXTURE_RESOURCE_LOCATION:
+                // 纹理资源路径：textures/blocks/xxx 或 textures/items/xxx
+                result.type = Type.TEXTURE;
+                if (pathPart.startsWith("textures/blocks/")) {
+                    result.path = pathPart.substring("textures/".length());
+                    result.textureCategory = TextureCategory.BLOCKS;
+                } else if (pathPart.startsWith("textures/items/")) {
+                    result.path = pathPart.substring("textures/".length());
+                    result.textureCategory = TextureCategory.ITEMS;
+                } else if (pathPart.startsWith("blocks/")) {
+                    result.path = pathPart;
+                    result.textureCategory = TextureCategory.BLOCKS;
+                } else if (pathPart.startsWith("items/")) {
+                    result.path = pathPart;
+                    result.textureCategory = TextureCategory.ITEMS;
+                } else {
+                    // 无前缀，默认添加 blocks/
+                    result.path = "blocks/" + pathPart;
+                    result.textureCategory = TextureCategory.BLOCKS;
+                }
+                break;
+
             default:
                 return;
         }
@@ -437,6 +465,12 @@ public final class CTMKey implements Comparable<CTMKey>, Serializable {
 
             case FULL_PATH:
                 return outputFullPath();
+
+            case TEXTURE_RESOURCE_LOCATION:
+                if (type != Type.TEXTURE) {
+                    throw new IllegalArgumentException("Cannot convert " + type + " to TEXTURE_RESOURCE_LOCATION format");
+                }
+                return outputTextureResourceLocation();
 
             default:
                 return toString();
@@ -523,6 +557,27 @@ public final class CTMKey implements Comparable<CTMKey>, Serializable {
                 sb.append(path);
         }
         
+        if (variant != null) {
+            sb.append('&').append(variant);
+        }
+        return sb.toString();
+    }
+
+    private String outputTextureResourceLocation() {
+        StringBuilder sb = new StringBuilder();
+        if (!"minecraft".equals(domain)) {
+            sb.append(domain).append(':');
+        }
+        sb.append("textures/");
+        if (textureCategory == TextureCategory.ITEMS) {
+            sb.append("items/");
+            String cleanPath = path.startsWith("items/") ? path.substring("items/".length()) : path;
+            sb.append(cleanPath);
+        } else {
+            sb.append("blocks/");
+            String cleanPath = path.startsWith("blocks/") ? path.substring("blocks/".length()) : path;
+            sb.append(cleanPath);
+        }
         if (variant != null) {
             sb.append('&').append(variant);
         }

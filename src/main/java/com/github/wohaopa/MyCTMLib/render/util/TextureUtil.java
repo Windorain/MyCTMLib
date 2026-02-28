@@ -4,12 +4,12 @@ import net.minecraft.util.IIcon;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import com.github.wohaopa.MyCTMLib.ctmkey.CTMKey;
+import com.github.wohaopa.MyCTMLib.ctmkey.CTMKeyUtil;
 import com.github.wohaopa.MyCTMLib.model.ModelData;
 import com.github.wohaopa.MyCTMLib.model.ModelElement;
 import com.github.wohaopa.MyCTMLib.model.ModelFace;
 import com.github.wohaopa.MyCTMLib.texture.CTMTextureAtlasSprite;
 import com.github.wohaopa.MyCTMLib.texture.CTMReLoc;
-import com.github.wohaopa.MyCTMLib.texture.TextureKeyNormalizer;
 
 /**
  * 材质数据查询工具类
@@ -52,7 +52,7 @@ public final class TextureUtil {
         if (faceData == null || faceData.getTextureKey() == null) return null;
 
         // Step 1: 解析 texturePath（处理 # 引用）
-        String texturePath = TextureKeyNormalizer.resolveTexturePath(faceData.getTextureKey(), modelData.getTextures());
+        String texturePath = CTMKeyUtil.resolveTextureRef(faceData.getTextureKey(), modelData.getTextures());
         if (texturePath == null) return null;
 
         // Step 2: 转为 canonical key

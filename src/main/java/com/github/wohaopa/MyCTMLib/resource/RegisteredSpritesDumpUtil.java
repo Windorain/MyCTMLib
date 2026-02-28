@@ -11,8 +11,9 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureMap;
 
 import com.github.wohaopa.MyCTMLib.MyCTMLib;
+import com.github.wohaopa.MyCTMLib.ctmkey.CTMKey;
+import com.github.wohaopa.MyCTMLib.ctmkey.CTMKeyUtil;
 import com.github.wohaopa.MyCTMLib.mixins.AccessorTextureMap;
-import com.github.wohaopa.MyCTMLib.texture.TextureKeyNormalizer;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -33,9 +34,9 @@ public class RegisteredSpritesDumpUtil {
     }
 
     private static void appendSprites(JsonArray out, Map<String, TextureAtlasSprite> sprites, String category) {
-        String basePath = TextureKeyNormalizer.getBasePath(
-            "blocks".equals(category) ? TextureKeyNormalizer.TextureCategory.BLOCKS
-                : TextureKeyNormalizer.TextureCategory.ITEMS);
+        String basePath = CTMKeyUtil.getBasePath(
+            "blocks".equals(category) ? CTMKey.TextureCategory.BLOCKS
+                : CTMKey.TextureCategory.ITEMS);
         for (Map.Entry<String, TextureAtlasSprite> e : sprites.entrySet()) {
             TextureAtlasSprite sprite = e.getValue();
             String mapKey = e.getKey();

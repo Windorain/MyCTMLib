@@ -3,11 +3,11 @@ package com.github.wohaopa.MyCTMLib.render.domain;
 import net.minecraft.util.IIcon;
 
 import com.github.wohaopa.MyCTMLib.ctmkey.CTMKey;
+import com.github.wohaopa.MyCTMLib.ctmkey.CTMKeyUtil;
 import com.github.wohaopa.MyCTMLib.model.ModelFace;
 import com.github.wohaopa.MyCTMLib.render.context.RenderContext;
 import com.github.wohaopa.MyCTMLib.render.util.TextureUtil;
 import com.github.wohaopa.MyCTMLib.texture.CTMTextureAtlasSprite;
-import com.github.wohaopa.MyCTMLib.texture.TextureKeyNormalizer;
 import com.github.wohaopa.MyCTMLib.texture.TextureRegistry;
 
 public final class TextureDomain {
@@ -45,7 +45,7 @@ public final class TextureDomain {
             return false;
         }
 
-        String texturePath = TextureKeyNormalizer.resolveTexturePath(
+        String texturePath = CTMKeyUtil.resolveTextureRef(
             faceData.getTextureKey(),
             ctx.getModelData()
                 .getTextures());

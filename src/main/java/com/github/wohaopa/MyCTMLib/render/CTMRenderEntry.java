@@ -18,7 +18,6 @@ import com.github.wohaopa.MyCTMLib.render.context.RenderContext;
 import com.github.wohaopa.MyCTMLib.render.pipeline.RenderLevel;
 import com.github.wohaopa.MyCTMLib.render.pipeline.RenderPipeline;
 import com.github.wohaopa.MyCTMLib.texture.ConnectingTextureData;
-import com.github.wohaopa.MyCTMLib.texture.TextureKeyNormalizer;
 import com.github.wohaopa.MyCTMLib.texture.TextureRegistry;
 import com.github.wohaopa.MyCTMLib.texture.TextureTypeData;
 import com.github.wohaopa.MyCTMLib.texture.layout.ConnectingLayout;
@@ -53,7 +52,7 @@ public final class CTMRenderEntry {
     public static boolean tryRenderItemFace(RenderBlocks renderBlocks, Block block, double x, double y, double z,
         IIcon icon, ForgeDirection face) {
         if (icon == null) return false;
-        String iconName = TextureKeyNormalizer.normalizeIconName(icon.getIconName());
+        String iconName = normalizeIconName(icon.getIconName());
         TextureTypeData data = getConnectingData(iconName);
         if (!(data instanceof ConnectingTextureData ctd)) return false;
 
@@ -225,6 +224,18 @@ public final class CTMRenderEntry {
 
     private static String safeStr(Object obj) {
         return obj != null ? obj.toString() : "null";
+    }
+
+    private static String normalizeIconName(String name) {
+        if (name == null) return "";
+        int first = name.indexOf(':');
+        int second = name.indexOf(':', first + 1);
+        if (second != -1) {
+            return name.substring(0, second) + "&"
+                + name.substring(second + 1)
+                    .replace(":", "&");
+        }
+        return name;
     }
 
 }

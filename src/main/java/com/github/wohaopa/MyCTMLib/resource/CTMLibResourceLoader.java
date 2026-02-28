@@ -21,10 +21,10 @@ import com.github.wohaopa.MyCTMLib.MyCTMLib;
 import com.github.wohaopa.MyCTMLib.blockstate.BlockStateParser;
 import com.github.wohaopa.MyCTMLib.blockstate.BlockStateRegistry;
 import com.github.wohaopa.MyCTMLib.ctmkey.CTMKey;
+import com.github.wohaopa.MyCTMLib.ctmkey.CTMKeyUtil;
 import com.github.wohaopa.MyCTMLib.model.ModelData;
 import com.github.wohaopa.MyCTMLib.model.ModelParser;
 import com.github.wohaopa.MyCTMLib.model.ModelRegistry;
-import com.github.wohaopa.MyCTMLib.texture.TextureKeyNormalizer;
 import com.github.wohaopa.MyCTMLib.texture.TextureMetadataSection;
 import com.github.wohaopa.MyCTMLib.texture.TextureRegistry;
 import com.google.gson.JsonObject;
@@ -127,7 +127,7 @@ public class CTMLibResourceLoader implements net.minecraft.client.resources.IRes
                 try {
                     IResource res = resourceManager.getResource(blockstateLoc);
                     try (InputStream in = res.getInputStream()) {
-                        blockStateParser.parseAndRegister(TextureKeyNormalizer.normalizeDomain(blockId), in);
+                        blockStateParser.parseAndRegister(blockId.toLowerCase(Locale.ROOT), in);
                     }
                     ResourceLoadTrace.getInstance()
                         .add("blockstate_file", domain + ":" + blockstatePath, attemptedPath, true);
@@ -217,8 +217,9 @@ public class CTMLibResourceLoader implements net.minecraft.client.resources.IRes
                 .getAsJsonObject();
             if (!modelParser.isSupported(root)) return;
             ModelData data = modelParser.parse(root);
+            CTMKey key = CTMKey.from(CTMKey.Format.MODEL_ID, modelId);
             ModelRegistry.getInstance()
-                .put(TextureKeyNormalizer.normalizeDomain(modelId), data);
+                .put(key != null ? key.domain() + ":" + key.path() : modelId.toLowerCase(Locale.ROOT), data);
             if (MyCTMLib.debugMode && data.getTextures() != null
                 && !data.getTextures()
                     .isEmpty()) {
@@ -241,7 +242,7 @@ public class CTMLibResourceLoader implements net.minecraft.client.resources.IRes
         Set<String> resolvedPaths = new HashSet<>();
         for (String value : textures.values()) {
             if (value == null) continue;
-            String resolved = value.startsWith("#") ? TextureKeyNormalizer.resolveTexturePath(value, textures) : value;
+            String resolved = value.startsWith("#") ? CTMKeyUtil.resolveTextureRef(value, textures) : value;
             if (resolved != null && !resolved.startsWith("#")) {
                 resolvedPaths.add(resolved);
             }
@@ -396,7 +397,7 @@ public class CTMLibResourceLoader implements net.minecraft.client.resources.IRes
      *
      * <h2>CTMLib 的规范化处理</h2>
      * <p>
-     * {@link TextureKeyNormalizer#toCanonicalTextureKey(String, String)} 会将路径规范化为：
+     * CTMKey 会将路径规范化为：
      * </p>
      * <ul>
      * <li>{@code "block/xxx"} → {@code "blocks/xxx"} (单数 → 复数)</li>
@@ -421,7 +422,6 @@ public class CTMLibResourceLoader implements net.minecraft.client.resources.IRes
      * @param modelDomain 模型所在的 domain（如 "minecraft", "ic2", "gregtech"）
      * @param texturePath 模型 textures 对象中的值（如 "block/stone", "ic2:block/xxx"）
      * @return 用于 ResourceManager 查找纹理的 ResourceLocation
-     * @see TextureKeyNormalizer#toCanonicalTextureKey(String, String)
      */
     private static ResourceLocation toTextureResourceLocation(String modelDomain, String texturePath) {
         CTMKey key = CTMKey.from(CTMKey.Format.TEXTURE_KEY, modelDomain + ":" + texturePath, CTMKey.TextureCategory.BLOCKS);
