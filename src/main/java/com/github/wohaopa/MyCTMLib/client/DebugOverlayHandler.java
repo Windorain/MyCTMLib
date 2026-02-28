@@ -98,11 +98,12 @@ public class DebugOverlayHandler {
             .isEmpty()) {
             lines.add("");
             lines.add("§f§l========== LOG (Quad #0 only) ==========");
-            
-            List<String> allLines = ctx.getLog().getLines();
+
+            List<String> allLines = ctx.getLog()
+                .getLines();
             boolean skipUntilNextQuad = false;
             int shownQuadCount = 0;
-            
+
             for (String logLine : allLines) {
                 if (logLine.contains("Quad #")) {
                     if (shownQuadCount >= 1) {
@@ -115,7 +116,7 @@ public class DebugOverlayHandler {
                     lines.add(logLine);
                 }
             }
-            
+
             if (shownQuadCount > 1) {
                 lines.add("§7[... " + (shownQuadCount - 1) + " more quads hidden ...]");
             }

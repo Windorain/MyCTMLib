@@ -9,9 +9,6 @@ import java.util.Map;
 
 import com.github.wohaopa.MyCTMLib.MyCTMLib;
 import com.github.wohaopa.MyCTMLib.ctmkey.CTMKey;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 
@@ -177,7 +174,10 @@ public class TextureRegistry {
         entry.put("key", key.to(CTMKey.Format.TEXTURE_KEY));
         entry.put("fullKey", key.toCanonicalString());
         entry.put("path", key.path());
-        entry.put("category", key.textureCategory().name());
+        entry.put(
+            "category",
+            key.textureCategory()
+                .name());
 
         Map<String, Object> spriteData = new LinkedHashMap<>();
         spriteData.put("iconName", sprite.getIconName());
@@ -185,7 +185,10 @@ public class TextureRegistry {
         spriteData.put("gridHeight", sprite.getGridHeight());
 
         if (sprite.getRenderType() != null) {
-            spriteData.put("renderType", sprite.getRenderType().getId());
+            spriteData.put(
+                "renderType",
+                sprite.getRenderType()
+                    .getId());
         } else {
             spriteData.put("renderType", null);
         }
@@ -193,13 +196,19 @@ public class TextureRegistry {
         spriteData.put("emissive", sprite.isEmissive());
 
         if (sprite.getTinting() != null) {
-            spriteData.put("tinting", sprite.getTinting().name());
+            spriteData.put(
+                "tinting",
+                sprite.getTinting()
+                    .name());
         } else {
             spriteData.put("tinting", null);
         }
 
         if (sprite.getLayoutStyle() != null) {
-            spriteData.put("layoutStyle", sprite.getLayoutStyle().name());
+            spriteData.put(
+                "layoutStyle",
+                sprite.getLayoutStyle()
+                    .name());
         } else {
             spriteData.put("layoutStyle", null);
         }

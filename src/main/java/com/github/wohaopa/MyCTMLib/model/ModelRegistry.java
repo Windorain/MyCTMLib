@@ -138,10 +138,15 @@ public class ModelRegistry {
             ModelData data = entry.getValue();
             if (data != null) {
                 modelInfo.put("type", data.getType());
-                modelInfo.put("elementsCount", data.getElements().size());
+                modelInfo.put(
+                    "elementsCount",
+                    data.getElements()
+                        .size());
                 modelInfo.put("textures", data.getTextures());
-                modelInfo.put("connections",
-                    new GsonBuilder().create().toJsonTree(data.getConnections()));
+                modelInfo.put(
+                    "connections",
+                    new GsonBuilder().create()
+                        .toJsonTree(data.getConnections()));
             }
             pendingModels.add(modelInfo);
         }
@@ -151,7 +156,10 @@ public class ModelRegistry {
         for (Map.Entry<String, BakedModel> entry : bakedModelById.entrySet()) {
             Map<String, Object> modelInfo = new LinkedHashMap<>();
             modelInfo.put("modelId", entry.getKey());
-            modelInfo.put("data", entry.getValue().toJson());
+            modelInfo.put(
+                "data",
+                entry.getValue()
+                    .toJson());
             bakedModels.add(modelInfo);
         }
 

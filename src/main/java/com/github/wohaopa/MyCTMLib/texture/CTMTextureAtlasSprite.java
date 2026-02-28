@@ -5,7 +5,6 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import com.github.wohaopa.MyCTMLib.texture.BaseTextureData.QuadTinting;
 import com.github.wohaopa.MyCTMLib.texture.BaseTextureData.RenderType;
 import com.github.wohaopa.MyCTMLib.texture.layout.ConnectingLayout;
-
 import com.google.gson.JsonObject;
 
 import cpw.mods.fml.relauncher.Side;

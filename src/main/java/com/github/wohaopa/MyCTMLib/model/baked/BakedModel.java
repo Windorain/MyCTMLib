@@ -8,7 +8,6 @@ import java.util.Map;
 
 import net.minecraftforge.common.util.ForgeDirection;
 
-import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 

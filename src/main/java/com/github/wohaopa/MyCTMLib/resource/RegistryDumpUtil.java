@@ -49,14 +49,17 @@ public class RegistryDumpUtil {
             root.add("blockStateRegistry", bsRoot);
 
             // ModelRegistry
-            Map<String, Object> modelDump = ModelRegistry.getInstance().dumpToJson();
+            Map<String, Object> modelDump = ModelRegistry.getInstance()
+                .dumpToJson();
             JsonObject modelRoot = new JsonObject();
 
             @SuppressWarnings("unchecked")
             List<Map<String, Object>> pendingModels = (List<Map<String, Object>>) modelDump.get("pendingModels");
             JsonArray pendingArray = new JsonArray();
             for (Map<String, Object> entry : pendingModels) {
-                pendingArray.add(new GsonBuilder().create().toJsonTree(entry));
+                pendingArray.add(
+                    new GsonBuilder().create()
+                        .toJsonTree(entry));
             }
             modelRoot.add("pendingModels", pendingArray);
 
@@ -64,7 +67,9 @@ public class RegistryDumpUtil {
             List<Map<String, Object>> bakedModels = (List<Map<String, Object>>) modelDump.get("bakedModels");
             JsonArray bakedArray = new JsonArray();
             for (Map<String, Object> entry : bakedModels) {
-                bakedArray.add(new GsonBuilder().create().toJsonTree(entry));
+                bakedArray.add(
+                    new GsonBuilder().create()
+                        .toJsonTree(entry));
             }
             modelRoot.add("bakedModels", bakedArray);
 
@@ -85,13 +90,17 @@ public class RegistryDumpUtil {
             @SuppressWarnings("unchecked")
             List<Map<String, Object>> blocks = (List<Map<String, Object>>) texDump.get("blocks");
             for (Map<String, Object> entry : blocks) {
-                texEntries.add(new GsonBuilder().create().toJsonTree(entry));
+                texEntries.add(
+                    new GsonBuilder().create()
+                        .toJsonTree(entry));
             }
 
             @SuppressWarnings("unchecked")
             List<Map<String, Object>> items = (List<Map<String, Object>>) texDump.get("items");
             for (Map<String, Object> entry : items) {
-                texEntries.add(new GsonBuilder().create().toJsonTree(entry));
+                texEntries.add(
+                    new GsonBuilder().create()
+                        .toJsonTree(entry));
             }
 
             texRoot.add("entries", texEntries);

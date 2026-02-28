@@ -48,7 +48,8 @@ public final class QuadRender {
     public static void drawFace(RenderContext ctx) {
         if (ctx.isDryRun()) {
             ctx.debug("QuadRender.drawFace: face=" + ctx.getFace());
-            ctx.debug("  Colors: TL=(" + ctx.getColorTL_R() + "," + ctx.getColorTL_G() + "," + ctx.getColorTL_B() + ")");
+            ctx.debug(
+                "  Colors: TL=(" + ctx.getColorTL_R() + "," + ctx.getColorTL_G() + "," + ctx.getColorTL_B() + ")");
             ctx.debug("  Brightness: TL=" + ctx.getBrightnessTL() + ", TR=" + ctx.getBrightnessTR());
             return;
         }

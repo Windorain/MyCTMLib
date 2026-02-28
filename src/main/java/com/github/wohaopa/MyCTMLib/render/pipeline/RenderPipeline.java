@@ -72,11 +72,10 @@ public class RenderPipeline {
 
         ctx.info("BLOCK: Executing block model branch");
 
-
-        boolean enableAO = Minecraft.isAmbientOcclusionEnabled() && ctx.getBlock().getLightValue() == 0;
+        boolean enableAO = Minecraft.isAmbientOcclusionEnabled() && ctx.getBlock()
+            .getLightValue() == 0;
         ctx.setEnableAO(enableAO);
         ctx.info("BLOCK: enableAO=" + enableAO);
-
 
         String modelId = ModelUtil.findModelId(ctx.getBlock(), ctx.getMeta());
         if (modelId == null) {
@@ -142,7 +141,7 @@ public class RenderPipeline {
         }
 
         int quadIndex = 0;
-        
+
         if (sprite.getLayoutStyle() != null) {
             ctx.trace(">>> Quad #" + quadIndex + ": renderConnecting face=" + ctx.getFace());
             BakedQuadRenderer.renderConnecting(quad, ctx);

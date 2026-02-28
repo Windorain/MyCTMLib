@@ -4,7 +4,6 @@ import net.minecraftforge.common.util.ForgeDirection;
 
 import com.github.wohaopa.MyCTMLib.predicate.ConnectionPredicate;
 import com.github.wohaopa.MyCTMLib.texture.CTMTextureAtlasSprite;
-
 import com.google.gson.JsonObject;
 
 public class BakedQuad {
