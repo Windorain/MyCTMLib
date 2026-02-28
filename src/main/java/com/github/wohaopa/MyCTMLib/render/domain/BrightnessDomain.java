@@ -74,16 +74,15 @@ public final class BrightnessDomain {
         ForgeDirection face = ctx.getFace();
         net.minecraft.client.renderer.RenderBlocks rb = ctx.getRenderBlocks();
 
-        ctx.info("BrightnessDomain.computeAO: face=" + face);
-        ctx.debug("  Position: (" + x + "," + y + "," + z + ")");
+        ctx.info("Brightness: face=" + face);
 
         int currentBrightness = block.getMixedBrightnessForBlock(world, x, y, z);
+
+        int tl = 0, tr = 0, bl = 0, br = 0;
 
         switch (face) {
             case DOWN: {
                 int baseY = (rb.renderMinY <= 0.0) ? y - 1 : y;
-                String boundaryInfo = (rb.renderMinY <= 0.0) ? " (boundary adjusted)" : "";
-                ctx.debug("  baseY=" + baseY + boundaryInfo);
 
                 int baseBrightness;
                 if (rb.renderMinY <= 0.0 || !isOpaque(world, x, baseY, z)) {
@@ -101,26 +100,15 @@ public final class BrightnessDomain {
                 int xPosZNeg = block.getMixedBrightnessForBlock(world, x + 1, baseY, z - 1);
                 int xPosZPos = block.getMixedBrightnessForBlock(world, x + 1, baseY, z + 1);
 
-                ctx.setBrightnessTL(getAoBrightness(xNegZPos, xNeg, zPos, baseBrightness));
-                ctx.setBrightnessTR(getAoBrightness(zPos, xPosZPos, xPos, baseBrightness));
-                ctx.setBrightnessBR(getAoBrightness(zNeg, xPos, xPosZNeg, baseBrightness));
-                ctx.setBrightnessBL(getAoBrightness(xNeg, xNegZNeg, zNeg, baseBrightness));
-
-                ctx.debug(
-                    "  Brightness: TL=" + ctx.getBrightnessTL()
-                        + ", TR="
-                        + ctx.getBrightnessTR()
-                        + ", BL="
-                        + ctx.getBrightnessBL()
-                        + ", BR="
-                        + ctx.getBrightnessBR());
+                tl = getAoBrightness(xNegZPos, xNeg, zPos, baseBrightness);
+                tr = getAoBrightness(zPos, xPosZPos, xPos, baseBrightness);
+                br = getAoBrightness(zNeg, xPos, xPosZNeg, baseBrightness);
+                bl = getAoBrightness(xNeg, xNegZNeg, zNeg, baseBrightness);
                 break;
             }
 
             case UP: {
                 int baseY = (rb.renderMaxY >= 1.0) ? y + 1 : y;
-                String boundaryInfo = (rb.renderMaxY >= 1.0) ? " (boundary adjusted)" : "";
-                ctx.debug("  baseY=" + baseY + boundaryInfo);
 
                 int baseBrightness;
                 if (rb.renderMaxY >= 1.0 || !isOpaque(world, x, baseY, z)) {
@@ -138,26 +126,15 @@ public final class BrightnessDomain {
                 int xPosZNeg = block.getMixedBrightnessForBlock(world, x + 1, baseY, z - 1);
                 int xPosZPos = block.getMixedBrightnessForBlock(world, x + 1, baseY, z + 1);
 
-                ctx.setBrightnessTR(getAoBrightness(xNegZPos, xNeg, zPos, baseBrightness));
-                ctx.setBrightnessTL(getAoBrightness(zPos, xPosZPos, xPos, baseBrightness));
-                ctx.setBrightnessBL(getAoBrightness(zNeg, xPos, xPosZNeg, baseBrightness));
-                ctx.setBrightnessBR(getAoBrightness(xNeg, xNegZNeg, zNeg, baseBrightness));
-
-                ctx.debug(
-                    "  Brightness: TL=" + ctx.getBrightnessTL()
-                        + ", TR="
-                        + ctx.getBrightnessTR()
-                        + ", BL="
-                        + ctx.getBrightnessBL()
-                        + ", BR="
-                        + ctx.getBrightnessBR());
+                tr = getAoBrightness(xNegZPos, xNeg, zPos, baseBrightness);
+                tl = getAoBrightness(zPos, xPosZPos, xPos, baseBrightness);
+                bl = getAoBrightness(zNeg, xPos, xPosZNeg, baseBrightness);
+                br = getAoBrightness(xNeg, xNegZNeg, zNeg, baseBrightness);
                 break;
             }
 
             case NORTH: {
                 int baseZ = (rb.renderMinZ <= 0.0) ? z - 1 : z;
-                String boundaryInfo = (rb.renderMinZ <= 0.0) ? " (boundary adjusted)" : "";
-                ctx.debug("  baseZ=" + baseZ + boundaryInfo);
 
                 int baseBrightness;
                 if (rb.renderMinZ <= 0.0 || !isOpaque(world, x, y, baseZ)) {
@@ -175,26 +152,15 @@ public final class BrightnessDomain {
                 int xPosYNeg = block.getMixedBrightnessForBlock(world, x + 1, y - 1, baseZ);
                 int xPosYPos = block.getMixedBrightnessForBlock(world, x + 1, y + 1, baseZ);
 
-                ctx.setBrightnessTL(getAoBrightness(xNeg, xNegYPos, yPos, baseBrightness));
-                ctx.setBrightnessBL(getAoBrightness(yPos, xPos, xPosYPos, baseBrightness));
-                ctx.setBrightnessBR(getAoBrightness(yNeg, xPosYNeg, xPos, baseBrightness));
-                ctx.setBrightnessTR(getAoBrightness(xNegYNeg, xNeg, yNeg, baseBrightness));
-
-                ctx.debug(
-                    "  Brightness: TL=" + ctx.getBrightnessTL()
-                        + ", TR="
-                        + ctx.getBrightnessTR()
-                        + ", BL="
-                        + ctx.getBrightnessBL()
-                        + ", BR="
-                        + ctx.getBrightnessBR());
+                tl = getAoBrightness(xNeg, xNegYPos, yPos, baseBrightness);
+                bl = getAoBrightness(yPos, xPos, xPosYPos, baseBrightness);
+                br = getAoBrightness(yNeg, xPosYNeg, xPos, baseBrightness);
+                tr = getAoBrightness(xNegYNeg, xNeg, yNeg, baseBrightness);
                 break;
             }
 
             case SOUTH: {
                 int baseZ = (rb.renderMaxZ >= 1.0) ? z + 1 : z;
-                String boundaryInfo = (rb.renderMaxZ >= 1.0) ? " (boundary adjusted)" : "";
-                ctx.debug("  baseZ=" + baseZ + boundaryInfo);
 
                 int baseBrightness;
                 if (rb.renderMaxZ >= 1.0 || !isOpaque(world, x, y, baseZ)) {
@@ -212,26 +178,15 @@ public final class BrightnessDomain {
                 int xPosYNeg = block.getMixedBrightnessForBlock(world, x + 1, y - 1, baseZ);
                 int xPosYPos = block.getMixedBrightnessForBlock(world, x + 1, y + 1, baseZ);
 
-                ctx.setBrightnessTL(getAoBrightness(xNeg, xNegYPos, yPos, baseBrightness));
-                ctx.setBrightnessTR(getAoBrightness(yPos, xPos, xPosYPos, baseBrightness));
-                ctx.setBrightnessBR(getAoBrightness(yNeg, xPosYNeg, xPos, baseBrightness));
-                ctx.setBrightnessBL(getAoBrightness(xNegYNeg, xNeg, yNeg, baseBrightness));
-
-                ctx.debug(
-                    "  Brightness: TL=" + ctx.getBrightnessTL()
-                        + ", TR="
-                        + ctx.getBrightnessTR()
-                        + ", BL="
-                        + ctx.getBrightnessBL()
-                        + ", BR="
-                        + ctx.getBrightnessBR());
+                tl = getAoBrightness(xNeg, xNegYPos, yPos, baseBrightness);
+                tr = getAoBrightness(yPos, xPos, xPosYPos, baseBrightness);
+                br = getAoBrightness(yNeg, xPosYNeg, xPos, baseBrightness);
+                bl = getAoBrightness(xNegYNeg, xNeg, yNeg, baseBrightness);
                 break;
             }
 
             case WEST: {
                 int baseX = (rb.renderMinX <= 0.0) ? x - 1 : x;
-                String boundaryInfo = (rb.renderMinX <= 0.0) ? " (boundary adjusted)" : "";
-                ctx.debug("  baseX=" + baseX + boundaryInfo);
 
                 int baseBrightness;
                 if (rb.renderMinX <= 0.0 || !isOpaque(world, baseX, y, z)) {
@@ -249,26 +204,15 @@ public final class BrightnessDomain {
                 int yPosZNeg = block.getMixedBrightnessForBlock(world, baseX, y + 1, z - 1);
                 int yPosZPos = block.getMixedBrightnessForBlock(world, baseX, y + 1, z + 1);
 
-                ctx.setBrightnessTR(getAoBrightness(yNeg, yNegZPos, zPos, baseBrightness));
-                ctx.setBrightnessTL(getAoBrightness(zPos, yPos, yPosZPos, baseBrightness));
-                ctx.setBrightnessBL(getAoBrightness(zNeg, yPosZNeg, yPos, baseBrightness));
-                ctx.setBrightnessBR(getAoBrightness(yNegZNeg, yNeg, zNeg, baseBrightness));
-
-                ctx.debug(
-                    "  Brightness: TL=" + ctx.getBrightnessTL()
-                        + ", TR="
-                        + ctx.getBrightnessTR()
-                        + ", BL="
-                        + ctx.getBrightnessBL()
-                        + ", BR="
-                        + ctx.getBrightnessBR());
+                tr = getAoBrightness(yNeg, yNegZPos, zPos, baseBrightness);
+                tl = getAoBrightness(zPos, yPos, yPosZPos, baseBrightness);
+                bl = getAoBrightness(zNeg, yPosZNeg, yPos, baseBrightness);
+                br = getAoBrightness(yNegZNeg, yNeg, zNeg, baseBrightness);
                 break;
             }
 
             case EAST: {
                 int baseX = (rb.renderMaxX >= 1.0) ? x + 1 : x;
-                String boundaryInfo = (rb.renderMaxX >= 1.0) ? " (boundary adjusted)" : "";
-                ctx.debug("  baseX=" + baseX + boundaryInfo);
 
                 int baseBrightness;
                 if (rb.renderMaxX >= 1.0 || !isOpaque(world, baseX, y, z)) {
@@ -286,31 +230,29 @@ public final class BrightnessDomain {
                 int yPosZNeg = block.getMixedBrightnessForBlock(world, baseX, y + 1, z - 1);
                 int yPosZPos = block.getMixedBrightnessForBlock(world, baseX, y + 1, z + 1);
 
-                ctx.setBrightnessTL(getAoBrightness(yNeg, yNegZPos, zPos, baseBrightness));
-                ctx.setBrightnessTR(getAoBrightness(zPos, yPos, yPosZPos, baseBrightness));
-                ctx.setBrightnessBR(getAoBrightness(zNeg, yPosZNeg, yPos, baseBrightness));
-                ctx.setBrightnessBL(getAoBrightness(yNegZNeg, yNeg, zNeg, baseBrightness));
-
-                ctx.debug(
-                    "  Brightness: TL=" + ctx.getBrightnessTL()
-                        + ", TR="
-                        + ctx.getBrightnessTR()
-                        + ", BL="
-                        + ctx.getBrightnessBL()
-                        + ", BR="
-                        + ctx.getBrightnessBR());
+                tl = getAoBrightness(yNeg, yNegZPos, zPos, baseBrightness);
+                tr = getAoBrightness(zPos, yPos, yPosZPos, baseBrightness);
+                br = getAoBrightness(zNeg, yPosZNeg, yPos, baseBrightness);
+                bl = getAoBrightness(yNegZNeg, yNeg, zNeg, baseBrightness);
                 break;
             }
 
             default: {
-                ctx.setBrightnessTL(currentBrightness);
-                ctx.setBrightnessTR(currentBrightness);
-                ctx.setBrightnessBL(currentBrightness);
-                ctx.setBrightnessBR(currentBrightness);
-                ctx.debug("  Brightness: TL=" + currentBrightness + " (uniform)");
+                tl = currentBrightness;
+                tr = currentBrightness;
+                bl = currentBrightness;
+                br = currentBrightness;
                 break;
             }
         }
+
+        ctx.setBrightnessTL(tl);
+        ctx.setBrightnessTR(tr);
+        ctx.setBrightnessBL(bl);
+        ctx.setBrightnessBR(br);
+
+        ctx.debug(
+            "  Brightness: TL=" + tl + ", TR=" + tr + ", BL=" + bl + ", BR=" + br);
     }
 
     /**

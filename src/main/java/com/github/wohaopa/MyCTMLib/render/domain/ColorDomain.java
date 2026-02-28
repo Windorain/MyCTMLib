@@ -92,7 +92,7 @@ public final class ColorDomain {
 
         float shade = getShadeForFace(face);
 
-        ctx.info("ColorDomain.computeAO: face=" + face + ", shade=" + shade);
+        ctx.info("Color: face=" + face + ", shade=" + shade);
 
         // 根据面查询 AO 值并计算四角系数
         float aoTL, aoTR, aoBR, aoBL;

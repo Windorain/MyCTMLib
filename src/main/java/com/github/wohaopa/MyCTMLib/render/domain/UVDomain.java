@@ -35,6 +35,10 @@ public final class UVDomain {
         double iconMinV = ctx.getIconMinV();
         double iconMaxV = ctx.getIconMaxV();
 
+        ctx.info("UV: iconMinU=" + iconMinU + ", iconMaxU=" + iconMaxU + ", iconMinV=" + iconMinV + ", iconMaxV=" + iconMaxV);
+        ctx.info("UV: tileX=" + tileX + ", tileY=" + tileY);
+        ctx.info("UV: gridW=" + gridW + ", gridH=" + gridH);
+
         // 步骤 1: 计算基础 UV（texture 切片）
         double baseMinU = iconMinU + (iconMaxU - iconMinU) * tileX / gridW;
         double baseMaxU = iconMinU + (iconMaxU - iconMinU) * (tileX + 1) / gridW;
@@ -82,5 +86,6 @@ public final class UVDomain {
         ctx.setDrawMaxU(drawMaxU);
         ctx.setDrawMinV(drawMinV);
         ctx.setDrawMaxV(drawMaxV);
+        ctx.info("UV: face=" + face + ", drawMinU=" + drawMinU + ", drawMaxU=" + drawMaxU + ", drawMinV=" + drawMinV + ", drawMaxV=" + drawMaxV);
     }
 }
