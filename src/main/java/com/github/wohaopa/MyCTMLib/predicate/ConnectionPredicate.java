@@ -4,6 +4,8 @@ import net.minecraft.block.Block;
 import net.minecraft.world.IBlockAccess;
 import net.minecraftforge.common.util.ForgeDirection;
 
+import com.google.gson.JsonObject;
+
 /**
  * 连接谓词：给定世界、当前格、当前面、以及“邻格方向”，判定该方向是否“连接”。
  * 用于计算 8 方向连接掩码并选 layout 切片。
@@ -33,5 +35,17 @@ public interface ConnectionPredicate {
      */
     default String getDebugName() {
         return getClass().getSimpleName();
+    }
+
+    /**
+     * 将谓词序列化为 JsonObject（用于 dump）
+     * 默认实现只输出类型，子类可覆盖以输出更多字段
+     * 
+     * @return JsonObject 包含谓词数据
+     */
+    default JsonObject toJson() {
+        JsonObject json = new JsonObject();
+        json.addProperty("type", getDebugName());
+        return json;
     }
 }

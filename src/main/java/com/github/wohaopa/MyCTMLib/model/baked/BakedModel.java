@@ -8,6 +8,10 @@ import java.util.Map;
 
 import net.minecraftforge.common.util.ForgeDirection;
 
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+
 public class BakedModel {
 
     private final List<BakedQuad> allQuads;
@@ -36,5 +40,20 @@ public class BakedModel {
 
     public List<BakedQuad> getQuads(ForgeDirection face) {
         return quadsByFace.getOrDefault(face, Collections.emptyList());
+    }
+
+    /**
+     * 将模型数据序列化为 JsonObject（用于 dump）
+     * 
+     * @return JsonObject 包含所有 quad 数据
+     */
+    public JsonObject toJson() {
+        JsonObject json = new JsonObject();
+        JsonArray quadsArray = new JsonArray();
+        for (BakedQuad quad : allQuads) {
+            quadsArray.add(quad.toJson());
+        }
+        json.add("quads", quadsArray);
+        return json;
     }
 }

@@ -6,6 +6,8 @@ import com.github.wohaopa.MyCTMLib.texture.BaseTextureData.QuadTinting;
 import com.github.wohaopa.MyCTMLib.texture.BaseTextureData.RenderType;
 import com.github.wohaopa.MyCTMLib.texture.layout.ConnectingLayout;
 
+import com.google.gson.JsonObject;
+
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import lombok.Getter;
@@ -91,5 +93,44 @@ public class CTMTextureAtlasSprite extends TextureAtlasSprite {
     public CTMTextureAtlasSprite(String iconName) {
         super(iconName);
         // 字段默认为 null/0
+    }
+
+    // ========== JSON 序列化 ==========
+
+    /**
+     * 将 sprite 数据序列化为 JsonObject（用于 dump）
+     * 
+     * @return JsonObject 包含所有 CTM 配置字段
+     */
+    public JsonObject toJson() {
+        JsonObject json = new JsonObject();
+        json.addProperty("iconName", getIconName());
+        json.addProperty("gridWidth", getGridWidth());
+        json.addProperty("gridHeight", getGridHeight());
+
+        if (getRenderType() != null) {
+            json.addProperty("renderType", getRenderType().getId());
+        } else {
+            json.add("renderType", null);
+        }
+
+        json.addProperty("emissive", isEmissive());
+
+        if (getTinting() != null) {
+            json.addProperty("tinting", getTinting().name());
+        } else {
+            json.add("tinting", null);
+        }
+
+        if (getLayoutStyle() != null) {
+            json.addProperty("layoutStyle", getLayoutStyle().name());
+        } else {
+            json.add("layoutStyle", null);
+        }
+
+        json.addProperty("randomCount", getRandomCount());
+        json.addProperty("randomSeed", getRandomSeed());
+
+        return json;
     }
 }

@@ -4,12 +4,13 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Map;
 
 import com.github.wohaopa.MyCTMLib.MyCTMLib;
 import com.github.wohaopa.MyCTMLib.blockstate.BlockStateRegistry;
-import com.github.wohaopa.MyCTMLib.model.ModelData;
 import com.github.wohaopa.MyCTMLib.model.ModelRegistry;
+import com.github.wohaopa.MyCTMLib.texture.TextureRegistry;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -48,59 +49,61 @@ public class RegistryDumpUtil {
             root.add("blockStateRegistry", bsRoot);
 
             // ModelRegistry
+            Map<String, Object> modelDump = ModelRegistry.getInstance().dumpToJson();
             JsonObject modelRoot = new JsonObject();
-            JsonArray modelEntries = new JsonArray();
-            Map<String, ModelData> modelById = ModelRegistry.getInstance()
-                .getModelByIdForDump();
-            for (Map.Entry<String, ModelData> e : modelById.entrySet()) {
-                JsonObject entry = new JsonObject();
-                entry.addProperty("modelId", e.getKey());
-                ModelData data = e.getValue();
-                if (data != null) {
-                    entry.addProperty("type", data.getType());
-                    entry.addProperty(
-                        "elementsCount",
-                        data.getElements()
-                            .size());
-                    JsonObject textures = new JsonObject();
-                    for (Map.Entry<String, String> t : data.getTextures()
-                        .entrySet()) {
-                        textures.addProperty(t.getKey(), t.getValue());
-                    }
-                    entry.add("textures", textures);
-                    entry.add(
-                        "connections",
-                        new GsonBuilder().create()
-                            .toJsonTree(data.getConnections()));
-                }
-                modelEntries.add(entry);
+
+            @SuppressWarnings("unchecked")
+            List<Map<String, Object>> pendingModels = (List<Map<String, Object>>) modelDump.get("pendingModels");
+            JsonArray pendingArray = new JsonArray();
+            for (Map<String, Object> entry : pendingModels) {
+                pendingArray.add(new GsonBuilder().create().toJsonTree(entry));
             }
-            modelRoot.add("entries", modelEntries);
+            modelRoot.add("pendingModels", pendingArray);
+
+            @SuppressWarnings("unchecked")
+            List<Map<String, Object>> bakedModels = (List<Map<String, Object>>) modelDump.get("bakedModels");
+            JsonArray bakedArray = new JsonArray();
+            for (Map<String, Object> entry : bakedModels) {
+                bakedArray.add(new GsonBuilder().create().toJsonTree(entry));
+            }
+            modelRoot.add("bakedModels", bakedArray);
+
+            @SuppressWarnings("unchecked")
+            Map<String, Object> modelSummary = (Map<String, Object>) modelDump.get("summary");
+            JsonObject modelSummaryJson = new JsonObject();
+            modelSummaryJson.addProperty("pendingCount", ((Number) modelSummary.get("pendingCount")).intValue());
+            modelSummaryJson.addProperty("bakedCount", ((Number) modelSummary.get("bakedCount")).intValue());
+            modelRoot.add("summary", modelSummaryJson);
+
             root.add("modelRegistry", modelRoot);
 
-            // TextureRegistry - TODO: 更新为新 API
-            // JsonObject texRoot = new JsonObject();
-            // JsonArray texEntries = new JsonArray();
-            // Map<String, TextureTypeData> pathToData = TextureRegistry.getInstance()
-            // .getPathToDataForDump();
-            // for (Map.Entry<String, TextureTypeData> e : pathToData.entrySet()) {
-            // JsonObject entry = new JsonObject();
-            // entry.addProperty("path", e.getKey());
-            // TextureTypeData data = e.getValue();
-            // if (data != null) {
-            // entry.addProperty("type", data.getType());
-            // if (data instanceof ConnectingTextureData ctd) {
-            // entry.addProperty(
-            // "layout",
-            // ctd.getLayout()
-            // .name());
-            // entry.addProperty("random", ctd.isRandom());
-            // }
-            // }
-            // texEntries.add(entry);
-            // }
-            // texRoot.add("entries", texEntries);
-            // root.add("textureRegistry", texRoot);
+            // TextureRegistry
+            Map<String, Object> texDump = TextureRegistry.dumpToJson();
+            JsonObject texRoot = new JsonObject();
+            JsonArray texEntries = new JsonArray();
+
+            @SuppressWarnings("unchecked")
+            List<Map<String, Object>> blocks = (List<Map<String, Object>>) texDump.get("blocks");
+            for (Map<String, Object> entry : blocks) {
+                texEntries.add(new GsonBuilder().create().toJsonTree(entry));
+            }
+
+            @SuppressWarnings("unchecked")
+            List<Map<String, Object>> items = (List<Map<String, Object>>) texDump.get("items");
+            for (Map<String, Object> entry : items) {
+                texEntries.add(new GsonBuilder().create().toJsonTree(entry));
+            }
+
+            texRoot.add("entries", texEntries);
+
+            @SuppressWarnings("unchecked")
+            Map<String, Object> summary = (Map<String, Object>) texDump.get("summary");
+            JsonObject summaryJson = new JsonObject();
+            summaryJson.addProperty("blockCount", ((Number) summary.get("blockCount")).intValue());
+            summaryJson.addProperty("itemCount", ((Number) summary.get("itemCount")).intValue());
+            texRoot.add("summary", summaryJson);
+
+            root.add("textureRegistry", texRoot);
 
             outputFile.getParentFile()
                 .mkdirs();
@@ -113,11 +116,12 @@ public class RegistryDumpUtil {
                     .toJson(root, w);
             }
             MyCTMLib.LOG.info(
-                "[CTMLibFusion] RegistryDump written to {} (blockState={} model={} texture={})",
+                "[CTMLibFusion] RegistryDump written to {} (blockState={} model(pending={}, baked={}) texture={})",
                 outputFile,
                 bsEntries.size(),
-                modelEntries.size(),
-                0); // texEntries.size()
+                pendingArray.size(),
+                bakedArray.size(),
+                texEntries.size());
         } catch (Exception e) {
             MyCTMLib.LOG.warn("[CTMLibFusion] RegistryDump failed", e);
         }

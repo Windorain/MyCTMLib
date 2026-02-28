@@ -1,10 +1,17 @@
 package com.github.wohaopa.MyCTMLib.texture;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 import com.github.wohaopa.MyCTMLib.MyCTMLib;
 import com.github.wohaopa.MyCTMLib.ctmkey.CTMKey;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 
@@ -128,5 +135,80 @@ public class TextureRegistry {
      */
     public static int getItemCount() {
         return itemSprites.size();
+    }
+
+    // ========== Dump API ==========
+
+    /**
+     * 导出 TextureRegistry 数据到 JSON 对象（用于 RegistryDumpUtil）
+     * 
+     * @return 包含 blocks、items 和 summary 的 JsonObject
+     */
+    public static Map<String, Object> dumpToJson() {
+        Map<String, Object> result = new LinkedHashMap<>();
+
+        List<Map<String, Object>> blocks = new ArrayList<>();
+        for (Map.Entry<CTMKey, CTMTextureAtlasSprite> entry : blockSprites.entrySet()) {
+            blocks.add(serializeEntry(entry.getKey(), entry.getValue()));
+        }
+
+        List<Map<String, Object>> items = new ArrayList<>();
+        for (Map.Entry<CTMKey, CTMTextureAtlasSprite> entry : itemSprites.entrySet()) {
+            items.add(serializeEntry(entry.getKey(), entry.getValue()));
+        }
+
+        Map<String, Object> summary = new LinkedHashMap<>();
+        summary.put("blockCount", blockSprites.size());
+        summary.put("itemCount", itemSprites.size());
+
+        result.put("blocks", blocks);
+        result.put("items", items);
+        result.put("summary", summary);
+
+        return result;
+    }
+
+    /**
+     * 序列化单个纹理条目为 Map
+     */
+    private static Map<String, Object> serializeEntry(CTMKey key, CTMTextureAtlasSprite sprite) {
+        Map<String, Object> entry = new LinkedHashMap<>();
+
+        entry.put("key", key.to(CTMKey.Format.TEXTURE_KEY));
+        entry.put("fullKey", key.toCanonicalString());
+        entry.put("path", key.path());
+        entry.put("category", key.textureCategory().name());
+
+        Map<String, Object> spriteData = new LinkedHashMap<>();
+        spriteData.put("iconName", sprite.getIconName());
+        spriteData.put("gridWidth", sprite.getGridWidth());
+        spriteData.put("gridHeight", sprite.getGridHeight());
+
+        if (sprite.getRenderType() != null) {
+            spriteData.put("renderType", sprite.getRenderType().getId());
+        } else {
+            spriteData.put("renderType", null);
+        }
+
+        spriteData.put("emissive", sprite.isEmissive());
+
+        if (sprite.getTinting() != null) {
+            spriteData.put("tinting", sprite.getTinting().name());
+        } else {
+            spriteData.put("tinting", null);
+        }
+
+        if (sprite.getLayoutStyle() != null) {
+            spriteData.put("layoutStyle", sprite.getLayoutStyle().name());
+        } else {
+            spriteData.put("layoutStyle", null);
+        }
+
+        spriteData.put("randomCount", sprite.getRandomCount());
+        spriteData.put("randomSeed", sprite.getRandomSeed());
+
+        entry.put("sprite", spriteData);
+
+        return entry;
     }
 }

@@ -5,6 +5,8 @@ import net.minecraftforge.common.util.ForgeDirection;
 import com.github.wohaopa.MyCTMLib.predicate.ConnectionPredicate;
 import com.github.wohaopa.MyCTMLib.texture.CTMTextureAtlasSprite;
 
+import com.google.gson.JsonObject;
+
 public class BakedQuad {
 
     private final ForgeDirection face;
@@ -80,5 +82,44 @@ public class BakedQuad {
 
     public ForgeDirection getCullface() {
         return cullface;
+    }
+
+    /**
+     * 将 quad 数据序列化为 JsonObject（用于 dump）
+     * 
+     * @return JsonObject 包含所有 quad 字段
+     */
+    public JsonObject toJson() {
+        JsonObject json = new JsonObject();
+        json.addProperty("face", face.name());
+        json.addProperty("relMinX", relMinX);
+        json.addProperty("relMaxX", relMaxX);
+        json.addProperty("relMinY", relMinY);
+        json.addProperty("relMaxY", relMaxY);
+        json.addProperty("relMinZ", relMinZ);
+        json.addProperty("relMaxZ", relMaxZ);
+
+        if (sprite != null) {
+            json.add("sprite", sprite.toJson());
+        } else {
+            json.add("sprite", null);
+        }
+
+        if (predicate != null) {
+            json.add("predicate", predicate.toJson());
+        } else {
+            json.add("predicate", null);
+        }
+
+        json.addProperty("rotation", rotation);
+        json.addProperty("tintindex", tintindex);
+
+        if (cullface != null) {
+            json.addProperty("cullface", cullface.name());
+        } else {
+            json.add("cullface", null);
+        }
+
+        return json;
     }
 }
