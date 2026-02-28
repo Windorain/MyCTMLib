@@ -1,6 +1,16 @@
 package com.github.wohaopa.MyCTMLib.texture;
 
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Collections;
+
+import javax.imageio.ImageIO;
+
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.resources.IResource;
+import net.minecraft.client.resources.IResourceManager;
+import net.minecraft.util.ResourceLocation;
 
 import com.github.wohaopa.MyCTMLib.texture.BaseTextureData.QuadTinting;
 import com.github.wohaopa.MyCTMLib.texture.BaseTextureData.RenderType;
@@ -131,5 +141,37 @@ public class CTMTextureAtlasSprite extends TextureAtlasSprite {
         json.addProperty("randomSeed", getRandomSeed());
 
         return json;
+    }
+
+    @Override
+    public boolean hasCustomLoader(IResourceManager manager, ResourceLocation location) {
+        return getLayoutStyle() != null || getRandomCount() > 0;
+    }
+
+    @Override
+    public boolean load(IResourceManager manager, ResourceLocation location) {
+        resetSprite();
+        String path = location.getResourcePath();
+        String resourcePath = "textures/blocks/" + path + ".png";
+        ResourceLocation fullLocation = new ResourceLocation(location.getResourceDomain(), resourcePath);
+        try {
+            IResource resource = manager.getResource(fullLocation);
+            try (InputStream in = resource.getInputStream()) {
+                BufferedImage img = ImageIO.read(in);
+                if (img == null) return true;
+                int w = img.getWidth();
+                int h = img.getHeight();
+                setIconWidth(w);
+                setIconHeight(h);
+                int[] pixels = new int[w * h];
+                img.getRGB(0, 0, w, h, pixels, 0, w);
+                int[][] oneFrame = new int[][] { pixels };
+                java.util.List<int[][]> frameList = Collections.singletonList(oneFrame);
+                setFramesTextureData(frameList);
+                return false;
+            }
+        } catch (IOException e) {
+            return true;
+        }
     }
 }

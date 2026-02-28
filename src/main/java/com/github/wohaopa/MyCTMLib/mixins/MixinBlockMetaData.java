@@ -11,8 +11,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import com.github.wohaopa.MyCTMLib.IC2TextureLoader;
-
 import ic2.core.IC2;
 import ic2.core.block.BlockBase;
 import ic2.core.block.BlockMetaData;
@@ -32,9 +30,6 @@ public abstract class MixinBlockMetaData extends BlockBase {
         this.textures = new IIcon[metaCount][6];
 
         for (int index = 0; index < metaCount; ++index) {
-            String name = IC2.textureDomain + ":textures/blocks/" + this.getTextureName(index);
-            IC2TextureLoader.handleTexture(iconRegister, name);
-
             String textureFolder = this.getTextureFolder(index);
             textureFolder = textureFolder == null ? "" : textureFolder + "/";
             String baseName = IC2.textureDomain + ":" + textureFolder + this.getTextureName(index);
