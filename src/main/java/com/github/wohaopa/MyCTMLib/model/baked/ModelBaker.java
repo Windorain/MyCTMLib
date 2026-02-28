@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -16,9 +15,8 @@ import com.github.wohaopa.MyCTMLib.model.ModelElement;
 import com.github.wohaopa.MyCTMLib.model.ModelFace;
 import com.github.wohaopa.MyCTMLib.predicate.ConnectionPredicate;
 import com.github.wohaopa.MyCTMLib.predicate.PredicateRegistry;
-import com.github.wohaopa.MyCTMLib.texture.TextureKeyNormalizer;
-import com.github.wohaopa.MyCTMLib.texture.TextureRegistry;
 import com.github.wohaopa.MyCTMLib.texture.CTMTextureAtlasSprite;
+import com.github.wohaopa.MyCTMLib.texture.TextureRegistry;
 import com.google.gson.JsonObject;
 
 public final class ModelBaker {
@@ -42,7 +40,8 @@ public final class ModelBaker {
             float relMinZ = Math.min(from[2], to[2]) / 16.0f;
             float relMaxZ = Math.max(from[2], to[2]) / 16.0f;
 
-            for (Map.Entry<ForgeDirection, ModelFace> entry : element.getFaces().entrySet()) {
+            for (Map.Entry<ForgeDirection, ModelFace> entry : element.getFaces()
+                .entrySet()) {
                 ForgeDirection face = entry.getKey();
                 ModelFace modelFace = entry.getValue();
 
@@ -50,7 +49,8 @@ public final class ModelBaker {
                 if (textureKey == null) {
                     String lookupKey = modelFace.getTextureKey();
                     if (lookupKey != null && lookupKey.startsWith("#")) {
-                        lookupKey = lookupKey.substring(1).trim();
+                        lookupKey = lookupKey.substring(1)
+                            .trim();
                     }
                     textureKey = resolvedTextures.get(lookupKey);
                 }
@@ -69,15 +69,17 @@ public final class ModelBaker {
                 if (sprite != null) {
                     BakedQuad quad = new BakedQuad(
                         face,
-                        relMinX, relMaxX,
-                        relMinY, relMaxY,
-                        relMinZ, relMaxZ,
+                        relMinX,
+                        relMaxX,
+                        relMinY,
+                        relMaxY,
+                        relMinZ,
+                        relMaxZ,
                         sprite,
                         predicate,
                         0,
                         -1,
-                        null
-                    );
+                        null);
                     quads.add(quad);
                 }
             }
@@ -111,7 +113,8 @@ public final class ModelBaker {
 
     private static String resolveTexturePath(String key, Map<String, String> textures, Set<String> visiting) {
         if (key == null || textures == null) return null;
-        String lookupKey = key.startsWith("#") ? key.substring(1).trim() : key;
+        String lookupKey = key.startsWith("#") ? key.substring(1)
+            .trim() : key;
         if (visiting.contains(lookupKey)) return null;
         visiting.add(lookupKey);
         try {
@@ -143,14 +146,15 @@ public final class ModelBaker {
         return result;
     }
 
-    private static ConnectionPredicate resolvePredicate(String key, Object value, 
-                                                       Map<String, Object> connections, Set<String> visiting) {
+    private static ConnectionPredicate resolvePredicate(String key, Object value, Map<String, Object> connections,
+        Set<String> visiting) {
         if (visiting.contains(key)) return null;
 
         if (value instanceof String) {
             String s = ((String) value).trim();
             if (s.startsWith("#")) {
-                String refKey = s.substring(1).trim();
+                String refKey = s.substring(1)
+                    .trim();
                 visiting.add(key);
                 try {
                     Object refValue = connections.get(refKey);

@@ -1,11 +1,11 @@
 package com.github.wohaopa.MyCTMLib.ctmkey;
 
-import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
-
 import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.Locale;
 import java.util.Objects;
+
+import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
 
 public final class CTMKey implements Comparable<CTMKey>, Serializable {
 
@@ -26,8 +26,7 @@ public final class CTMKey implements Comparable<CTMKey>, Serializable {
 
     private static final int MAX_CACHE_SIZE = 10000;
 
-    private static final Object2ObjectLinkedOpenHashMap<String, CTMKey> CACHE =
-        new Object2ObjectLinkedOpenHashMap<>();
+    private static final Object2ObjectLinkedOpenHashMap<String, CTMKey> CACHE = new Object2ObjectLinkedOpenHashMap<>();
 
     private static final LinkedList<String> ACCESS_ORDER = new LinkedList<>();
 
@@ -45,8 +44,7 @@ public final class CTMKey implements Comparable<CTMKey>, Serializable {
     private final String safeString;
     private final int hashCode;
 
-    private CTMKey(String domain, Type type, String path, String variant,
-                   TextureCategory textureCategory) {
+    private CTMKey(String domain, Type type, String path, String variant, TextureCategory textureCategory) {
         this.domain = domain;
         this.type = type;
         this.path = path;
@@ -76,13 +74,7 @@ public final class CTMKey implements Comparable<CTMKey>, Serializable {
             return null;
         }
 
-        CTMKey key = new CTMKey(
-            parsed.domain,
-            parsed.type,
-            parsed.path,
-            parsed.variant,
-            parsed.textureCategory
-        );
+        CTMKey key = new CTMKey(parsed.domain, parsed.type, parsed.path, parsed.variant, parsed.textureCategory);
 
         synchronized (CACHE) {
             cachePut(key.safeString, key);
@@ -155,7 +147,8 @@ public final class CTMKey implements Comparable<CTMKey>, Serializable {
     }
 
     private static ParsedResult parseInternal(String input) {
-        String cleaned = input.replace('\\', '/').trim();
+        String cleaned = input.replace('\\', '/')
+            .trim();
         if (cleaned.isEmpty()) {
             return null;
         }
@@ -164,7 +157,8 @@ public final class CTMKey implements Comparable<CTMKey>, Serializable {
 
         int colonIdx = cleaned.indexOf(':');
         if (colonIdx >= 0) {
-            result.domain = cleaned.substring(0, colonIdx).toLowerCase(Locale.ROOT);
+            result.domain = cleaned.substring(0, colonIdx)
+                .toLowerCase(Locale.ROOT);
             String remaining = cleaned.substring(colonIdx + 1);
             parsePathAndType(remaining, result);
         } else {
@@ -223,14 +217,16 @@ public final class CTMKey implements Comparable<CTMKey>, Serializable {
 
     private static String buildSafeString(String domain, Type type, String path, String variant) {
         StringBuilder sb = new StringBuilder();
-        sb.append(domain).append(':');
+        sb.append(domain)
+            .append(':');
 
         switch (type) {
             case BLOCK:
                 sb.append(path);
                 break;
             case MODEL:
-                sb.append("models/block/").append(path);
+                sb.append("models/block/")
+                    .append(path);
                 break;
             case TEXTURE:
                 TextureCategory cat = inferTextureCategory(type, path);
@@ -249,7 +245,8 @@ public final class CTMKey implements Comparable<CTMKey>, Serializable {
         }
 
         if (variant != null) {
-            sb.append('&').append(variant);
+            sb.append('&')
+                .append(variant);
         }
 
         return sb.toString();
@@ -269,14 +266,16 @@ public final class CTMKey implements Comparable<CTMKey>, Serializable {
 
     private String buildCanonicalString() {
         StringBuilder sb = new StringBuilder();
-        sb.append(domain).append(':');
+        sb.append(domain)
+            .append(':');
 
         switch (type) {
             case BLOCK:
                 sb.append(path);
                 break;
             case MODEL:
-                sb.append("models/block/").append(path);
+                sb.append("models/block/")
+                    .append(path);
                 break;
             case TEXTURE:
                 if (textureCategory == TextureCategory.BLOCKS) {
@@ -294,7 +293,8 @@ public final class CTMKey implements Comparable<CTMKey>, Serializable {
         }
 
         if (variant != null) {
-            sb.append('&').append(variant);
+            sb.append('&')
+                .append(variant);
         }
 
         return sb.toString();
@@ -367,11 +367,10 @@ public final class CTMKey implements Comparable<CTMKey>, Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         CTMKey ctmKey = (CTMKey) o;
-        return hashCode == ctmKey.hashCode &&
-            domain.equals(ctmKey.domain) &&
-            type == ctmKey.type &&
-            path.equals(ctmKey.path) &&
-            Objects.equals(variant, ctmKey.variant);
+        return hashCode == ctmKey.hashCode && domain.equals(ctmKey.domain)
+            && type == ctmKey.type
+            && path.equals(ctmKey.path)
+            && Objects.equals(variant, ctmKey.variant);
     }
 
     @Override
@@ -412,6 +411,7 @@ public final class CTMKey implements Comparable<CTMKey>, Serializable {
     }
 
     private static class ParsedResult {
+
         String domain;
         Type type;
         String path;

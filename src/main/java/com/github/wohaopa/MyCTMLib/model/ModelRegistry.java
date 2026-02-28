@@ -6,13 +6,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-
 import com.github.wohaopa.MyCTMLib.MyCTMLib;
 import com.github.wohaopa.MyCTMLib.ctmkey.CTMKey;
 import com.github.wohaopa.MyCTMLib.model.baked.BakedModel;
 import com.github.wohaopa.MyCTMLib.model.baked.ModelBaker;
 import com.github.wohaopa.MyCTMLib.texture.TextureKeyNormalizer;
+
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 
 public class ModelRegistry {
 
@@ -100,14 +100,15 @@ public class ModelRegistry {
 
     public void dumpForDebug() {
         if (!MyCTMLib.debugMode) return;
-        MyCTMLib.LOG.info("[CTMLibFusion] ModelRegistry size={}, bakedSize={}", 
-            modelById.size(), bakedModelById.size());
+        MyCTMLib.LOG
+            .info("[CTMLibFusion] ModelRegistry size={}, bakedSize={}", modelById.size(), bakedModelById.size());
     }
 
     private String extractDomain(String modelId) {
         int colon = modelId.indexOf(':');
         if (colon >= 0) {
-            return modelId.substring(0, colon).toLowerCase(java.util.Locale.ROOT);
+            return modelId.substring(0, colon)
+                .toLowerCase(java.util.Locale.ROOT);
         }
         return "minecraft";
     }

@@ -2,7 +2,6 @@ package com.github.wohaopa.MyCTMLib.render.domain;
 
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
-import net.minecraftforge.common.util.ForgeDirection;
 
 import com.github.wohaopa.MyCTMLib.FastRandom;
 import com.github.wohaopa.MyCTMLib.render.ConnectionState;
@@ -65,8 +64,7 @@ public final class TileDomain {
             ctx.getFace(),
             ctx.getBlock(),
             ctx.getMeta(),
-            ctx.getConnectionPredicate()
-        );
+            ctx.getConnectionPredicate());
         ctx.setConnectionMask(mask);
         ctx.info("TILE: Connection mask = 0x" + Integer.toHexString(mask));
 

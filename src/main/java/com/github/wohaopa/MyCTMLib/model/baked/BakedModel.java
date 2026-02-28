@@ -15,13 +15,14 @@ public class BakedModel {
 
     public BakedModel(List<BakedQuad> quads) {
         this.allQuads = Collections.unmodifiableList(new ArrayList<>(quads));
-        
+
         Map<ForgeDirection, List<BakedQuad>> byFace = new EnumMap<>(ForgeDirection.class);
         for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
             byFace.put(dir, new ArrayList<>());
         }
         for (BakedQuad quad : quads) {
-            byFace.get(quad.getFace()).add(quad);
+            byFace.get(quad.getFace())
+                .add(quad);
         }
         for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
             byFace.put(dir, Collections.unmodifiableList(byFace.get(dir)));

@@ -5,13 +5,13 @@ import java.util.List;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import com.github.wohaopa.MyCTMLib.model.ModelRegistry;
-import com.github.wohaopa.MyCTMLib.render.util.ModelUtil;
 import com.github.wohaopa.MyCTMLib.model.baked.BakedModel;
 import com.github.wohaopa.MyCTMLib.model.baked.BakedQuad;
 import com.github.wohaopa.MyCTMLib.render.context.RenderContext;
 import com.github.wohaopa.MyCTMLib.render.domain.TextureDomain;
 import com.github.wohaopa.MyCTMLib.render.quads.BakedQuadRenderer;
 import com.github.wohaopa.MyCTMLib.render.quads.RenderBlocksQuadRenderer;
+import com.github.wohaopa.MyCTMLib.render.util.ModelUtil;
 import com.github.wohaopa.MyCTMLib.texture.CTMTextureAtlasSprite;
 
 public class RenderPipeline {
@@ -77,19 +77,22 @@ public class RenderPipeline {
         }
         ctx.info("BLOCK: Found modelId: " + modelId);
 
-        BakedModel bakedModel = ModelRegistry.getInstance().getBakedModel(modelId);
+        BakedModel bakedModel = ModelRegistry.getInstance()
+            .getBakedModel(modelId);
         if (bakedModel == null) {
             ctx.warn("BLOCK: No BakedModel found for: " + modelId);
             return false;
         }
         ctx.setBakedModel(bakedModel);
-        ctx.info("BLOCK: Using BakedModel with " + bakedModel.getAllQuads().size() + " quads");
+        ctx.info(
+            "BLOCK: Using BakedModel with " + bakedModel.getAllQuads()
+                .size() + " quads");
 
         for (ForgeDirection face : ForgeDirection.VALID_DIRECTIONS) {
             ctx.setFace(face);
             List<BakedQuad> quads = bakedModel.getQuads(face);
             ctx.info("BLOCK: Rendering face " + face + " with " + quads.size() + " quads");
-            
+
             for (BakedQuad quad : quads) {
                 renderBakedQuad(quad, ctx);
             }

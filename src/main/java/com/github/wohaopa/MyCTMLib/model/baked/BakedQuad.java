@@ -17,13 +17,9 @@ public class BakedQuad {
     private final int tintindex;
     private final ForgeDirection cullface;
 
-    public BakedQuad(ForgeDirection face,
-                     float relMinX, float relMaxX,
-                     float relMinY, float relMaxY,
-                     float relMinZ, float relMaxZ,
-                     CTMTextureAtlasSprite sprite,
-                     ConnectionPredicate predicate,
-                     int rotation, int tintindex, ForgeDirection cullface) {
+    public BakedQuad(ForgeDirection face, float relMinX, float relMaxX, float relMinY, float relMaxY, float relMinZ,
+        float relMaxZ, CTMTextureAtlasSprite sprite, ConnectionPredicate predicate, int rotation, int tintindex,
+        ForgeDirection cullface) {
         this.face = face;
         this.relMinX = relMinX;
         this.relMaxX = relMaxX;

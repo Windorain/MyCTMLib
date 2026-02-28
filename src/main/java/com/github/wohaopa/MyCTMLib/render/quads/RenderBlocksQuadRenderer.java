@@ -7,7 +7,6 @@ import com.github.wohaopa.MyCTMLib.render.domain.GeometryDomain;
 import com.github.wohaopa.MyCTMLib.render.domain.PositionDomain;
 import com.github.wohaopa.MyCTMLib.render.domain.TileDomain;
 import com.github.wohaopa.MyCTMLib.render.domain.UVDomain;
-import com.github.wohaopa.MyCTMLib.texture.CTMTextureAtlasSprite;
 
 /**
  * RenderBlocks quad 渲染器（TextureReloc 分支专用）

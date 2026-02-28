@@ -111,13 +111,11 @@ public final class CTMRenderEntry {
         }
     }
 
-    public static boolean renderPipeline(RenderBlocks renderBlocks,
-                                          IBlockAccess blockAccess,
-                                          Block block,
-                                          double x, double y, double z,
-                                          int meta) {
+    public static boolean renderPipeline(RenderBlocks renderBlocks, IBlockAccess blockAccess, Block block, double x,
+        double y, double z, int meta) {
         RenderContext ctx = RenderContext.get();
-        ctx.getLog().clear();
+        ctx.getLog()
+            .clear();
         try {
             ctx.setRenderLevel(RenderLevel.BLOCK);
             ctx.setRenderBlocks(renderBlocks);
@@ -136,15 +134,11 @@ public final class CTMRenderEntry {
         }
     }
 
-    public static boolean renderPipeline(RenderBlocks renderBlocks,
-                                          IBlockAccess blockAccess,
-                                          Block block,
-                                          double x, double y, double z,
-                                          int meta,
-                                          ForgeDirection face,
-                                          IIcon icon) {
+    public static boolean renderPipeline(RenderBlocks renderBlocks, IBlockAccess blockAccess, Block block, double x,
+        double y, double z, int meta, ForgeDirection face, IIcon icon) {
         RenderContext ctx = RenderContext.get();
-        ctx.getLog().clear();
+        ctx.getLog()
+            .clear();
         try {
             ctx.setRenderLevel(RenderLevel.FACE);
             ctx.setRenderBlocks(renderBlocks);

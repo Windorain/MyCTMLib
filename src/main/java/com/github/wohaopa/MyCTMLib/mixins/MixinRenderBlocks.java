@@ -28,13 +28,8 @@ public abstract class MixinRenderBlocks {
     @Inject(method = "renderBlockByRenderType", at = @At("HEAD"), cancellable = true)
     private void onRenderBlockByRenderType(Block block, int x, int y, int z, CallbackInfoReturnable<Boolean> cir) {
         int meta = this.blockAccess != null ? this.blockAccess.getBlockMetadata(x, y, z) : 0;
-        
-        if (CTMRenderEntry.renderPipeline(
-                (RenderBlocks) (Object) this,
-                this.blockAccess,
-                block,
-                x, y, z,
-                meta)) {
+
+        if (CTMRenderEntry.renderPipeline((RenderBlocks) (Object) this, this.blockAccess, block, x, y, z, meta)) {
             cir.setReturnValue(true);
             cir.cancel();
         }
@@ -48,20 +43,23 @@ public abstract class MixinRenderBlocks {
         int meta = this.blockAccess != null ? this.blockAccess.getBlockMetadata((int) x, (int) y, (int) z) : 0;
 
         if (blockAccess == null) {
-            if (CTMRenderEntry.tryRenderItemFace((RenderBlocks) (Object) this, block, x, y, z, iIcon, ForgeDirection.DOWN)) {
+            if (CTMRenderEntry
+                .tryRenderItemFace((RenderBlocks) (Object) this, block, x, y, z, iIcon, ForgeDirection.DOWN)) {
                 ci.cancel();
             }
             return;
         }
 
         if (CTMRenderEntry.renderPipeline(
-                (RenderBlocks) (Object) this,
-                this.blockAccess,
-                block,
-                x, y, z,
-                meta,
-                ForgeDirection.DOWN,
-                iIcon)) {
+            (RenderBlocks) (Object) this,
+            this.blockAccess,
+            block,
+            x,
+            y,
+            z,
+            meta,
+            ForgeDirection.DOWN,
+            iIcon)) {
             ci.cancel();
         }
     }
@@ -74,20 +72,23 @@ public abstract class MixinRenderBlocks {
         int meta = this.blockAccess != null ? this.blockAccess.getBlockMetadata((int) x, (int) y, (int) z) : 0;
 
         if (blockAccess == null) {
-            if (CTMRenderEntry.tryRenderItemFace((RenderBlocks) (Object) this, block, x, y, z, iIcon, ForgeDirection.UP)) {
+            if (CTMRenderEntry
+                .tryRenderItemFace((RenderBlocks) (Object) this, block, x, y, z, iIcon, ForgeDirection.UP)) {
                 ci.cancel();
             }
             return;
         }
 
         if (CTMRenderEntry.renderPipeline(
-                (RenderBlocks) (Object) this,
-                this.blockAccess,
-                block,
-                x, y, z,
-                meta,
-                ForgeDirection.UP,
-                iIcon)) {
+            (RenderBlocks) (Object) this,
+            this.blockAccess,
+            block,
+            x,
+            y,
+            z,
+            meta,
+            ForgeDirection.UP,
+            iIcon)) {
             ci.cancel();
         }
     }
@@ -100,20 +101,23 @@ public abstract class MixinRenderBlocks {
         int meta = this.blockAccess != null ? this.blockAccess.getBlockMetadata((int) x, (int) y, (int) z) : 0;
 
         if (blockAccess == null) {
-            if (CTMRenderEntry.tryRenderItemFace((RenderBlocks) (Object) this, block, x, y, z, iIcon, ForgeDirection.NORTH)) {
+            if (CTMRenderEntry
+                .tryRenderItemFace((RenderBlocks) (Object) this, block, x, y, z, iIcon, ForgeDirection.NORTH)) {
                 ci.cancel();
             }
             return;
         }
 
         if (CTMRenderEntry.renderPipeline(
-                (RenderBlocks) (Object) this,
-                this.blockAccess,
-                block,
-                x, y, z,
-                meta,
-                ForgeDirection.NORTH,
-                iIcon)) {
+            (RenderBlocks) (Object) this,
+            this.blockAccess,
+            block,
+            x,
+            y,
+            z,
+            meta,
+            ForgeDirection.NORTH,
+            iIcon)) {
             ci.cancel();
         }
     }
@@ -126,20 +130,23 @@ public abstract class MixinRenderBlocks {
         int meta = this.blockAccess != null ? this.blockAccess.getBlockMetadata((int) x, (int) y, (int) z) : 0;
 
         if (blockAccess == null) {
-            if (CTMRenderEntry.tryRenderItemFace((RenderBlocks) (Object) this, block, x, y, z, iIcon, ForgeDirection.SOUTH)) {
+            if (CTMRenderEntry
+                .tryRenderItemFace((RenderBlocks) (Object) this, block, x, y, z, iIcon, ForgeDirection.SOUTH)) {
                 ci.cancel();
             }
             return;
         }
 
         if (CTMRenderEntry.renderPipeline(
-                (RenderBlocks) (Object) this,
-                this.blockAccess,
-                block,
-                x, y, z,
-                meta,
-                ForgeDirection.SOUTH,
-                iIcon)) {
+            (RenderBlocks) (Object) this,
+            this.blockAccess,
+            block,
+            x,
+            y,
+            z,
+            meta,
+            ForgeDirection.SOUTH,
+            iIcon)) {
             ci.cancel();
         }
     }
@@ -152,20 +159,23 @@ public abstract class MixinRenderBlocks {
         int meta = this.blockAccess != null ? this.blockAccess.getBlockMetadata((int) x, (int) y, (int) z) : 0;
 
         if (blockAccess == null) {
-            if (CTMRenderEntry.tryRenderItemFace((RenderBlocks) (Object) this, block, x, y, z, iIcon, ForgeDirection.WEST)) {
+            if (CTMRenderEntry
+                .tryRenderItemFace((RenderBlocks) (Object) this, block, x, y, z, iIcon, ForgeDirection.WEST)) {
                 ci.cancel();
             }
             return;
         }
 
         if (CTMRenderEntry.renderPipeline(
-                (RenderBlocks) (Object) this,
-                this.blockAccess,
-                block,
-                x, y, z,
-                meta,
-                ForgeDirection.WEST,
-                iIcon)) {
+            (RenderBlocks) (Object) this,
+            this.blockAccess,
+            block,
+            x,
+            y,
+            z,
+            meta,
+            ForgeDirection.WEST,
+            iIcon)) {
             ci.cancel();
         }
     }
@@ -178,20 +188,23 @@ public abstract class MixinRenderBlocks {
         int meta = this.blockAccess != null ? this.blockAccess.getBlockMetadata((int) x, (int) y, (int) z) : 0;
 
         if (blockAccess == null) {
-            if (CTMRenderEntry.tryRenderItemFace((RenderBlocks) (Object) this, block, x, y, z, iIcon, ForgeDirection.EAST)) {
+            if (CTMRenderEntry
+                .tryRenderItemFace((RenderBlocks) (Object) this, block, x, y, z, iIcon, ForgeDirection.EAST)) {
                 ci.cancel();
             }
             return;
         }
 
         if (CTMRenderEntry.renderPipeline(
-                (RenderBlocks) (Object) this,
-                this.blockAccess,
-                block,
-                x, y, z,
-                meta,
-                ForgeDirection.EAST,
-                iIcon)) {
+            (RenderBlocks) (Object) this,
+            this.blockAccess,
+            block,
+            x,
+            y,
+            z,
+            meta,
+            ForgeDirection.EAST,
+            iIcon)) {
             ci.cancel();
         }
     }

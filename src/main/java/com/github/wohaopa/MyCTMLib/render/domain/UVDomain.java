@@ -19,7 +19,7 @@ public final class UVDomain {
     /**
      * 计算最终 UV 坐标
      * 
-     * @param ctx   渲染上下文
+     * @param ctx 渲染上下文
      */
     public static void calc(RenderContext ctx) {
         assert ctx.getCtmSprite() != null;
