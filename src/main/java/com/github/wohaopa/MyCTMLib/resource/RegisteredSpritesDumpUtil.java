@@ -34,9 +34,8 @@ public class RegisteredSpritesDumpUtil {
     }
 
     private static void appendSprites(JsonArray out, Map<String, TextureAtlasSprite> sprites, String category) {
-        String basePath = CTMKeyUtil.getBasePath(
-            "blocks".equals(category) ? CTMKey.TextureCategory.BLOCKS
-                : CTMKey.TextureCategory.ITEMS);
+        String basePath = CTMKeyUtil
+            .getBasePath("blocks".equals(category) ? CTMKey.TextureCategory.BLOCKS : CTMKey.TextureCategory.ITEMS);
         for (Map.Entry<String, TextureAtlasSprite> e : sprites.entrySet()) {
             TextureAtlasSprite sprite = e.getValue();
             String mapKey = e.getKey();

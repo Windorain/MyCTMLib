@@ -1,133 +1,132 @@
 package com.github.wohaopa.MyCTMLib.texture;
 
-import java.util.EnumMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.renderer.texture.TextureMap;
-import net.minecraft.util.IIcon;
+import java.util.Collection;
+import java.util.Collections;
 
 import com.github.wohaopa.MyCTMLib.MyCTMLib;
 import com.github.wohaopa.MyCTMLib.ctmkey.CTMKey;
-import com.github.wohaopa.MyCTMLib.ctmkey.CTMKeyUtil;
-import com.github.wohaopa.MyCTMLib.mixins.AccessorTextureMap;
+
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 
 /**
- * 纹理路径（如 "modid:blocks/stone"）→ 解析后的 TextureTypeData。
- * 键语义：TexReg 内部统一用 canonicalKey（domain:blocks/name 或 domain:items/name）；图集 mapRegisteredSprites 的键为 mapKey（registerIcon
- * 传入名，各 mod 不统一）。
- * 本类维护 canonicalKey → mapKey 登记表（按 BLOCKS/ITEMS 分），每次我们向 map 写入 sprite 时登记；getIcon 优先用登记表单键查找，无记录时回退
- * getLookupCandidates。
+ * 纹理注册表 - 静态工具类
+ * 
+ * <p>
+ * 维护 CTMKey → CTMTextureAtlasSprite 映射
+ * </p>
+ * <p>
+ * 按纹理类别分为两张表：BLOCKS 和 ITEMS
+ * </p>
+ * 
+ * @author MyCTMLib
+ * @since 2.0.0
  */
 public class TextureRegistry {
 
-    private static final TextureRegistry INSTANCE = new TextureRegistry();
-    private final Map<String, TextureTypeData> pathToData = new ConcurrentHashMap<>();
-    private final Map<CTMKey.TextureCategory, Map<String, String>> canonicalToMapKey = new EnumMap<>(
-        CTMKey.TextureCategory.class);
+    // ========== 数据结构 ==========
 
-    {
-        canonicalToMapKey.put(CTMKey.TextureCategory.BLOCKS, new ConcurrentHashMap<>());
-        canonicalToMapKey.put(CTMKey.TextureCategory.ITEMS, new ConcurrentHashMap<>());
-    }
+    /**
+     * 方块纹理表
+     */
+    private static final Object2ObjectOpenHashMap<CTMKey, CTMTextureAtlasSprite> blockSprites = new Object2ObjectOpenHashMap<>();
 
-    public static TextureRegistry getInstance() {
-        return INSTANCE;
-    }
+    /**
+     * 物品纹理表
+     */
+    private static final Object2ObjectOpenHashMap<CTMKey, CTMTextureAtlasSprite> itemSprites = new Object2ObjectOpenHashMap<>();
 
-    public void put(String texturePath, TextureTypeData data) {
-        if (texturePath == null || data == null) return;
-        CTMKey.TextureCategory category = getCategoryFromPath(texturePath);
-        CTMKey key = CTMKey.from(CTMKey.Format.TEXTURE_KEY, texturePath, category);
-        if (key == null) return;
-        pathToData.put(key.toCanonicalString(), data);
-    }
+    // ========== 私有构造函数（禁止实例化） ==========
 
-    public TextureTypeData get(String texturePath) {
-        if (texturePath == null) return null;
-        CTMKey.TextureCategory category = getCategoryFromPath(texturePath);
-        CTMKey key = CTMKey.from(CTMKey.Format.TEXTURE_KEY, texturePath, category);
-        if (key == null) return null;
-        return pathToData.get(key.toCanonicalString());
-    }
+    private TextureRegistry() {}
 
-    private CTMKey.TextureCategory getCategoryFromPath(String texturePath) {
-        if (texturePath == null) return CTMKey.TextureCategory.BLOCKS;
-        if (texturePath.contains("items/") || texturePath.contains(":items/")) {
-            return CTMKey.TextureCategory.ITEMS;
+    // ========== 注册 API ==========
+
+    /**
+     * 注册纹理到注册表
+     * 
+     * @param key    纹理键（CTMKey）
+     * @param sprite CTM 纹理精灵
+     */
+    public static void put(CTMKey key, CTMTextureAtlasSprite sprite) {
+        if (key == null || sprite == null) return;
+
+        if (key.textureCategory() == CTMKey.TextureCategory.ITEMS) {
+            itemSprites.put(key, sprite);
+        } else {
+            blockSprites.put(key, sprite);
         }
-        return CTMKey.TextureCategory.BLOCKS;
+    }
+
+    // ========== 查询 API ==========
+
+    /**
+     * 获取纹理精灵
+     * 
+     * @param key 纹理键
+     * @return CTMTextureAtlasSprite，不存在则返回 null
+     */
+    public static CTMTextureAtlasSprite getSprite(CTMKey key) {
+        if (key == null) return null;
+
+        if (key.textureCategory() == CTMKey.TextureCategory.ITEMS) {
+            return itemSprites.get(key);
+        } else {
+            return blockSprites.get(key);
+        }
     }
 
     /**
-     * 登记 canonicalKey → mapKey（按图集分类）。在每次向 mapRegisteredSprites put 时调用，便于 getIcon 单键查找。
+     * 获取所有方块纹理键
+     * 
+     * @return 不可修改的方块纹理键集合
      */
-    public void putCanonicalToMapKey(String canonicalKey, String mapKey,
-        CTMKey.TextureCategory category) {
-        if (canonicalKey == null || mapKey == null || category == null) return;
-        Map<String, String> per = canonicalToMapKey.get(category);
-        if (per != null) per.put(canonicalKey, mapKey);
+    public static Collection<CTMKey> getAllBlockKeys() {
+        return Collections.unmodifiableSet(blockSprites.keySet());
     }
 
     /**
-     * 从 TextureMap 的 mapRegisteredSprites 中按 texturePath 查找 IIcon。
-     * 优先用登记表 canonical→mapKey 单键查找；无记录时回退 getLookupCandidates。
+     * 获取所有物品纹理键
+     * 
+     * @return 不可修改的物品纹理键集合
      */
-    public IIcon getIcon(String texturePath) {
-        return getIcon(texturePath, CTMKey.TextureCategory.BLOCKS);
+    public static Collection<CTMKey> getAllItemKeys() {
+        return Collections.unmodifiableSet(itemSprites.keySet());
     }
 
-    public IIcon getIcon(String texturePath, CTMKey.TextureCategory category) {
-        if (texturePath == null) return null;
-        CTMKey key = CTMKey.from(CTMKey.Format.TEXTURE_KEY, texturePath, category);
-        if (key == null) return null;
-        String canonicalKey = key.toCanonicalString();
-        if (get(canonicalKey) == null) return null;
-        net.minecraft.util.ResourceLocation texMapLoc = CTMKey.TextureCategory.ITEMS == category
-            ? net.minecraft.client.renderer.texture.TextureMap.locationItemsTexture
-            : net.minecraft.client.renderer.texture.TextureMap.locationBlocksTexture;
-        Object texObj = Minecraft.getMinecraft()
-            .getTextureManager()
-            .getTexture(texMapLoc);
-        if (!(texObj instanceof TextureMap textureMap)) return null;
-        Map<String, TextureAtlasSprite> map = ((AccessorTextureMap) textureMap).getMapRegisteredSprites();
-        Map<String, String> per = canonicalToMapKey.get(category);
-        if (per != null) {
-            String mapKey = per.get(canonicalKey);
-            if (mapKey != null) {
-                TextureAtlasSprite sprite = map.get(mapKey);
-                if (sprite != null) return sprite;
-            }
-        }
-        return null;
+    // ========== 生命周期管理 ==========
+
+    /**
+     * 清空所有注册表
+     */
+    public static void clear() {
+        blockSprites.clear();
+        itemSprites.clear();
     }
 
-    public void clear() {
-        pathToData.clear();
-        for (Map<String, String> per : canonicalToMapKey.values()) {
-            if (per != null) per.clear();
-        }
-    }
-
-    /** 供 RegistryDumpUtil 导出，按 TextureTypeData 去重后每个 value 保留一个 representative key。 */
-    public Map<String, TextureTypeData> getPathToDataForDump() {
-        Map<TextureTypeData, String> firstKeyPerValue = new LinkedHashMap<>();
-        for (Map.Entry<String, TextureTypeData> e : pathToData.entrySet()) {
-            firstKeyPerValue.putIfAbsent(e.getValue(), e.getKey());
-        }
-        Map<String, TextureTypeData> result = new LinkedHashMap<>();
-        for (Map.Entry<TextureTypeData, String> e : firstKeyPerValue.entrySet()) {
-            result.put(e.getValue(), e.getKey());
-        }
-        return result;
-    }
-
-    /** debug 模式下仅打出 size 摘要，避免刷屏。 */
-    public void dumpForDebug() {
+    /**
+     * 输出调试信息
+     */
+    public static void dumpForDebug() {
         if (!MyCTMLib.debugMode) return;
-        MyCTMLib.LOG.info("[CTMLibFusion] TextureRegistry size={}", pathToData.size());
+        MyCTMLib.LOG
+            .info("[CTMLibFusion] TextureRegistry: blocks={}, items={}", blockSprites.size(), itemSprites.size());
+    }
+
+    /**
+     * 获取方块纹理表大小（用于调试）
+     * 
+     * @return 方块纹理数量
+     */
+    public static int getBlockCount() {
+        return blockSprites.size();
+    }
+
+    /**
+     * 获取物品纹理表大小（用于调试）
+     * 
+     * @return 物品纹理数量
+     */
+    public static int getItemCount() {
+        return itemSprites.size();
     }
 }

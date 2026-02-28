@@ -29,7 +29,8 @@ public final class CTMKeyUtil {
     }
 
     private static String resolveTextureRef(String key, Map<String, String> textures, Set<String> visiting) {
-        String lookupKey = key.startsWith("#") ? key.substring(1).trim() : key;
+        String lookupKey = key.startsWith("#") ? key.substring(1)
+            .trim() : key;
         if (visiting.contains(lookupKey)) return null;
         visiting.add(lookupKey);
         try {

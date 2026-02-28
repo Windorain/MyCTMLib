@@ -32,8 +32,7 @@ public class MixinSimpleReloadableResourceManager {
             .clear();
         ModelRegistry.getInstance()
             .clear();
-        TextureRegistry.getInstance()
-            .clear();
+        TextureRegistry.clear();
         ctmIconMap.clear();
         ctmAltMap.clear();
         ctmReplaceMap.clear();

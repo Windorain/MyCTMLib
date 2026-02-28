@@ -10,9 +10,6 @@ import com.github.wohaopa.MyCTMLib.MyCTMLib;
 import com.github.wohaopa.MyCTMLib.blockstate.BlockStateRegistry;
 import com.github.wohaopa.MyCTMLib.model.ModelData;
 import com.github.wohaopa.MyCTMLib.model.ModelRegistry;
-import com.github.wohaopa.MyCTMLib.texture.ConnectingTextureData;
-import com.github.wohaopa.MyCTMLib.texture.TextureRegistry;
-import com.github.wohaopa.MyCTMLib.texture.TextureTypeData;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -81,29 +78,29 @@ public class RegistryDumpUtil {
             modelRoot.add("entries", modelEntries);
             root.add("modelRegistry", modelRoot);
 
-            // TextureRegistry
-            JsonObject texRoot = new JsonObject();
-            JsonArray texEntries = new JsonArray();
-            Map<String, TextureTypeData> pathToData = TextureRegistry.getInstance()
-                .getPathToDataForDump();
-            for (Map.Entry<String, TextureTypeData> e : pathToData.entrySet()) {
-                JsonObject entry = new JsonObject();
-                entry.addProperty("path", e.getKey());
-                TextureTypeData data = e.getValue();
-                if (data != null) {
-                    entry.addProperty("type", data.getType());
-                    if (data instanceof ConnectingTextureData ctd) {
-                        entry.addProperty(
-                            "layout",
-                            ctd.getLayout()
-                                .name());
-                        entry.addProperty("random", ctd.isRandom());
-                    }
-                }
-                texEntries.add(entry);
-            }
-            texRoot.add("entries", texEntries);
-            root.add("textureRegistry", texRoot);
+            // TextureRegistry - TODO: 更新为新 API
+            // JsonObject texRoot = new JsonObject();
+            // JsonArray texEntries = new JsonArray();
+            // Map<String, TextureTypeData> pathToData = TextureRegistry.getInstance()
+            // .getPathToDataForDump();
+            // for (Map.Entry<String, TextureTypeData> e : pathToData.entrySet()) {
+            // JsonObject entry = new JsonObject();
+            // entry.addProperty("path", e.getKey());
+            // TextureTypeData data = e.getValue();
+            // if (data != null) {
+            // entry.addProperty("type", data.getType());
+            // if (data instanceof ConnectingTextureData ctd) {
+            // entry.addProperty(
+            // "layout",
+            // ctd.getLayout()
+            // .name());
+            // entry.addProperty("random", ctd.isRandom());
+            // }
+            // }
+            // texEntries.add(entry);
+            // }
+            // texRoot.add("entries", texEntries);
+            // root.add("textureRegistry", texRoot);
 
             outputFile.getParentFile()
                 .mkdirs();
@@ -120,7 +117,7 @@ public class RegistryDumpUtil {
                 outputFile,
                 bsEntries.size(),
                 modelEntries.size(),
-                texEntries.size());
+                0); // texEntries.size()
         } catch (Exception e) {
             MyCTMLib.LOG.warn("[CTMLibFusion] RegistryDump failed", e);
         }

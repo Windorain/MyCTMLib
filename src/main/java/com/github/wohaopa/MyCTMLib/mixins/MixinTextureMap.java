@@ -79,12 +79,19 @@ public abstract class MixinTextureMap extends AbstractTexture implements ITickab
             : CTMKey.TextureCategory.BLOCKS;
     }
 
-    private void registerCanonicalToMapKey(String mapKey) {
-        if (mapKey == null) return;
-        CTMKey key = CTMKey.from(CTMKey.Format.TEXTURE_KEY, mapKey, getAtlasCategory());
-        if (key == null) return;
-        TextureRegistry.getInstance()
-            .putCanonicalToMapKey(key.toCanonicalString(), mapKey, getAtlasCategory());
+    @Inject(method = "registerIcon", at = @At("HEAD"), cancellable = true)
+    private void onRegisterIconHead(String textureName, CallbackInfoReturnable<IIcon> cir) {
+        // 检查是否已在 TextureRegistry 中（预注册的情况）
+        CTMKey key = CTMKey.from(CTMKey.Format.TEXTURE_KEY, textureName, getAtlasCategory());
+        if (key != null) {
+            CTMTextureAtlasSprite existing = TextureRegistry.getSprite(key);
+            if (existing != null) {
+                // 已预注册，直接使用
+                cir.setReturnValue(existing);
+                cir.cancel();
+                return;
+            }
+        }
     }
 
     @Inject(
@@ -104,7 +111,7 @@ public abstract class MixinTextureMap extends AbstractTexture implements ITickab
                 return;
             }
 
-            // 新管线：若存在 ctmlib section 则写入 TextureRegistry（用 canonicalKey），并替换 sprite 为整张连接图
+            // 新管线：若存在 ctmlib section 则写入 TextureRegistry（用 CTMKey），并替换 sprite 为整张连接图
             boolean hadCtmlib = false;
             TextureTypeData ctmlibData = null;
             try {
@@ -113,10 +120,32 @@ public abstract class MixinTextureMap extends AbstractTexture implements ITickab
                     CTMKey key = CTMKey.from(CTMKey.Format.TEXTURE_KEY, textureName, getAtlasCategory());
                     if (key != null) {
                         ctmlibData = ((TextureMetadataSection) ctmlibSec).getData();
-                        TextureRegistry.getInstance()
-                            .put(key.toCanonicalString(), ctmlibData);
+
+                        // 创建 CTMTextureAtlasSprite
+                        CTMTextureAtlasSprite ctmSprite = new CTMTextureAtlasSprite(textureName + "_ctm");
+
+                        // 设置 CTM 字段
+                        if (ctmlibData instanceof ConnectingTextureData ctd) {
+                            LayoutHandler handler = LayoutHandlers.get(ctd.getLayout());
+                            ctmSprite.setGridWidth(handler.getWidth());
+                            ctmSprite.setGridHeight(handler.getHeight());
+                            ctmSprite.setLayoutStyle(ctd.getLayout());
+                        } else if (ctmlibData instanceof RandomTextureData rtd) {
+                            ctmSprite.setGridWidth(rtd.getColumns());
+                            ctmSprite.setGridHeight(rtd.getRows());
+                            ctmSprite.setRandomCount(rtd.getCount());
+                            ctmSprite.setRandomSeed(rtd.getSeed() != null ? rtd.getSeed() : 0L);
+                        } else if (ctmlibData instanceof BaseTextureData btd) {
+                            ctmSprite.setRenderType(btd.getRenderType());
+                            ctmSprite.setEmissive(btd.isEmissive());
+                            ctmSprite.setTinting(btd.getTinting());
+                        }
+
+                        // 注册到 TextureRegistry
+                        TextureRegistry.put(key, ctmSprite);
+
+                        hadCtmlib = true;
                     }
-                    hadCtmlib = true;
                 }
             } catch (Exception e) {
                 if (MyCTMLib.debugMode) {
@@ -149,7 +178,6 @@ public abstract class MixinTextureMap extends AbstractTexture implements ITickab
                     }
 
                     mapRegisteredSprites.put(ctmName, ctmSprite);
-                    registerCanonicalToMapKey(ctmName);
 
                     // 同时创建原版 sprite 保持兼容
                     TextureAtlasSprite sprite = new NewTextureAtlasSprite(textureName);
@@ -157,7 +185,6 @@ public abstract class MixinTextureMap extends AbstractTexture implements ITickab
                         ((NewTextureAtlasSprite) sprite).setData(baseData);
                     }
                     mapRegisteredSprites.put(textureName, sprite);
-                    registerCanonicalToMapKey(textureName);
                     cir.setReturnValue(sprite);
                     cir.cancel();
                 }
@@ -180,7 +207,6 @@ public abstract class MixinTextureMap extends AbstractTexture implements ITickab
                         }
                     }
                     mapRegisteredSprites.put(textureName, sprite);
-                    registerCanonicalToMapKey(textureName);
                     cir.setReturnValue(sprite);
                     cir.cancel();
                 }
@@ -194,15 +220,18 @@ public abstract class MixinTextureMap extends AbstractTexture implements ITickab
                 : new NewTextureAtlasSprite(textureName);
             if (hadCtmlib && currentBase instanceof NewTextureAtlasSprite ntas) {
                 CTMKey key = CTMKey.from(CTMKey.Format.TEXTURE_KEY, textureName, getAtlasCategory());
-                com.github.wohaopa.MyCTMLib.texture.TextureTypeData ttd = TextureRegistry.getInstance()
-                    .get(key != null ? key.toCanonicalString() : null);
-                if (ttd instanceof BaseTextureData baseData) {
+                CTMTextureAtlasSprite ctmSprite = TextureRegistry.getSprite(key);
+                if (ctmSprite != null && ctmSprite.getRenderType() != null) {
+                    // 从 CTMTextureAtlasSprite 获取 BaseTextureData
+                    BaseTextureData baseData = new BaseTextureData.Builder().renderType(ctmSprite.getRenderType())
+                        .emissive(ctmSprite.isEmissive())
+                        .tinting(ctmSprite.getTinting())
+                        .build();
                     ntas.setData(baseData);
                 }
             }
             builder.setIconSmall(currentBase);
             mapRegisteredSprites.put(textureName, currentBase);
-            registerCanonicalToMapKey(textureName);
 
             if (config.connectionTexture != null) {
 
@@ -216,7 +245,6 @@ public abstract class MixinTextureMap extends AbstractTexture implements ITickab
                         currentCTM = useInterpolation(simpleCTM) ? new InterpolatedIcon(config.connectionTexture)
                             : new NewTextureAtlasSprite(config.connectionTexture);
                         mapRegisteredSprites.put(config.connectionTexture, currentCTM);
-                        registerCanonicalToMapKey(config.connectionTexture);
                         builder.setIconCTM(currentCTM);
                     }
 
@@ -245,9 +273,7 @@ public abstract class MixinTextureMap extends AbstractTexture implements ITickab
                         TextureAtlasSprite baseSprite = new NewTextureAtlasSprite(baseTextureName);
                         TextureAtlasSprite randomSprite = new NewTextureAtlasSprite(processedTexture);
                         mapRegisteredSprites.put(baseTextureName, baseSprite);
-                        registerCanonicalToMapKey(baseTextureName);
                         mapRegisteredSprites.put(processedTexture, randomSprite);
-                        registerCanonicalToMapKey(processedTexture);
 
                         randomManagers.add(
                             CTMIconManager.builder()
@@ -264,7 +290,6 @@ public abstract class MixinTextureMap extends AbstractTexture implements ITickab
                     for (String processedTexture : processedTextures) {
                         TextureAtlasSprite randomSprite = new NewTextureAtlasSprite(processedTexture);
                         mapRegisteredSprites.put(processedTexture, randomSprite);
-                        registerCanonicalToMapKey(processedTexture);
 
                         randomManagers.add(
                             CTMIconManager.builder()
@@ -288,7 +313,6 @@ public abstract class MixinTextureMap extends AbstractTexture implements ITickab
                             : new NewTextureAtlasSprite(config.altTexture);
 
                         mapRegisteredSprites.put(config.altTexture, currentAlt);
-                        registerCanonicalToMapKey(config.altTexture);
                         builder.setIconAlt(currentAlt);
                         ctmAltMap.put(textureName, currentAlt.getIconName());
                     }
@@ -370,8 +394,7 @@ public abstract class MixinTextureMap extends AbstractTexture implements ITickab
                 .dumpForDebug();
             ModelRegistry.getInstance()
                 .dumpForDebug();
-            TextureRegistry.getInstance()
-                .dumpForDebug();
+            TextureRegistry.dumpForDebug();
         }
         if (MyCTMLib.dumpBlockTextureMapping && basePath != null
             && (basePath.contains("blocks") && !basePath.contains("items"))) {

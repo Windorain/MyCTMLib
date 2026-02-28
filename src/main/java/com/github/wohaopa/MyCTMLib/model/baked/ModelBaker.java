@@ -57,8 +57,7 @@ public final class ModelBaker {
 
                 CTMTextureAtlasSprite sprite = null;
                 if (textureKey != null) {
-                    sprite = (CTMTextureAtlasSprite) TextureRegistry.getInstance()
-                        .getIcon(textureKey.toCanonicalString());
+                    sprite = TextureRegistry.getSprite(textureKey);
                 }
 
                 ConnectionPredicate predicate = null;

@@ -1,19 +1,11 @@
 package com.github.wohaopa.MyCTMLib.client;
 
-import java.util.Map;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraftforge.client.event.TextureStitchEvent;
 
+import com.github.wohaopa.MyCTMLib.model.ModelRegistry;
 import com.github.wohaopa.MyCTMLib.resource.CTMLibResourceLoader;
-import com.github.wohaopa.MyCTMLib.ctmkey.CTMKey;
-import com.github.wohaopa.MyCTMLib.ctmkey.CTMKeyUtil;
-import com.github.wohaopa.MyCTMLib.texture.BaseTextureData;
-import com.github.wohaopa.MyCTMLib.texture.ConnectingTextureData;
-import com.github.wohaopa.MyCTMLib.texture.RandomTextureData;
-import com.github.wohaopa.MyCTMLib.texture.TextureRegistry;
-import com.github.wohaopa.MyCTMLib.texture.TextureTypeData;
 
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.relauncher.Side;
@@ -34,49 +26,28 @@ public class TextureStitchEventHandler {
         boolean isItems = (textureType == 1);
         if (!isBlocks && !isItems) return;
 
+        // 阶段 1: 确保资源已加载
         CTMLibResourceLoader.ensureLoaded(
             Minecraft.getMinecraft()
                 .getResourceManager());
 
-        Map<String, TextureTypeData> pathToData = TextureRegistry.getInstance()
-            .getPathToDataForDump();
-        for (Map.Entry<String, TextureTypeData> e : pathToData.entrySet()) {
-            if (!(e.getValue() instanceof ConnectingTextureData) && !(e.getValue() instanceof RandomTextureData)
-                && !(e.getValue() instanceof BaseTextureData)) continue;
-            String key = e.getKey();
-            CTMKey.TextureCategory cat = CTMKeyUtil.getTextureCategory(key);
-            if (isBlocks && cat != CTMKey.TextureCategory.BLOCKS) continue;
-            if (isItems && cat != CTMKey.TextureCategory.ITEMS) continue;
+        // 阶段 2: 预注册纹理（从 pendingModelData）
+        prefillTexturesFromModels(map);
 
-            try {
-                map.registerIcon(toRegisterIconName(key, isBlocks, isItems));
-            } catch (Exception ex) {
-                com.github.wohaopa.MyCTMLib.MyCTMLib.LOG
-                    .warn("[CTMLib] TextureStitchEvent.Pre registerIcon failed key={}", key, ex);
-            }
-        }
+        // 阶段 3: 烘焙（此时所有纹理已就绪）
+        ModelRegistry.getInstance()
+            .bakeAll();
     }
 
     /**
-     * 将 canonicalKey 转为 registerIcon 接受的格式，避免 TextureMap 拼出错误路径。
-     * 1.7.10 中 TextureMap 用 basePath + iconName 拼资源路径；blocks 的 basePath 已是 "textures/blocks"，
-     * 若传入 "blocks/stone" 会变成 "textures/blocks/blocks/stone.png" 导致 load 失败。故对 blocks/items
-     * 只传短名（去掉 "blocks/" 或 "items/" 前缀），例如 minecraft:blocks/stone → minecraft:stone（或 stone）。
+     * 从 pendingModelData 预填充纹理
      */
-    private static String toRegisterIconName(String canonicalKey, boolean isBlocks, boolean isItems) {
-        if (canonicalKey == null) return "";
-        if (isBlocks && canonicalKey.contains(":blocks/")) {
-            int i = canonicalKey.indexOf(":blocks/");
-            String domain = canonicalKey.substring(0, i);
-            String shortName = canonicalKey.substring(i + ":blocks/".length());
-            return "minecraft".equalsIgnoreCase(domain) ? shortName : (domain + ":" + shortName);
-        }
-        if (isItems && canonicalKey.contains(":items/")) {
-            int i = canonicalKey.indexOf(":items/");
-            String domain = canonicalKey.substring(0, i);
-            String shortName = canonicalKey.substring(i + ":items/".length());
-            return "minecraft".equalsIgnoreCase(domain) ? shortName : (domain + ":" + shortName);
-        }
-        return canonicalKey.replaceFirst("^minecraft:", "");
+    private void prefillTexturesFromModels(TextureMap textureMap) {
+        CTMLibResourceLoader.getInstance()
+            .prefillTexturesFromPendingModels(
+                Minecraft.getMinecraft()
+                    .getResourceManager(),
+                textureMap);
     }
+
 }

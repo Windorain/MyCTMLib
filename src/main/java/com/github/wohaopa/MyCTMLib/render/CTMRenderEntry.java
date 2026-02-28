@@ -12,14 +12,14 @@ import net.minecraftforge.common.util.ForgeDirection;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.github.wohaopa.MyCTMLib.ctmkey.CTMKey;
 import com.github.wohaopa.MyCTMLib.model.ModelData;
 import com.github.wohaopa.MyCTMLib.model.ModelElement;
 import com.github.wohaopa.MyCTMLib.render.context.RenderContext;
 import com.github.wohaopa.MyCTMLib.render.pipeline.RenderLevel;
 import com.github.wohaopa.MyCTMLib.render.pipeline.RenderPipeline;
-import com.github.wohaopa.MyCTMLib.texture.ConnectingTextureData;
+import com.github.wohaopa.MyCTMLib.texture.CTMTextureAtlasSprite;
 import com.github.wohaopa.MyCTMLib.texture.TextureRegistry;
-import com.github.wohaopa.MyCTMLib.texture.TextureTypeData;
 import com.github.wohaopa.MyCTMLib.texture.layout.ConnectingLayout;
 import com.github.wohaopa.MyCTMLib.texture.layout.LayoutHandler;
 import com.github.wohaopa.MyCTMLib.texture.layout.LayoutHandlers;
@@ -44,19 +44,19 @@ public final class CTMRenderEntry {
         return out;
     }
 
-    public static TextureTypeData getConnectingData(String key) {
-        return TextureRegistry.getInstance()
-            .get(key);
+    public static ConnectingLayout getConnectingLayout(String key) {
+        CTMKey ctmKey = CTMKey.from(CTMKey.Format.TEXTURE_KEY, key, CTMKey.TextureCategory.BLOCKS);
+        CTMTextureAtlasSprite sprite = TextureRegistry.getSprite(ctmKey);
+        return sprite != null ? sprite.getLayoutStyle() : null;
     }
 
     public static boolean tryRenderItemFace(RenderBlocks renderBlocks, Block block, double x, double y, double z,
         IIcon icon, ForgeDirection face) {
         if (icon == null) return false;
         String iconName = normalizeIconName(icon.getIconName());
-        TextureTypeData data = getConnectingData(iconName);
-        if (!(data instanceof ConnectingTextureData ctd)) return false;
+        ConnectingLayout layout = getConnectingLayout(iconName);
+        if (layout == null) return false;
 
-        ConnectingLayout layout = ctd.getLayout();
         LayoutHandler handler = LayoutHandlers.get(layout);
         int tileX = 0;
         int tileY = 0;

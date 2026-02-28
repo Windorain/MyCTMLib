@@ -1,5 +1,6 @@
 package com.github.wohaopa.MyCTMLib.model;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -12,6 +13,7 @@ import com.github.wohaopa.MyCTMLib.ctmkey.CTMKey;
 import com.github.wohaopa.MyCTMLib.model.baked.BakedModel;
 import com.github.wohaopa.MyCTMLib.model.baked.ModelBaker;
 
+import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 
 public class ModelRegistry {
@@ -28,28 +30,41 @@ public class ModelRegistry {
 
     private final Object2ObjectOpenHashMap<String, BakedModel> bakedModelById = new Object2ObjectOpenHashMap<>();
 
+    private final Object2ObjectOpenHashMap<String, ModelData> pendingModelData = new Object2ObjectOpenHashMap<>();
+
     public static ModelRegistry getInstance() {
         return INSTANCE;
     }
 
     @Deprecated
     public void put(String modelId, ModelData data) {
-        String normalizedId = modelId.toLowerCase(Locale.ROOT);
-        modelById.put(normalizedId, data);
+        putRawModelData(modelId, data);
+    }
 
+    public void putRawModelData(String modelId, ModelData data) {
+        String normalizedId = modelId.toLowerCase(Locale.ROOT);
+        pendingModelData.put(normalizedId, data);
+    }
+
+    public void bakeAll() {
+        for (Object2ObjectMap.Entry<String, ModelData> entry : pendingModelData.object2ObjectEntrySet()) {
+            String modelId = entry.getKey();
+            ModelData data = entry.getValue();
             try {
                 BakedModel baked = ModelBaker.bake(data);
-                bakedModelById.put(normalizedId, baked);
+                bakedModelById.put(modelId, baked);
 
-                CTMKey key = CTMKey.from(CTMKey.Format.MODEL_ID, normalizedId);
+                CTMKey key = CTMKey.from(CTMKey.Format.MODEL_ID, modelId);
                 if (key != null) {
                     bakedModelByKey.put(key, baked);
                 }
             } catch (Exception e) {
-            if (MyCTMLib.debugMode) {
-                MyCTMLib.LOG.warn("[CTMLibFusion] Failed to bake model: " + modelId, e);
+                if (MyCTMLib.debugMode) {
+                    MyCTMLib.LOG.warn("[CTMLibFusion] Failed to bake model: " + modelId, e);
+                }
             }
         }
+        pendingModelData.clear();
     }
 
     @Deprecated
@@ -72,8 +87,7 @@ public class ModelRegistry {
     @Deprecated
     public void putTextureFallback(String texturePath, String modelId, int faceOrdinal) {
         TextureModelEntry e = new TextureModelEntry(modelId, faceOrdinal);
-        textureToModel
-            .computeIfAbsent(texturePath.toLowerCase(Locale.ROOT), k -> new java.util.ArrayList<>())
+        textureToModel.computeIfAbsent(texturePath.toLowerCase(Locale.ROOT), k -> new java.util.ArrayList<>())
             .add(e);
     }
 
@@ -88,6 +102,11 @@ public class ModelRegistry {
         textureToModel.clear();
         bakedModelByKey.clear();
         bakedModelById.clear();
+        pendingModelData.clear();
+    }
+
+    public Collection<Map.Entry<String, ModelData>> getPendingModelDataEntries() {
+        return Collections.unmodifiableCollection(pendingModelData.entrySet());
     }
 
     @Deprecated

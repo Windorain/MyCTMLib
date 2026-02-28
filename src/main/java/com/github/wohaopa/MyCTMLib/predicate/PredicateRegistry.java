@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Set;
 
 import net.minecraft.block.Block;
+
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 
@@ -90,7 +91,8 @@ public final class PredicateRegistry {
             if (block == null) {
                 String norm = blockId.toLowerCase(Locale.ROOT);
                 for (Object k : Block.blockRegistry.getKeys()) {
-                    if (k instanceof String && ((String) k).toLowerCase(Locale.ROOT).equals(norm)) {
+                    if (k instanceof String && ((String) k).toLowerCase(Locale.ROOT)
+                        .equals(norm)) {
                         block = (Block) Block.blockRegistry.getObject((String) k);
                         break;
                     }

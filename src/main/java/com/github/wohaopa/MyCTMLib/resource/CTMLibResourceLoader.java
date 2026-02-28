@@ -3,11 +3,9 @@ package com.github.wohaopa.MyCTMLib.resource;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
@@ -25,8 +23,15 @@ import com.github.wohaopa.MyCTMLib.ctmkey.CTMKeyUtil;
 import com.github.wohaopa.MyCTMLib.model.ModelData;
 import com.github.wohaopa.MyCTMLib.model.ModelParser;
 import com.github.wohaopa.MyCTMLib.model.ModelRegistry;
+import com.github.wohaopa.MyCTMLib.texture.BaseTextureData;
+import com.github.wohaopa.MyCTMLib.texture.CTMTextureAtlasSprite;
+import com.github.wohaopa.MyCTMLib.texture.ConnectingTextureData;
+import com.github.wohaopa.MyCTMLib.texture.RandomTextureData;
 import com.github.wohaopa.MyCTMLib.texture.TextureMetadataSection;
 import com.github.wohaopa.MyCTMLib.texture.TextureRegistry;
+import com.github.wohaopa.MyCTMLib.texture.TextureTypeData;
+import com.github.wohaopa.MyCTMLib.texture.layout.LayoutHandler;
+import com.github.wohaopa.MyCTMLib.texture.layout.LayoutHandlers;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
@@ -55,6 +60,29 @@ public class CTMLibResourceLoader implements net.minecraft.client.resources.IRes
      */
     public static void ensureLoaded(IResourceManager resourceManager) {
         if (instance != null) instance.doEnsureLoaded(resourceManager);
+    }
+
+    /**
+     * 从 pendingModelData 预填充纹理到 TextureRegistry
+     * 在 TextureStitchEvent.Pre 中调用
+     */
+    public void prefillTexturesFromPendingModels(IResourceManager resourceManager,
+        net.minecraft.client.renderer.texture.TextureMap textureMap) {
+
+        for (Map.Entry<String, ModelData> entry : ModelRegistry.getInstance()
+            .getPendingModelDataEntries()) {
+            String modelId = entry.getKey();
+            ModelData data = entry.getValue();
+
+            prefillTextureRegistryForModel(resourceManager, data, textureMap, modelId);
+        }
+    }
+
+    /**
+     * 获取单例实例
+     */
+    public static CTMLibResourceLoader getInstance() {
+        return instance;
     }
 
     private void doEnsureLoaded(IResourceManager resourceManager) {
@@ -92,8 +120,7 @@ public class CTMLibResourceLoader implements net.minecraft.client.resources.IRes
                 .dumpForDebug();
             ModelRegistry.getInstance()
                 .dumpForDebug();
-            TextureRegistry.getInstance()
-                .dumpForDebug();
+            TextureRegistry.dumpForDebug();
             DebugErrorCollector.getInstance()
                 .flushToFile(new File(Minecraft.getMinecraft().mcDataDir, "config/ctmlib_debug_errors.json"));
         }
@@ -219,222 +246,153 @@ public class CTMLibResourceLoader implements net.minecraft.client.resources.IRes
             ModelData data = modelParser.parse(root);
             CTMKey key = CTMKey.from(CTMKey.Format.MODEL_ID, modelId);
             ModelRegistry.getInstance()
-                .put(key != null ? key.domain() + ":" + key.path() : modelId.toLowerCase(Locale.ROOT), data);
+                .putRawModelData(modelId.toLowerCase(Locale.ROOT), data);
             if (MyCTMLib.debugMode && data.getTextures() != null
                 && !data.getTextures()
                     .isEmpty()) {
-                MyCTMLib.LOG.info(
-                    "[CTMLibFusion] prefillTextureRegistry ENTRY modelId={} textures={}",
-                    modelId,
-                    data.getTextures());
+                MyCTMLib.LOG.info("[CTMLibFusion] Model loaded: modelId={} textures={}", modelId, data.getTextures());
             }
-            prefillTextureRegistryForModel(resourceManager, domain, data);
+            // 注意：不在这里调用 prefillTextureRegistryForModel
+            // 预填充将在 TextureStitchEvent.Pre 中统一处理
         }
     }
 
     /**
      * 根据模型引用的纹理路径预填充 TextureRegistry。
-     * 若已存在则跳过；若不存在则尝试加载纹理资源，有 ctmlib mcmeta 则注册；纹理不存在则静默跳过。
+     * 若已存在则跳过；若不存在则尝试加载纹理资源，有 ctmlib mcmeta 则创建 sprite 并注册。
+     * 
+     * @param resourceManager 资源管理器
+     * @param data            模型数据
+     * @param textureMap      纹理贴图（用于 registerIcon）
+     * @param modelId         模型 ID（用于日志和 domain 提取）
      */
-    private void prefillTextureRegistryForModel(IResourceManager resourceManager, String modelDomain, ModelData data) {
+    private void prefillTextureRegistryForModel(IResourceManager resourceManager, ModelData data,
+        net.minecraft.client.renderer.texture.TextureMap textureMap, String modelId) {
+
         Map<String, String> textures = data.getTextures();
         if (textures == null || textures.isEmpty()) return;
-        Set<String> resolvedPaths = new HashSet<>();
+
+        // 从 modelId 提取 domain
+        String domain = "minecraft";
+        if (modelId != null && modelId.contains(":")) {
+            domain = modelId.substring(0, modelId.indexOf(":"));
+        }
+
         for (String value : textures.values()) {
             if (value == null) continue;
+
             String resolved = value.startsWith("#") ? CTMKeyUtil.resolveTextureRef(value, textures) : value;
-            if (resolved != null && !resolved.startsWith("#")) {
-                resolvedPaths.add(resolved);
-            }
-        }
-        if (MyCTMLib.debugMode && !resolvedPaths.isEmpty()) {
-            MyCTMLib.LOG.info(
-                "[CTMLibFusion] prefillTextureRegistry modelDomain={} resolvedPaths={}",
-                modelDomain,
-                resolvedPaths);
-        }
-        TextureRegistry texReg = TextureRegistry.getInstance();
-        for (String texturePath : resolvedPaths) {
-            CTMKey key = CTMKey.from(CTMKey.Format.TEXTURE_KEY, modelDomain + ":" + texturePath, CTMKey.TextureCategory.BLOCKS);
-            String lookupKey = key != null ? key.toCanonicalString() : null;
-            if (lookupKey == null) {
+            if (resolved == null || resolved.startsWith("#")) continue;
+
+            // 使用 MODEL_TEXTURE 格式解析（会自动设置正确的 textureCategory）
+            CTMKey key = CTMKey.from(CTMKey.Format.MODEL_TEXTURE, resolved);
+            if (key == null) {
                 if (MyCTMLib.debugMode) {
-                    MyCTMLib.LOG.warn(
-                        "[CTMLibFusion] prefillTextureRegistry lookupKey=null modelDomain={} texturePath={}",
-                        modelDomain,
-                        texturePath);
+                    MyCTMLib.LOG.warn("[CTMLibFusion] Prefill failed: key=null modelId={} texture={}", modelId, value);
                 }
                 continue;
             }
-            if (texReg.get(lookupKey) != null) {
-                ResourceLoadTrace.getInstance()
-                    .add("texture_prefill_skip", lookupKey, null, true);
+
+            // 检查是否已注册
+            if (TextureRegistry.getSprite(key) != null) {
                 if (MyCTMLib.debugMode) {
-                    MyCTMLib.LOG.debug("[CTMLibFusion] prefillTextureRegistry skip existing lookupKey={}", lookupKey);
+                    MyCTMLib.LOG.debug("[CTMLibFusion] Prefill skip: already registered key={}", key);
                 }
                 continue;
             }
-            ResourceLocation texRes = toTextureResourceLocation(modelDomain, texturePath);
-            if (texRes == null) {
-                ResourceLoadTrace.getInstance()
-                    .add("texture_prefill", lookupKey, null, false);
-                if (MyCTMLib.debugMode) {
-                    MyCTMLib.LOG.warn(
-                        "[CTMLibFusion] prefillTextureRegistry texRes=null modelDomain={} texturePath={} lookupKey={}",
-                        modelDomain,
-                        texturePath,
-                        lookupKey);
-                }
-                continue;
-            }
-            String fullPath = "assets/" + texRes.getResourceDomain() + "/" + texRes.getResourcePath();
-            if (MyCTMLib.debugMode) {
-                MyCTMLib.LOG.info(
-                    "[CTMLibFusion] prefillTextureRegistry try resource domain={} path={} full={}",
-                    texRes.getResourceDomain(),
-                    texRes.getResourcePath(),
-                    "assets/" + texRes.getResourceDomain() + "/" + texRes.getResourcePath());
-            }
+
+            // 构建资源位置
+            String texPath = key.to(CTMKey.Format.TEXTURE_RESOURCE_LOCATION);
+            ResourceLocation texRes = new ResourceLocation(texPath);
+            String fullPath = "assets/" + texRes.getResourceDomain() + "/" + texRes.getResourcePath() + ".png";
+
             try {
                 IResource resource = resourceManager.getResource(texRes);
-                if (MyCTMLib.debugMode) {
-                    MyCTMLib.LOG
-                        .info("[CTMLibFusion] prefillTextureRegistry resource found for lookupKey={}", lookupKey);
-                }
+
                 IMetadataSection sec;
                 try {
                     sec = resource.getMetadata("ctmlib");
                 } catch (Exception deserEx) {
+                    if (MyCTMLib.debugMode) {
+                        MyCTMLib.LOG.warn(
+                            "[CTMLibFusion] Prefill failed: metadata deserialize failed key={} modelId={} error={}",
+                            key,
+                            modelId,
+                            deserEx.getMessage());
+                    }
                     ResourceLoadTrace.getInstance()
-                        .add("texture_prefill", lookupKey, fullPath, false, null, deserEx);
-                    MyCTMLib.LOG.warn(
-                        "[CTMLibFusion] prefillTextureRegistry ctmlib deserialize failed lookupKey={} path={}",
-                        lookupKey,
-                        fullPath,
-                        deserEx);
-                    DebugErrorCollector.getInstance()
-                        .add("texture_prefill_deserialize", lookupKey, fullPath, deserEx);
+                        .add("texture_prefill_deserialize", key.toString(), fullPath, false, null, deserEx);
                     continue;
                 }
+
                 if (sec instanceof TextureMetadataSection tms) {
-                    texReg.put(lookupKey, tms.getData());
-                    ResourceLoadTrace.getInstance()
-                        .add("texture_prefill_ok", lookupKey, fullPath, true);
-                    if (MyCTMLib.debugMode) {
-                        MyCTMLib.LOG.info("[CTMLibFusion] prefillTextureRegistry REGISTERED lookupKey={}", lookupKey);
+                    TextureTypeData typeData = tms.getData();
+
+                    // 创建 CTMTextureAtlasSprite
+                    String iconName = key.to(CTMKey.Format.TEXTURE_KEY);
+                    CTMTextureAtlasSprite sprite = new CTMTextureAtlasSprite(iconName);
+
+                    // 设置 CTM 字段
+                    if (typeData instanceof ConnectingTextureData ctd) {
+                        LayoutHandler handler = LayoutHandlers.get(ctd.getLayout());
+                        sprite.setGridWidth(handler.getWidth());
+                        sprite.setGridHeight(handler.getHeight());
+                        sprite.setLayoutStyle(ctd.getLayout());
+                    } else if (typeData instanceof RandomTextureData rtd) {
+                        sprite.setGridWidth(rtd.getColumns());
+                        sprite.setGridHeight(rtd.getRows());
+                        sprite.setRandomCount(rtd.getCount());
+                        sprite.setRandomSeed(rtd.getSeed() != null ? rtd.getSeed() : 0L);
+                    } else if (typeData instanceof BaseTextureData btd) {
+                        sprite.setRenderType(btd.getRenderType());
+                        sprite.setEmissive(btd.isEmissive());
+                        sprite.setTinting(btd.getTinting());
                     }
+
+                    // 注册到 TextureRegistry 和 TextureMap
+                    TextureRegistry.put(key, sprite);
+                    textureMap.registerIcon(iconName);
+
+                    if (MyCTMLib.debugMode) {
+                        MyCTMLib.LOG
+                            .info("[CTMLibFusion] Prefill OK: key={} modelId={} icon={}", key, modelId, iconName);
+                    }
+                    ResourceLoadTrace.getInstance()
+                        .add("texture_prefill_ok", key.toString(), fullPath, true);
+
                 } else {
-                    ResourceLoadTrace.getInstance()
-                        .add("texture_prefill_skip", lookupKey, fullPath, true);
                     if (MyCTMLib.debugMode) {
-                        MyCTMLib.LOG.debug(
-                            "[CTMLibFusion] prefillTextureRegistry no ctmlib metadata lookupKey={} sec={}",
-                            lookupKey,
-                            sec != null ? sec.getClass()
-                                .getName() : "null");
+                        MyCTMLib.LOG
+                            .debug("[CTMLibFusion] Prefill skip: no ctmlib metadata key={} modelId={}", key, modelId);
                     }
+                    ResourceLoadTrace.getInstance()
+                        .add("texture_prefill_skip", key.toString(), fullPath, true);
                 }
+
             } catch (IOException e) {
-                ResourceLoadTrace.getInstance()
-                    .add("texture_prefill", lookupKey, fullPath, false, null, e);
+                // 纹理不存在，静默跳过（debug 模式下记录）
                 if (MyCTMLib.debugMode) {
-                    MyCTMLib.LOG.warn(
-                        "[CTMLibFusion] prefillTextureRegistry resource not found lookupKey={} path={}",
-                        lookupKey,
+                    MyCTMLib.LOG.debug(
+                        "[CTMLibFusion] Prefill skip: resource not found key={} modelId={} path={}",
+                        key,
+                        modelId,
                         fullPath);
                 }
-                DebugErrorCollector.getInstance()
-                    .add("texture_prefill", lookupKey, fullPath, e);
-            } catch (Exception e) {
                 ResourceLoadTrace.getInstance()
-                    .add("texture_prefill", lookupKey, fullPath, false, null, e);
-                MyCTMLib.LOG.warn(
-                    "[CTMLibFusion] prefillTextureRegistry unexpected lookupKey={} path={}",
-                    lookupKey,
-                    fullPath,
-                    e);
+                    .add("texture_prefill", key.toString(), fullPath, false, null, e);
+            } catch (Exception e) {
+                if (MyCTMLib.debugMode) {
+                    MyCTMLib.LOG.warn(
+                        "[CTMLibFusion] Prefill failed: unexpected error key={} modelId={} error={}",
+                        key,
+                        modelId,
+                        e.getMessage());
+                }
+                ResourceLoadTrace.getInstance()
+                    .add("texture_prefill", key.toString(), fullPath, false, null, e);
                 DebugErrorCollector.getInstance()
-                    .add("texture_prefill", lookupKey, fullPath, e);
+                    .add("texture_prefill", key.toString(), fullPath, e);
             }
         }
-    }
-
-    /**
-     * 将模型纹理路径转为 ResourceLocation。
-     *
-     * <h2>Minecraft 模型纹理路径规范</h2>
-     * <p>
-     * 根据 Minecraft 官方模型系统规范，模型 JSON 中的纹理引用格式为：
-     * </p>
-     * 
-     * <pre>
-     * {@code
-     * {
-     *   "textures": {
-     *     "all": "block/stone",           // Minecraft 原生：block/ 前缀
-     *     "layer0": "item/diamond",       // Minecraft 原生：item/ 前缀
-     *     "default": "ic2:block/xxx"      // Mod 纹理：modid:block/ 前缀
-     *   }
-     * }
-     * }
-     * </pre>
-     * <p>
-     * 纹理实际文件路径为：
-     * </p>
-     * 
-     * <pre>
-     * assets/&lt;namespace&gt;/textures/&lt;path&gt;.png
-     *                             ^^^^^^
-     *                    必须包含 block/ 或 item/ 前缀
-     * </pre>
-     * <p>
-     * 例如：
-     * </p>
-     * <ul>
-     * <li>{@code "block/stone"} → {@code assets/minecraft/textures/block/stone.png}</li>
-     * <li>{@code "ic2:block/xxx"} → {@code assets/ic2/textures/block/xxx.png}</li>
-     * </ul>
-     *
-     * <h2>CTMLib 的规范化处理</h2>
-     * <p>
-     * CTMKey 会将路径规范化为：
-     * </p>
-     * <ul>
-     * <li>{@code "block/xxx"} → {@code "blocks/xxx"} (单数 → 复数)</li>
-     * <li>{@code "item/xxx"} → {@code "items/xxx"} (单数 → 复数)</li>
-     * </ul>
-     *
-     * <h2>转换示例</h2>
-     * 
-     * <pre>
-     * 输入：modelDomain = "ic2", texturePath = "ic2:block/blockAlloyGlass"
-     * ↓
-     * canonical = "ic2:blocks/blockAlloyGlass"  (block/ → blocks/)
-     * ↓
-     * pathPart = "blocks/blockAlloyGlass"
-     * ↓
-     * resourcePath = "textures/" + pathPart + ".png"
-     *              = "textures/blocks/blockAlloyGlass.png"
-     * ↓
-     * 返回：ResourceLocation("ic2", "textures/blocks/blockAlloyGlass.png")
-     * </pre>
-     *
-     * @param modelDomain 模型所在的 domain（如 "minecraft", "ic2", "gregtech"）
-     * @param texturePath 模型 textures 对象中的值（如 "block/stone", "ic2:block/xxx"）
-     * @return 用于 ResourceManager 查找纹理的 ResourceLocation
-     */
-    private static ResourceLocation toTextureResourceLocation(String modelDomain, String texturePath) {
-        CTMKey key = CTMKey.from(CTMKey.Format.TEXTURE_KEY, modelDomain + ":" + texturePath, CTMKey.TextureCategory.BLOCKS);
-        if (key == null) return null;
-        String canonical = key.toCanonicalString();
-        int colon = canonical.indexOf(':');
-        if (colon < 0) return null;
-        String domain = canonical.substring(0, colon);
-        String pathPart = canonical.substring(colon + 1);
-        if (pathPart.isEmpty()) return null;
-        // 此时 pathPart 格式为 "blocks/xxx"、"items/xxx" 或 "iconsets/xxx" 等
-        // 构建完整资源路径：textures/blocks/xxx.png 或 textures/items/xxx.png
-        String resourcePath = "textures/" + pathPart + ".png";
-        return new ResourceLocation(domain, resourcePath);
     }
 }

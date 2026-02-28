@@ -8,8 +8,8 @@ import com.github.wohaopa.MyCTMLib.ctmkey.CTMKeyUtil;
 import com.github.wohaopa.MyCTMLib.model.ModelData;
 import com.github.wohaopa.MyCTMLib.model.ModelElement;
 import com.github.wohaopa.MyCTMLib.model.ModelFace;
-import com.github.wohaopa.MyCTMLib.texture.CTMTextureAtlasSprite;
 import com.github.wohaopa.MyCTMLib.texture.CTMReLoc;
+import com.github.wohaopa.MyCTMLib.texture.CTMTextureAtlasSprite;
 
 /**
  * 材质数据查询工具类

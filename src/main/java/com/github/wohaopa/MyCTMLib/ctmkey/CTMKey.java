@@ -12,21 +12,38 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
  * 
  * <h2>设计原则</h2>
  * <ul>
- *   <li>所有 TEXTURE 类型的 path 统一使用 {@code blocks/} 或 {@code items/} 前缀</li>
- *   <li>所有 MODEL 类型的 path 统一使用 {@code block/} 或 {@code item/} 前缀</li>
- *   <li>domain 为 {@code minecraft} 时输入输出均省略前缀</li>
- *   <li>通过 {@link Format} 枚举显式指定解析和输出格式</li>
+ * <li>所有 TEXTURE 类型的 path 统一使用 {@code blocks/} 或 {@code items/} 前缀</li>
+ * <li>所有 MODEL 类型的 path 统一使用 {@code block/} 或 {@code item/} 前缀</li>
+ * <li>domain 为 {@code minecraft} 时输入输出均省略前缀</li>
+ * <li>通过 {@link Format} 枚举显式指定解析和输出格式</li>
  * </ul>
  * 
  * <h2>内部存储规范</h2>
  * <table border="1">
- *   <tr><th>Type</th><th>path 前缀</th><th>textureCategory</th></tr>
- *   <tr><td>TEXTURE (BLOCKS)</td><td>{@code blocks/xxx}</td><td>BLOCKS</td></tr>
- *   <tr><td>TEXTURE (ITEMS)</td><td>{@code items/xxx}</td><td>ITEMS</td></tr>
- *   <tr><td>MODEL</td><td>{@code block/xxx} 或 {@code item/xxx}</td><td>NONE</td></tr>
+ * <tr>
+ * <th>Type</th>
+ * <th>path 前缀</th>
+ * <th>textureCategory</th>
+ * </tr>
+ * <tr>
+ * <td>TEXTURE (BLOCKS)</td>
+ * <td>{@code blocks/xxx}</td>
+ * <td>BLOCKS</td>
+ * </tr>
+ * <tr>
+ * <td>TEXTURE (ITEMS)</td>
+ * <td>{@code items/xxx}</td>
+ * <td>ITEMS</td>
+ * </tr>
+ * <tr>
+ * <td>MODEL</td>
+ * <td>{@code block/xxx} 或 {@code item/xxx}</td>
+ * <td>NONE</td>
+ * </tr>
  * </table>
  * 
  * <h2>使用示例</h2>
+ * 
  * <pre>
  * // 解析模型纹理引用
  * CTMKey key = CTMKey.from(Format.MODEL_TEXTURE, "block/stone_ctm");
@@ -37,9 +54,9 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
  * // 内部存储：{ type=TEXTURE, path=blocks/stone, textureCategory=BLOCKS }
  * 
  * // 输出为不同格式
- * key.to(Format.MODEL_TEXTURE);  // → "block/stone_ctm"
- * key.to(Format.TEXTURE_KEY);    // → "stone_ctm"
- * key.to(Format.FULL_PATH);      // → "textures/blocks/stone_ctm"
+ * key.to(Format.MODEL_TEXTURE); // → "block/stone_ctm"
+ * key.to(Format.TEXTURE_KEY); // → "stone_ctm"
+ * key.to(Format.FULL_PATH); // → "textures/blocks/stone_ctm"
  * </pre>
  */
 public final class CTMKey implements Comparable<CTMKey>, Serializable {
@@ -109,123 +126,169 @@ public final class CTMKey implements Comparable<CTMKey>, Serializable {
      * 
      * <h2>使用说明</h2>
      * <ul>
-     *   <li>{@link #from(Format, String)} - 将指定格式的输入解析为 CTMKey</li>
-     *   <li>{@link #to(Format)} - 将 CTMKey 输出为指定格式的字符串</li>
-     *   <li>{@link #TEXTURE_KEY} 格式需要使用 {@link #from(Format, String, TextureCategory)} 重载</li>
+     * <li>{@link #from(Format, String)} - 将指定格式的输入解析为 CTMKey</li>
+     * <li>{@link #to(Format)} - 将 CTMKey 输出为指定格式的字符串</li>
+     * <li>{@link #TEXTURE_KEY} 格式需要使用 {@link #from(Format, String, TextureCategory)} 重载</li>
      * </ul>
      * 
      * <h2>各格式详解</h2>
      * 
      * <h3>MODEL_TEXTURE</h3>
-     * <p><strong>用途</strong>：模型 JSON 中的纹理引用（用于 {@code ModelBaker.resolveTextures}）</p>
-     * <p><strong>输入示例</strong>：</p>
+     * <p>
+     * <strong>用途</strong>：模型 JSON 中的纹理引用（用于 {@code ModelBaker.resolveTextures}）
+     * </p>
+     * <p>
+     * <strong>输入示例</strong>：
+     * </p>
      * <ul>
-     *   <li>{@code "block/stone_ctm"}</li>
-     *   <li>{@code "item/diamond"}</li>
-     *   <li>{@code "minecraft:block/cobblestone"}</li>
+     * <li>{@code "block/stone_ctm"}</li>
+     * <li>{@code "item/diamond"}</li>
+     * <li>{@code "minecraft:block/cobblestone"}</li>
      * </ul>
-     * <p><strong>解析规则</strong>：</p>
+     * <p>
+     * <strong>解析规则</strong>：
+     * </p>
      * <ul>
-     *   <li>Type: TEXTURE</li>
-     *   <li>path: {@code block/xxx} → {@code blocks/xxx}，{@code item/xxx} → {@code items/xxx}</li>
-     *   <li>textureCategory: 根据前缀推断（{@code blocks/}→BLOCKS, {@code items/}→ITEMS）</li>
+     * <li>Type: TEXTURE</li>
+     * <li>path: {@code block/xxx} → {@code blocks/xxx}，{@code item/xxx} → {@code items/xxx}</li>
+     * <li>textureCategory: 根据前缀推断（{@code blocks/}→BLOCKS, {@code items/}→ITEMS）</li>
      * </ul>
-     * <p><strong>输出规则</strong>：</p>
+     * <p>
+     * <strong>输出规则</strong>：
+     * </p>
      * <ul>
-     *   <li>{@code blocks/xxx} → {@code block/xxx}（用于模型 JSON）</li>
-     *   <li>{@code items/xxx} → {@code item/xxx}（用于模型 JSON）</li>
+     * <li>{@code blocks/xxx} → {@code block/xxx}（用于模型 JSON）</li>
+     * <li>{@code items/xxx} → {@code item/xxx}（用于模型 JSON）</li>
      * </ul>
      * 
      * <h3>MODEL_ID</h3>
-     * <p><strong>用途</strong>：模型 ID（用于 {@code ModelRegistry}）</p>
-     * <p><strong>输入示例</strong>：</p>
+     * <p>
+     * <strong>用途</strong>：模型 ID（用于 {@code ModelRegistry}）
+     * </p>
+     * <p>
+     * <strong>输入示例</strong>：
+     * </p>
      * <ul>
-     *   <li>{@code "block/stone"}</li>
-     *   <li>{@code "item/diamond"}</li>
-     *   <li>{@code "minecraft:models/block/stone"}</li>
+     * <li>{@code "block/stone"}</li>
+     * <li>{@code "item/diamond"}</li>
+     * <li>{@code "minecraft:models/block/stone"}</li>
      * </ul>
-     * <p><strong>解析规则</strong>：</p>
+     * <p>
+     * <strong>解析规则</strong>：
+     * </p>
      * <ul>
-     *   <li>Type: MODEL</li>
-     *   <li>path: 保留 {@code block/} 或 {@code item/} 前缀</li>
-     *   <li>textureCategory: NONE</li>
+     * <li>Type: MODEL</li>
+     * <li>path: 保留 {@code block/} 或 {@code item/} 前缀</li>
+     * <li>textureCategory: NONE</li>
      * </ul>
-     * <p><strong>输出规则</strong>：</p>
+     * <p>
+     * <strong>输出规则</strong>：
+     * </p>
      * <ul>
-     *   <li>直接输出 path（{@code block/xxx} 或 {@code item/xxx}）</li>
+     * <li>直接输出 path（{@code block/xxx} 或 {@code item/xxx}）</li>
      * </ul>
      * 
      * <h3>TEXTURE_KEY</h3>
-     * <p><strong>用途</strong>：纹理注册键（用于 {@code TextureRegistry} / {@code MixinTextureMap}）</p>
-     * <p><strong>输入示例</strong>：</p>
+     * <p>
+     * <strong>用途</strong>：纹理注册键（用于 {@code TextureRegistry} / {@code MixinTextureMap}）
+     * </p>
+     * <p>
+     * <strong>输入示例</strong>：
+     * </p>
      * <ul>
-     *   <li>{@code "stone"}（mapKey，无前缀）</li>
-     *   <li>{@code "minecraft:stone"}</li>
-     *   <li>{@code "ic2:blockAlloyGlass"}</li>
+     * <li>{@code "stone"}（mapKey，无前缀）</li>
+     * <li>{@code "minecraft:stone"}</li>
+     * <li>{@code "ic2:blockAlloyGlass"}</li>
      * </ul>
-     * <p><strong>解析规则</strong>：</p>
+     * <p>
+     * <strong>解析规则</strong>：
+     * </p>
      * <ul>
-     *   <li>Type: TEXTURE</li>
-     *   <li>path: 根据 TextureCategory 添加 {@code blocks/} 或 {@code items/} 前缀</li>
-     *   <li>textureCategory: 由 {@link #from(Format, String, TextureCategory)} 参数指定</li>
+     * <li>Type: TEXTURE</li>
+     * <li>path: 根据 TextureCategory 添加 {@code blocks/} 或 {@code items/} 前缀</li>
+     * <li>textureCategory: 由 {@link #from(Format, String, TextureCategory)} 参数指定</li>
      * </ul>
-     * <p><strong>输出规则</strong>：</p>
+     * <p>
+     * <strong>输出规则</strong>：
+     * </p>
      * <ul>
-     *   <li>去掉 {@code blocks/} 或 {@code items/} 前缀，返回纯 mapKey</li>
+     * <li>去掉 {@code blocks/} 或 {@code items/} 前缀，返回纯 mapKey</li>
      * </ul>
-     * <p><strong>注意</strong>：此格式必须使用 {@link #from(Format, String, TextureCategory)} 重载方法</p>
+     * <p>
+     * <strong>注意</strong>：此格式必须使用 {@link #from(Format, String, TextureCategory)} 重载方法
+     * </p>
      * 
      * <h3>FULL_PATH</h3>
-     * <p><strong>用途</strong>：完整资源路径（用于外部输入/资源加载）</p>
-     * <p><strong>输入示例</strong>：</p>
+     * <p>
+     * <strong>用途</strong>：完整资源路径（用于外部输入/资源加载）
+     * </p>
+     * <p>
+     * <strong>输入示例</strong>：
+     * </p>
      * <ul>
-     *   <li>{@code "textures/blocks/stone"}</li>
-     *   <li>{@code "minecraft:textures/items/diamond"}</li>
-     *   <li>{@code "assets/minecraft/models/block/stone"}</li>
+     * <li>{@code "textures/blocks/stone"}</li>
+     * <li>{@code "minecraft:textures/items/diamond"}</li>
+     * <li>{@code "assets/minecraft/models/block/stone"}</li>
      * </ul>
-     * <p><strong>解析规则</strong>：</p>
+     * <p>
+     * <strong>解析规则</strong>：
+     * </p>
      * <ul>
-     *   <li>{@code textures/blocks/xxx} → Type.TEXTURE, path={@code blocks/xxx}, textureCategory=BLOCKS</li>
-     *   <li>{@code textures/items/xxx} → Type.TEXTURE, path={@code items/xxx}, textureCategory=ITEMS</li>
-     *   <li>{@code models/block/xxx} → Type.MODEL, path={@code block/xxx}, textureCategory=NONE</li>
-     *   <li>{@code models/item/xxx} → Type.MODEL, path={@code item/xxx}, textureCategory=NONE</li>
+     * <li>{@code textures/blocks/xxx} → Type.TEXTURE, path={@code blocks/xxx}, textureCategory=BLOCKS</li>
+     * <li>{@code textures/items/xxx} → Type.TEXTURE, path={@code items/xxx}, textureCategory=ITEMS</li>
+     * <li>{@code models/block/xxx} → Type.MODEL, path={@code block/xxx}, textureCategory=NONE</li>
+     * <li>{@code models/item/xxx} → Type.MODEL, path={@code item/xxx}, textureCategory=NONE</li>
      * </ul>
-     * <p><strong>输出规则</strong>：</p>
+     * <p>
+     * <strong>输出规则</strong>：
+     * </p>
      * <ul>
-     *   <li>TEXTURE + BLOCKS → {@code textures/blocks/xxx}</li>
-     *   <li>TEXTURE + ITEMS → {@code textures/items/xxx}</li>
-     *   <li>MODEL → {@code models/block/xxx} 或 {@code models/item/xxx}</li>
+     * <li>TEXTURE + BLOCKS → {@code textures/blocks/xxx}</li>
+     * <li>TEXTURE + ITEMS → {@code textures/items/xxx}</li>
+     * <li>MODEL → {@code models/block/xxx} 或 {@code models/item/xxx}</li>
      * </ul>
      */
     public enum Format {
         /**
          * 模型纹理引用格式
-         * <p>用于模型 JSON 中的 textures 字段，如 {@code {"base": "block/stone_ctm"}}</p>
+         * <p>
+         * 用于模型 JSON 中的 textures 字段，如 {@code {"base": "block/stone_ctm"}}
+         * </p>
          */
         MODEL_TEXTURE,
 
         /**
          * 模型 ID 格式
-         * <p>用于模型注册，如 {@code "minecraft:block/stone"}</p>
+         * <p>
+         * 用于模型注册，如 {@code "minecraft:block/stone"}
+         * </p>
          */
         MODEL_ID,
 
         /**
          * 纹理注册键格式
-         * <p>用于纹理注册到 TextureRegistry，需要配合 TextureCategory 使用</p>
-         * <p>输入为不带前缀的 mapKey（如 {@code "stone"}），输出同理</p>
+         * <p>
+         * 用于纹理注册到 TextureRegistry，需要配合 TextureCategory 使用
+         * </p>
+         * <p>
+         * 输入为不带前缀的 mapKey（如 {@code "stone"}），输出同理
+         * </p>
          */
         TEXTURE_KEY,
 
         /**
          * 完整资源路径格式
-         * <p>用于文件系统路径解析，如 {@code "assets/minecraft/textures/blocks/stone.png"}</p>
+         * <p>
+         * 用于文件系统路径解析，如 {@code "assets/minecraft/textures/blocks/stone.png"}
+         * </p>
          */
         FULL_PATH,
 
         /**
          * 纹理资源路径格式
-         * <p>用于 ResourceLocation 路径，如 {@code "minecraft:textures/blocks/stone"} 或 {@code "textures/blocks/stone"}</p>
+         * <p>
+         * 用于 ResourceLocation 路径，如 {@code "minecraft:textures/blocks/stone"} 或 {@code "textures/blocks/stone"}
+         * </p>
          */
         TEXTURE_RESOURCE_LOCATION
     }
@@ -234,7 +297,7 @@ public final class CTMKey implements Comparable<CTMKey>, Serializable {
      * 根据指定格式解析输入字符串创建 CTMKey
      * 
      * @param format 解析格式
-     * @param input 输入字符串
+     * @param input  输入字符串
      * @return CTMKey 或 null（解析失败）
      */
     public static CTMKey from(Format format, String input) {
@@ -244,8 +307,8 @@ public final class CTMKey implements Comparable<CTMKey>, Serializable {
     /**
      * 根据指定格式解析输入字符串创建 CTMKey
      * 
-     * @param format 解析格式
-     * @param input 输入字符串
+     * @param format   解析格式
+     * @param input    输入字符串
      * @param category 纹理类别（仅当 format=TEXTURE_KEY 时需要）
      * @return CTMKey 或 null（解析失败）
      */
@@ -278,7 +341,8 @@ public final class CTMKey implements Comparable<CTMKey>, Serializable {
     }
 
     private static ParsedResult parseByFormat(Format format, String input, TextureCategory category) {
-        String cleaned = input.replace('\\', '/').trim();
+        String cleaned = input.replace('\\', '/')
+            .trim();
         if (cleaned.isEmpty()) {
             return null;
         }
@@ -293,7 +357,8 @@ public final class CTMKey implements Comparable<CTMKey>, Serializable {
         // 解析 domain
         int colonIdx = cleaned.indexOf(':');
         if (colonIdx >= 0) {
-            result.domain = cleaned.substring(0, colonIdx).toLowerCase(Locale.ROOT);
+            result.domain = cleaned.substring(0, colonIdx)
+                .toLowerCase(Locale.ROOT);
             String remaining = cleaned.substring(colonIdx + 1);
             // 可选：移除 domain 后面的 assets/ 前缀
             if (remaining.startsWith("assets/")) {
@@ -308,7 +373,8 @@ public final class CTMKey implements Comparable<CTMKey>, Serializable {
         return result;
     }
 
-    private static void parsePathByFormat(Format format, String pathPart, ParsedResult result, TextureCategory category) {
+    private static void parsePathByFormat(Format format, String pathPart, ParsedResult result,
+        TextureCategory category) {
         // 处理 variant (& 符号)
         int ampIdx = pathPart.indexOf('&');
         if (ampIdx >= 0) {
@@ -468,7 +534,8 @@ public final class CTMKey implements Comparable<CTMKey>, Serializable {
 
             case TEXTURE_RESOURCE_LOCATION:
                 if (type != Type.TEXTURE) {
-                    throw new IllegalArgumentException("Cannot convert " + type + " to TEXTURE_RESOURCE_LOCATION format");
+                    throw new IllegalArgumentException(
+                        "Cannot convert " + type + " to TEXTURE_RESOURCE_LOCATION format");
                 }
                 return outputTextureResourceLocation();
 
@@ -480,20 +547,24 @@ public final class CTMKey implements Comparable<CTMKey>, Serializable {
     private String outputModelTexture() {
         StringBuilder sb = new StringBuilder();
         if (!"minecraft".equals(domain)) {
-            sb.append(domain).append(':');
+            sb.append(domain)
+                .append(':');
         }
-        
+
         // blocks/ → block/, items/ → item/
         if (path.startsWith("blocks/")) {
-            sb.append("block/").append(path.substring("blocks/".length()));
+            sb.append("block/")
+                .append(path.substring("blocks/".length()));
         } else if (path.startsWith("items/")) {
-            sb.append("item/").append(path.substring("items/".length()));
+            sb.append("item/")
+                .append(path.substring("items/".length()));
         } else {
             sb.append(path);
         }
-        
+
         if (variant != null) {
-            sb.append('&').append(variant);
+            sb.append('&')
+                .append(variant);
         }
         return sb.toString();
     }
@@ -501,11 +572,13 @@ public final class CTMKey implements Comparable<CTMKey>, Serializable {
     private String outputModelId() {
         StringBuilder sb = new StringBuilder();
         if (!"minecraft".equals(domain)) {
-            sb.append(domain).append(':');
+            sb.append(domain)
+                .append(':');
         }
         sb.append(path);
         if (variant != null) {
-            sb.append('&').append(variant);
+            sb.append('&')
+                .append(variant);
         }
         return sb.toString();
     }
@@ -513,9 +586,10 @@ public final class CTMKey implements Comparable<CTMKey>, Serializable {
     private String outputTextureKey() {
         StringBuilder sb = new StringBuilder();
         if (!"minecraft".equals(domain)) {
-            sb.append(domain).append(':');
+            sb.append(domain)
+                .append(':');
         }
-        
+
         // 去掉 blocks/ 或 items/ 前缀，返回纯 mapKey
         String cleanPath = path;
         if (cleanPath.startsWith("blocks/")) {
@@ -524,9 +598,10 @@ public final class CTMKey implements Comparable<CTMKey>, Serializable {
             cleanPath = cleanPath.substring("items/".length());
         }
         sb.append(cleanPath);
-        
+
         if (variant != null) {
-            sb.append('&').append(variant);
+            sb.append('&')
+                .append(variant);
         }
         return sb.toString();
     }
@@ -534,9 +609,10 @@ public final class CTMKey implements Comparable<CTMKey>, Serializable {
     private String outputFullPath() {
         StringBuilder sb = new StringBuilder();
         if (!"minecraft".equals(domain)) {
-            sb.append(domain).append(':');
+            sb.append(domain)
+                .append(':');
         }
-        
+
         switch (type) {
             case TEXTURE:
                 sb.append("textures/");
@@ -551,14 +627,16 @@ public final class CTMKey implements Comparable<CTMKey>, Serializable {
                 }
                 break;
             case MODEL:
-                sb.append("models/").append(path);
+                sb.append("models/")
+                    .append(path);
                 break;
             default:
                 sb.append(path);
         }
-        
+
         if (variant != null) {
-            sb.append('&').append(variant);
+            sb.append('&')
+                .append(variant);
         }
         return sb.toString();
     }
@@ -566,7 +644,8 @@ public final class CTMKey implements Comparable<CTMKey>, Serializable {
     private String outputTextureResourceLocation() {
         StringBuilder sb = new StringBuilder();
         if (!"minecraft".equals(domain)) {
-            sb.append(domain).append(':');
+            sb.append(domain)
+                .append(':');
         }
         sb.append("textures/");
         if (textureCategory == TextureCategory.ITEMS) {
@@ -579,14 +658,17 @@ public final class CTMKey implements Comparable<CTMKey>, Serializable {
             sb.append(cleanPath);
         }
         if (variant != null) {
-            sb.append('&').append(variant);
+            sb.append('&')
+                .append(variant);
         }
         return sb.toString();
     }
 
     /**
      * 获取内部存储的 path（规范格式）
-     * <p>可直接用于 TextureRegistry 查找</p>
+     * <p>
+     * 可直接用于 TextureRegistry 查找
+     * </p>
      * 
      * @return 规范化的 path（如 {@code blocks/stone} 或 {@code items/diamond}）
      */
@@ -645,16 +727,20 @@ public final class CTMKey implements Comparable<CTMKey>, Serializable {
 
     /**
      * 获取完整查找键（用于 TextureRegistry 查找）
-     * <p>格式：{@code domain:blocks/xxx} 或 {@code domain:items/xxx}</p>
+     * <p>
+     * 格式：{@code domain:blocks/xxx} 或 {@code domain:items/xxx}
+     * </p>
      * 
      * @return 完整查找键
      */
     public String toCanonicalString() {
         StringBuilder sb = new StringBuilder();
-        sb.append(domain).append(':');
+        sb.append(domain)
+            .append(':');
         sb.append(path);
         if (variant != null) {
-            sb.append('&').append(variant);
+            sb.append('&')
+                .append(variant);
         }
         return sb.toString();
     }
@@ -666,11 +752,14 @@ public final class CTMKey implements Comparable<CTMKey>, Serializable {
 
     private String buildHashCodeString() {
         StringBuilder sb = new StringBuilder();
-        sb.append(domain).append(':');
-        sb.append(type.name()).append(':');
+        sb.append(domain)
+            .append(':');
+        sb.append(type.name())
+            .append(':');
         sb.append(path);
         if (variant != null) {
-            sb.append('&').append(variant);
+            sb.append('&')
+                .append(variant);
         }
         return sb.toString();
     }
@@ -684,8 +773,7 @@ public final class CTMKey implements Comparable<CTMKey>, Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         CTMKey ctmKey = (CTMKey) o;
-        return hashCode == ctmKey.hashCode 
-            && domain.equals(ctmKey.domain)
+        return hashCode == ctmKey.hashCode && domain.equals(ctmKey.domain)
             && type == ctmKey.type
             && path.equals(ctmKey.path)
             && Objects.equals(variant, ctmKey.variant);
@@ -739,6 +827,7 @@ public final class CTMKey implements Comparable<CTMKey>, Serializable {
     }
 
     private static class ParsedResult {
+
         String domain = "minecraft";
         Type type = Type.UNKNOWN;
         String path = "";

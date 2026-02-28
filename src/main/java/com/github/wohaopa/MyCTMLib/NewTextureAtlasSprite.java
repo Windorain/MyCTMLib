@@ -12,11 +12,10 @@ import net.minecraft.client.resources.IResource;
 import net.minecraft.client.resources.IResourceManager;
 import net.minecraft.util.ResourceLocation;
 
+import com.github.wohaopa.MyCTMLib.ctmkey.CTMKey;
 import com.github.wohaopa.MyCTMLib.texture.BaseTextureData;
-import com.github.wohaopa.MyCTMLib.texture.ConnectingTextureData;
-import com.github.wohaopa.MyCTMLib.texture.RandomTextureData;
+import com.github.wohaopa.MyCTMLib.texture.CTMTextureAtlasSprite;
 import com.github.wohaopa.MyCTMLib.texture.TextureRegistry;
-import com.github.wohaopa.MyCTMLib.texture.TextureTypeData;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -49,8 +48,7 @@ public class NewTextureAtlasSprite extends TextureAtlasSprite {
     @Override
     public boolean hasCustomLoader(IResourceManager manager, ResourceLocation location) {
         String key = toTextureKey(location);
-        TextureTypeData data = getConnectingData(key);
-        return data instanceof ConnectingTextureData || data instanceof RandomTextureData;
+        return hasConnectingOrRandomData(key);
     }
 
     /**
@@ -202,13 +200,23 @@ public class NewTextureAtlasSprite extends TextureAtlasSprite {
         return domain + ":" + path;
     }
 
-    private static TextureTypeData getConnectingData(String key) {
-        TextureTypeData data = TextureRegistry.getInstance()
-            .get(key);
-        if (data == null && key != null && key.indexOf(':') >= 0) {
-            data = TextureRegistry.getInstance()
-                .get(key.substring(key.indexOf(':') + 1));
+    private static boolean hasConnectingOrRandomData(String key) {
+        // 尝试从 CTMTextureAtlasSprite 获取信息
+        CTMKey ctmKey = CTMKey.from(CTMKey.Format.TEXTURE_KEY, key, CTMKey.TextureCategory.BLOCKS);
+        CTMTextureAtlasSprite sprite = TextureRegistry.getSprite(ctmKey);
+        if (sprite != null) {
+            // 检查是否有 Connecting 或 Random 特征
+            return sprite.getLayoutStyle() != null || sprite.getRandomCount() > 0;
         }
-        return data;
+
+        // 回退逻辑：尝试不带 domain 的 key
+        if (key != null && key.indexOf(':') >= 0) {
+            String shortKey = key.substring(key.indexOf(':') + 1);
+            ctmKey = CTMKey.from(CTMKey.Format.TEXTURE_KEY, shortKey, CTMKey.TextureCategory.BLOCKS);
+            sprite = TextureRegistry.getSprite(ctmKey);
+            return sprite != null && (sprite.getLayoutStyle() != null || sprite.getRandomCount() > 0);
+        }
+
+        return false;
     }
 }
