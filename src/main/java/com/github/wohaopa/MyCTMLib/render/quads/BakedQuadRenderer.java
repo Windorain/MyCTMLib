@@ -21,6 +21,9 @@ public final class BakedQuadRenderer {
 
         CTMTextureAtlasSprite sprite = quad.getSprite();
 
+        ctx.debug("  enableAO=" + ctx.isEnableAO());
+        ctx.debug("  Sprite: " + sprite.getIconName());
+
         ctx.setCtmSprite(sprite);
         ctx.setConnectionPredicate(quad.getPredicate());
 
@@ -40,10 +43,13 @@ public final class BakedQuadRenderer {
         UVDomain.calc(ctx);
         PositionDomain.calc(ctx);
 
-        if (ctx.getRenderBlocks().enableAO) {
+        if (ctx.isEnableAO()) {
+            ctx.trace("  Calling BrightnessDomain.computeAO()");
             BrightnessDomain.computeAO(ctx);
+            ctx.trace("  Calling ColorDomain.computeAO()");
             ColorDomain.computeAO(ctx);
         } else {
+            ctx.trace("  Calling computeUniform() (AO disabled)");
             BrightnessDomain.computeUniform(ctx);
             ColorDomain.computeUniform(ctx);
         }
@@ -61,6 +67,9 @@ public final class BakedQuadRenderer {
         assert ctx.getRenderBlocks() != null;
 
         CTMTextureAtlasSprite sprite = quad.getSprite();
+
+        ctx.debug("  enableAO=" + ctx.isEnableAO());
+        ctx.debug("  Sprite: " + sprite.getIconName());
 
         ctx.setCtmSprite(sprite);
 
@@ -80,10 +89,13 @@ public final class BakedQuadRenderer {
         UVDomain.calc(ctx);
         PositionDomain.calc(ctx);
 
-        if (ctx.getRenderBlocks().enableAO) {
+        if (ctx.isEnableAO()) {
+            ctx.trace("  Calling BrightnessDomain.setFullAO()");
             BrightnessDomain.setFullAO(ctx);
+            ctx.trace("  Calling ColorDomain.computeAO()");
             ColorDomain.computeAO(ctx);
         } else {
+            ctx.trace("  Calling setFullUniform() (AO disabled)");
             BrightnessDomain.setFullUniform(ctx);
             ColorDomain.computeUniform(ctx);
         }
@@ -103,6 +115,9 @@ public final class BakedQuadRenderer {
 
         CTMTextureAtlasSprite sprite = quad.getSprite();
 
+        ctx.debug("  enableAO=" + ctx.isEnableAO());
+        ctx.debug("  Sprite: " + sprite.getIconName());
+
         ctx.setCtmSprite(sprite);
 
         ctx.setDrawRelMinX(quad.getRelMinX());
@@ -121,10 +136,13 @@ public final class BakedQuadRenderer {
         UVDomain.calc(ctx);
         PositionDomain.calc(ctx);
 
-        if (ctx.getRenderBlocks().enableAO) {
+        if (ctx.isEnableAO()) {
+            ctx.trace("  Calling BrightnessDomain.computeAO()");
             BrightnessDomain.computeAO(ctx);
+            ctx.trace("  Calling ColorDomain.computeAO()");
             ColorDomain.computeAO(ctx);
         } else {
+            ctx.trace("  Calling computeUniform() (AO disabled)");
             BrightnessDomain.computeUniform(ctx);
             ColorDomain.computeUniform(ctx);
         }

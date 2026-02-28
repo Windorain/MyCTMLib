@@ -2,6 +2,7 @@ package com.github.wohaopa.MyCTMLib.render.pipeline;
 
 import java.util.List;
 
+import net.minecraft.client.Minecraft;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import com.github.wohaopa.MyCTMLib.model.ModelRegistry;
@@ -68,7 +69,14 @@ public class RenderPipeline {
     }
 
     private boolean executeBlockModelBranch(RenderContext ctx) {
+
         ctx.info("BLOCK: Executing block model branch");
+
+
+        boolean enableAO = Minecraft.isAmbientOcclusionEnabled() && ctx.getBlock().getLightValue() == 0;
+        ctx.setEnableAO(enableAO);
+        ctx.info("BLOCK: enableAO=" + enableAO);
+
 
         String modelId = ModelUtil.findModelId(ctx.getBlock(), ctx.getMeta());
         if (modelId == null) {
@@ -133,14 +141,16 @@ public class RenderPipeline {
             return;
         }
 
+        int quadIndex = 0;
+        
         if (sprite.getLayoutStyle() != null) {
-            ctx.trace(() -> "Rendering connecting quad for face " + ctx.getFace());
+            ctx.trace(">>> Quad #" + quadIndex + ": renderConnecting face=" + ctx.getFace());
             BakedQuadRenderer.renderConnecting(quad, ctx);
         } else if (sprite.getRandomCount() > 0) {
-            ctx.trace(() -> "Rendering random quad for face " + ctx.getFace());
+            ctx.trace(">>> Quad #" + quadIndex + ": renderRandom face=" + ctx.getFace());
             BakedQuadRenderer.renderRandom(quad, ctx);
         } else {
-            ctx.trace(() -> "Rendering base quad for face " + ctx.getFace());
+            ctx.trace(">>> Quad #" + quadIndex + ": renderBase face=" + ctx.getFace());
             BakedQuadRenderer.renderBase(quad, ctx);
         }
     }

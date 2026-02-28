@@ -165,6 +165,11 @@ public class RenderContext {
     @Setter
     private int biomeColor;
 
+    // ========== enableAO ==========
+    @Getter
+    @Setter
+    private boolean enableAO;
+
     // ========== 状态 ==========
     @Getter
     @Setter

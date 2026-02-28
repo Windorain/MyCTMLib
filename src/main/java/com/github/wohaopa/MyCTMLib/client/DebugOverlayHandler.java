@@ -97,10 +97,28 @@ public class DebugOverlayHandler {
         if (!ctx.getLog()
             .isEmpty()) {
             lines.add("");
-            lines.add("§f§l========== LOG ==========");
-            lines.addAll(
-                ctx.getLog()
-                    .getLines());
+            lines.add("§f§l========== LOG (Quad #0 only) ==========");
+            
+            List<String> allLines = ctx.getLog().getLines();
+            boolean skipUntilNextQuad = false;
+            int shownQuadCount = 0;
+            
+            for (String logLine : allLines) {
+                if (logLine.contains("Quad #")) {
+                    if (shownQuadCount >= 1) {
+                        skipUntilNextQuad = true;
+                        break;
+                    }
+                    shownQuadCount++;
+                }
+                if (!skipUntilNextQuad) {
+                    lines.add(logLine);
+                }
+            }
+            
+            if (shownQuadCount > 1) {
+                lines.add("§7[... " + (shownQuadCount - 1) + " more quads hidden ...]");
+            }
         }
 
         int lineHeight = mc.fontRenderer.FONT_HEIGHT;
