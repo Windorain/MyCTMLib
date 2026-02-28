@@ -35,7 +35,14 @@ public final class UVDomain {
         double iconMinV = ctx.getIconMinV();
         double iconMaxV = ctx.getIconMaxV();
 
-        ctx.info("UV: iconMinU=" + iconMinU + ", iconMaxU=" + iconMaxU + ", iconMinV=" + iconMinV + ", iconMaxV=" + iconMaxV);
+        ctx.info(
+            "UV: iconMinU=" + iconMinU
+                + ", iconMaxU="
+                + iconMaxU
+                + ", iconMinV="
+                + iconMinV
+                + ", iconMaxV="
+                + iconMaxV);
         ctx.info("UV: tileX=" + tileX + ", tileY=" + tileY);
         ctx.info("UV: gridW=" + gridW + ", gridH=" + gridH);
 
@@ -86,6 +93,15 @@ public final class UVDomain {
         ctx.setDrawMaxU(drawMaxU);
         ctx.setDrawMinV(drawMinV);
         ctx.setDrawMaxV(drawMaxV);
-        ctx.info("UV: face=" + face + ", drawMinU=" + drawMinU + ", drawMaxU=" + drawMaxU + ", drawMinV=" + drawMinV + ", drawMaxV=" + drawMaxV);
+        ctx.info(
+            "UV: face=" + face
+                + ", drawMinU="
+                + drawMinU
+                + ", drawMaxU="
+                + drawMaxU
+                + ", drawMinV="
+                + drawMinV
+                + ", drawMaxV="
+                + drawMaxV);
     }
 }

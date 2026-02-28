@@ -40,7 +40,6 @@ import com.github.wohaopa.MyCTMLib.CTMIconManager;
 import com.github.wohaopa.MyCTMLib.InterpolatedIcon;
 import com.github.wohaopa.MyCTMLib.MyCTMLib;
 import com.github.wohaopa.MyCTMLib.MyCTMLibMetadataSectionSerializer.MyCTMLibMetadataSection;
-
 import com.github.wohaopa.MyCTMLib.blockstate.BlockStateRegistry;
 import com.github.wohaopa.MyCTMLib.ctmkey.CTMKey;
 import com.github.wohaopa.MyCTMLib.model.ModelRegistry;
@@ -89,7 +88,7 @@ public abstract class MixinTextureMap extends AbstractTexture implements ITickab
                 // 关键修复：把预注册的 sprite 放入 mapRegisteredSprites
                 // 原版 registerIcon() 会做这件事，但我们 cancel() 了，所以需要手动做
                 mapRegisteredSprites.put(textureName, existing);
-                
+
                 // 已预注册，直接使用
                 cir.setReturnValue(existing);
                 cir.cancel();

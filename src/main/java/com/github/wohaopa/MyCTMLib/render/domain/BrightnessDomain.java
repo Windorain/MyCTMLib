@@ -251,8 +251,7 @@ public final class BrightnessDomain {
         ctx.setBrightnessBL(bl);
         ctx.setBrightnessBR(br);
 
-        ctx.debug(
-            "  Brightness: TL=" + tl + ", TR=" + tr + ", BL=" + bl + ", BR=" + br);
+        ctx.debug("  Brightness: TL=" + tl + ", TR=" + tr + ", BL=" + bl + ", BR=" + br);
     }
 
     /**
