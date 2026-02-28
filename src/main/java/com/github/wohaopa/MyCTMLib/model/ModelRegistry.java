@@ -37,18 +37,15 @@ public class ModelRegistry {
         String normalizedId = TextureKeyNormalizer.normalizeDomain(modelId);
         modelById.put(normalizedId, data);
 
-        try {
-            BakedModel baked = ModelBaker.bake(data);
-            bakedModelById.put(normalizedId, baked);
+            try {
+                BakedModel baked = ModelBaker.bake(data);
+                bakedModelById.put(normalizedId, baked);
 
-            CTMKey key = CTMKey.parse(normalizedId);
-            if (key == null) {
-                key = CTMKey.of(extractDomain(normalizedId), CTMKey.Type.MODEL, extractPath(normalizedId));
-            }
-            if (key != null) {
-                bakedModelByKey.put(key, baked);
-            }
-        } catch (Exception e) {
+                CTMKey key = CTMKey.from(CTMKey.Format.MODEL_ID, normalizedId);
+                if (key != null) {
+                    bakedModelByKey.put(key, baked);
+                }
+            } catch (Exception e) {
             if (MyCTMLib.debugMode) {
                 MyCTMLib.LOG.warn("[CTMLibFusion] Failed to bake model: " + modelId, e);
             }
@@ -102,23 +99,6 @@ public class ModelRegistry {
         if (!MyCTMLib.debugMode) return;
         MyCTMLib.LOG
             .info("[CTMLibFusion] ModelRegistry size={}, bakedSize={}", modelById.size(), bakedModelById.size());
-    }
-
-    private String extractDomain(String modelId) {
-        int colon = modelId.indexOf(':');
-        if (colon >= 0) {
-            return modelId.substring(0, colon)
-                .toLowerCase(java.util.Locale.ROOT);
-        }
-        return "minecraft";
-    }
-
-    private String extractPath(String modelId) {
-        int colon = modelId.indexOf(':');
-        if (colon >= 0) {
-            return modelId.substring(colon + 1);
-        }
-        return modelId;
     }
 
     @Deprecated

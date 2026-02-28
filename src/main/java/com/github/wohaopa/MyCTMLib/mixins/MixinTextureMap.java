@@ -42,6 +42,7 @@ import com.github.wohaopa.MyCTMLib.MyCTMLib;
 import com.github.wohaopa.MyCTMLib.MyCTMLibMetadataSectionSerializer.MyCTMLibMetadataSection;
 import com.github.wohaopa.MyCTMLib.NewTextureAtlasSprite;
 import com.github.wohaopa.MyCTMLib.blockstate.BlockStateRegistry;
+import com.github.wohaopa.MyCTMLib.ctmkey.CTMKey;
 import com.github.wohaopa.MyCTMLib.model.ModelRegistry;
 import com.github.wohaopa.MyCTMLib.resource.BlockTextureDumpUtil;
 import com.github.wohaopa.MyCTMLib.resource.DebugErrorCollector;
@@ -74,15 +75,22 @@ public abstract class MixinTextureMap extends AbstractTexture implements ITickab
     @Final
     private String basePath;
 
-    private TextureKeyNormalizer.TextureCategory getAtlasCategory() {
+    private CTMKey.TextureCategory getAtlasCategory() {
+        return (basePath != null && (basePath.contains("items"))) ? CTMKey.TextureCategory.ITEMS
+            : CTMKey.TextureCategory.BLOCKS;
+    }
+
+    private TextureKeyNormalizer.TextureCategory getAtlasCategoryForRegistry() {
         return (basePath != null && (basePath.contains("items"))) ? TextureKeyNormalizer.TextureCategory.ITEMS
             : TextureKeyNormalizer.TextureCategory.BLOCKS;
     }
 
     private void registerCanonicalToMapKey(String mapKey) {
         if (mapKey == null) return;
+        CTMKey key = CTMKey.from(CTMKey.Format.TEXTURE_KEY, mapKey, getAtlasCategory());
+        if (key == null) return;
         TextureRegistry.getInstance()
-            .putCanonicalToMapKey(TextureKeyNormalizer.toCanonicalTextureKey(mapKey), mapKey, getAtlasCategory());
+            .putCanonicalToMapKey(key.toCanonicalString(), mapKey, getAtlasCategoryForRegistry());
     }
 
     @Inject(
@@ -108,11 +116,11 @@ public abstract class MixinTextureMap extends AbstractTexture implements ITickab
             try {
                 IMetadataSection ctmlibSec = resource.getMetadata("ctmlib");
                 if (ctmlibSec != null && ctmlibSec instanceof TextureMetadataSection) {
-                    String canonicalKey = TextureKeyNormalizer.toCanonicalTextureKey(textureName);
-                    if (canonicalKey != null) {
+                    CTMKey key = CTMKey.from(CTMKey.Format.TEXTURE_KEY, textureName, getAtlasCategory());
+                    if (key != null) {
                         ctmlibData = ((TextureMetadataSection) ctmlibSec).getData();
                         TextureRegistry.getInstance()
-                            .put(canonicalKey, ctmlibData);
+                            .put(key.toCanonicalString(), ctmlibData);
                     }
                     hadCtmlib = true;
                 }
@@ -191,8 +199,9 @@ public abstract class MixinTextureMap extends AbstractTexture implements ITickab
             currentBase = useInterpolation(simple) ? new InterpolatedIcon(textureName)
                 : new NewTextureAtlasSprite(textureName);
             if (hadCtmlib && currentBase instanceof NewTextureAtlasSprite ntas) {
+                CTMKey key = CTMKey.from(CTMKey.Format.TEXTURE_KEY, textureName, getAtlasCategory());
                 com.github.wohaopa.MyCTMLib.texture.TextureTypeData ttd = TextureRegistry.getInstance()
-                    .get(TextureKeyNormalizer.toCanonicalTextureKey(textureName));
+                    .get(key != null ? key.toCanonicalString() : null);
                 if (ttd instanceof BaseTextureData baseData) {
                     ntas.setData(baseData);
                 }

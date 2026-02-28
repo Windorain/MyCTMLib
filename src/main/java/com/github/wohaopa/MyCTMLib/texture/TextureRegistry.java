@@ -11,6 +11,7 @@ import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.util.IIcon;
 
 import com.github.wohaopa.MyCTMLib.MyCTMLib;
+import com.github.wohaopa.MyCTMLib.ctmkey.CTMKey;
 import com.github.wohaopa.MyCTMLib.mixins.AccessorTextureMap;
 
 /**
@@ -38,16 +39,26 @@ public class TextureRegistry {
 
     public void put(String texturePath, TextureTypeData data) {
         if (texturePath == null || data == null) return;
-        String canonicalKey = TextureKeyNormalizer.toCanonicalTextureKey(texturePath);
-        if (canonicalKey == null) return;
-        pathToData.put(canonicalKey, data);
+        CTMKey.TextureCategory category = getCategoryFromPath(texturePath);
+        CTMKey key = CTMKey.from(CTMKey.Format.TEXTURE_KEY, texturePath, category);
+        if (key == null) return;
+        pathToData.put(key.toCanonicalString(), data);
     }
 
     public TextureTypeData get(String texturePath) {
         if (texturePath == null) return null;
-        String canonicalKey = TextureKeyNormalizer.toCanonicalTextureKey(texturePath);
-        if (canonicalKey == null) return null;
-        return pathToData.get(canonicalKey);
+        CTMKey.TextureCategory category = getCategoryFromPath(texturePath);
+        CTMKey key = CTMKey.from(CTMKey.Format.TEXTURE_KEY, texturePath, category);
+        if (key == null) return null;
+        return pathToData.get(key.toCanonicalString());
+    }
+
+    private CTMKey.TextureCategory getCategoryFromPath(String texturePath) {
+        if (texturePath == null) return CTMKey.TextureCategory.BLOCKS;
+        if (texturePath.contains("items/") || texturePath.contains(":items/")) {
+            return CTMKey.TextureCategory.ITEMS;
+        }
+        return CTMKey.TextureCategory.BLOCKS;
     }
 
     /**
@@ -73,8 +84,10 @@ public class TextureRegistry {
      */
     public IIcon getIcon(String texturePath, TextureKeyNormalizer.TextureCategory category) {
         if (texturePath == null) return null;
-        String canonicalKey = TextureKeyNormalizer.toCanonicalTextureKey(texturePath);
-        if (canonicalKey == null) return null;
+        CTMKey.TextureCategory ctmCategory = convertCategory(category);
+        CTMKey key = CTMKey.from(CTMKey.Format.TEXTURE_KEY, texturePath, ctmCategory);
+        if (key == null) return null;
+        String canonicalKey = key.toCanonicalString();
         if (get(canonicalKey) == null) return null;
         net.minecraft.util.ResourceLocation texMapLoc = TextureKeyNormalizer.getTextureMapLocation(category);
         Object texObj = Minecraft.getMinecraft()
@@ -121,5 +134,14 @@ public class TextureRegistry {
     public void dumpForDebug() {
         if (!MyCTMLib.debugMode) return;
         MyCTMLib.LOG.info("[CTMLibFusion] TextureRegistry size={}", pathToData.size());
+    }
+
+    private CTMKey.TextureCategory convertCategory(TextureKeyNormalizer.TextureCategory category) {
+        if (category == null) return CTMKey.TextureCategory.BLOCKS;
+        switch (category) {
+            case ITEMS: return CTMKey.TextureCategory.ITEMS;
+            case BLOCKS: return CTMKey.TextureCategory.BLOCKS;
+            default: return CTMKey.TextureCategory.BLOCKS;
+        }
     }
 }

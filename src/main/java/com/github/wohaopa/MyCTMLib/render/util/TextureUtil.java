@@ -3,11 +3,12 @@ package com.github.wohaopa.MyCTMLib.render.util;
 import net.minecraft.util.IIcon;
 import net.minecraftforge.common.util.ForgeDirection;
 
+import com.github.wohaopa.MyCTMLib.ctmkey.CTMKey;
 import com.github.wohaopa.MyCTMLib.model.ModelData;
 import com.github.wohaopa.MyCTMLib.model.ModelElement;
 import com.github.wohaopa.MyCTMLib.model.ModelFace;
-import com.github.wohaopa.MyCTMLib.texture.CTMReLoc;
 import com.github.wohaopa.MyCTMLib.texture.CTMTextureAtlasSprite;
+import com.github.wohaopa.MyCTMLib.texture.CTMReLoc;
 import com.github.wohaopa.MyCTMLib.texture.TextureKeyNormalizer;
 
 /**
@@ -57,7 +58,8 @@ public final class TextureUtil {
         // Step 2: 转为 canonical key
         String modelId = getModelIdFromModelData(modelData);
         String domain = extractDomain(modelId);
-        String textureKey = TextureKeyNormalizer.toCanonicalTextureKey(domain, texturePath);
+        CTMKey key = CTMKey.from(CTMKey.Format.TEXTURE_KEY, domain + ":" + texturePath, CTMKey.TextureCategory.BLOCKS);
+        String textureKey = key != null ? key.toCanonicalString() : null;
         if (textureKey == null) return null;
 
         // Step 3: 查找 CTM sprite

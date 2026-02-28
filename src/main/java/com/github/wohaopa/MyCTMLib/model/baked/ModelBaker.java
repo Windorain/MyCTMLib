@@ -98,10 +98,7 @@ public final class ModelBaker {
 
             String resolved = resolveTexturePath(value, textures, new HashSet<>());
             if (resolved != null) {
-                CTMKey ctmKey = CTMKey.parse(resolved);
-                if (ctmKey == null) {
-                    ctmKey = CTMKey.parse("minecraft:" + resolved);
-                }
+                CTMKey ctmKey = CTMKey.from(CTMKey.Format.MODEL_TEXTURE, resolved);
                 if (ctmKey != null) {
                     result.put(key, ctmKey);
                 }
@@ -120,6 +117,9 @@ public final class ModelBaker {
         try {
             String v = textures.get(key);
             if (v == null && key.startsWith("#")) v = textures.get(lookupKey);
+            if (v == null && !key.startsWith("#")) {
+                return key;
+            }
             if (v != null && v.startsWith("#")) {
                 return resolveTexturePath(v, textures, visiting);
             }

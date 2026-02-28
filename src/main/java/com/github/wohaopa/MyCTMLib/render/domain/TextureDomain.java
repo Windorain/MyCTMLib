@@ -2,6 +2,7 @@ package com.github.wohaopa.MyCTMLib.render.domain;
 
 import net.minecraft.util.IIcon;
 
+import com.github.wohaopa.MyCTMLib.ctmkey.CTMKey;
 import com.github.wohaopa.MyCTMLib.model.ModelFace;
 import com.github.wohaopa.MyCTMLib.render.context.RenderContext;
 import com.github.wohaopa.MyCTMLib.render.util.TextureUtil;
@@ -55,7 +56,8 @@ public final class TextureDomain {
 
         String modelId = getModelIdFromModelData(ctx.getModelData());
         String domain = extractDomain(modelId);
-        String textureKey = TextureKeyNormalizer.toCanonicalTextureKey(domain, texturePath);
+        CTMKey key = CTMKey.from(CTMKey.Format.TEXTURE_KEY, domain + ":" + texturePath, CTMKey.TextureCategory.BLOCKS);
+        String textureKey = key != null ? key.toCanonicalString() : null;
         if (textureKey == null) {
             ctx.warn("TEXTURE: Failed to create textureKey");
             return false;

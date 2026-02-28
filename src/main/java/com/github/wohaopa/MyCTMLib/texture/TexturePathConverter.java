@@ -2,6 +2,8 @@ package com.github.wohaopa.MyCTMLib.texture;
 
 import net.minecraft.util.ResourceLocation;
 
+import com.github.wohaopa.MyCTMLib.ctmkey.CTMKey;
+
 /**
  * 纹理路径转换工具。
  * <p>
@@ -66,31 +68,32 @@ public final class TexturePathConverter {
      */
     private static String normalizeToCanonical(TexturePathSource source, String path, String defaultDomain) {
         switch (source) {
-            case MODEL_TEXTURES:
-                // 模型纹理：必须有 block/ 或 item/ 前缀
-                return TextureKeyNormalizer.toCanonicalTextureKey(defaultDomain, path);
+            case MODEL_TEXTURES: {
+                String input = defaultDomain != null ? defaultDomain + ":" + path : path;
+                CTMKey key = CTMKey.from(CTMKey.Format.MODEL_TEXTURE, input);
+                return key != null ? key.toCanonicalString() : null;
+            }
 
-            case REGISTER_ICON:
-                // registerIcon 参数：可能包含 domain，也可能不包含
-                if (path.contains(":")) {
-                    return TextureKeyNormalizer.toCanonicalTextureKey(path);
-                } else {
-                    return TextureKeyNormalizer.toCanonicalTextureKey(defaultDomain, path);
-                }
+            case REGISTER_ICON: {
+                String input = path.contains(":") ? path : (defaultDomain != null ? defaultDomain + ":" + path : path);
+                CTMKey key = CTMKey.from(CTMKey.Format.TEXTURE_KEY, input, CTMKey.TextureCategory.BLOCKS);
+                return key != null ? key.toCanonicalString() : null;
+            }
 
-            case RESOURCE_LOCATION_PATH:
-                // ResourceLocation.getResourcePath() 返回的路径
-                // 需要调用方提供 domain
-                return TextureKeyNormalizer.toCanonicalTextureKey(defaultDomain, path);
+            case RESOURCE_LOCATION_PATH: {
+                String input = defaultDomain != null ? defaultDomain + ":" + path : path;
+                CTMKey key = CTMKey.from(CTMKey.Format.TEXTURE_KEY, input, CTMKey.TextureCategory.BLOCKS);
+                return key != null ? key.toCanonicalString() : null;
+            }
 
             case CONFIG_FILE:
-            case IC2_CONFIG:
-                // 配置文件：可能包含完整路径，需要清理
+            case IC2_CONFIG: {
                 String cleaned = cleanConfigPath(path);
-                return TextureKeyNormalizer.toCanonicalTextureKey(cleaned);
+                CTMKey key = CTMKey.from(CTMKey.Format.TEXTURE_KEY, cleaned, CTMKey.TextureCategory.BLOCKS);
+                return key != null ? key.toCanonicalString() : null;
+            }
 
             case MODEL_TEXTURE_REF:
-                // #key 引用，需要解析
                 throw new IllegalArgumentException(
                     "MODEL_TEXTURE_REF requires texture map for resolution, use resolveModelTextureRef() instead");
 

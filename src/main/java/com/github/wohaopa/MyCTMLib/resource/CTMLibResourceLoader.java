@@ -20,6 +20,7 @@ import net.minecraft.util.ResourceLocation;
 import com.github.wohaopa.MyCTMLib.MyCTMLib;
 import com.github.wohaopa.MyCTMLib.blockstate.BlockStateParser;
 import com.github.wohaopa.MyCTMLib.blockstate.BlockStateRegistry;
+import com.github.wohaopa.MyCTMLib.ctmkey.CTMKey;
 import com.github.wohaopa.MyCTMLib.model.ModelData;
 import com.github.wohaopa.MyCTMLib.model.ModelParser;
 import com.github.wohaopa.MyCTMLib.model.ModelRegistry;
@@ -253,7 +254,8 @@ public class CTMLibResourceLoader implements net.minecraft.client.resources.IRes
         }
         TextureRegistry texReg = TextureRegistry.getInstance();
         for (String texturePath : resolvedPaths) {
-            String lookupKey = TextureKeyNormalizer.toCanonicalTextureKey(modelDomain, texturePath);
+            CTMKey key = CTMKey.from(CTMKey.Format.TEXTURE_KEY, modelDomain + ":" + texturePath, CTMKey.TextureCategory.BLOCKS);
+            String lookupKey = key != null ? key.toCanonicalString() : null;
             if (lookupKey == null) {
                 if (MyCTMLib.debugMode) {
                     MyCTMLib.LOG.warn(
@@ -422,8 +424,9 @@ public class CTMLibResourceLoader implements net.minecraft.client.resources.IRes
      * @see TextureKeyNormalizer#toCanonicalTextureKey(String, String)
      */
     private static ResourceLocation toTextureResourceLocation(String modelDomain, String texturePath) {
-        String canonical = TextureKeyNormalizer.toCanonicalTextureKey(modelDomain, texturePath);
-        if (canonical == null) return null;
+        CTMKey key = CTMKey.from(CTMKey.Format.TEXTURE_KEY, modelDomain + ":" + texturePath, CTMKey.TextureCategory.BLOCKS);
+        if (key == null) return null;
+        String canonical = key.toCanonicalString();
         int colon = canonical.indexOf(':');
         if (colon < 0) return null;
         String domain = canonical.substring(0, colon);
