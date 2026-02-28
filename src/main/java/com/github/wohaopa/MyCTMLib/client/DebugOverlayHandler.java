@@ -65,7 +65,7 @@ public class DebugOverlayHandler {
         ctx.setMeta(meta);
         ctx.setFace(hitFace);
         ctx.setOriginalIcon(block.getIcon(hitSide, meta));
-        // dryRun 不需要 renderBlocks
+        ctx.setRenderBlocks(new net.minecraft.client.renderer.RenderBlocks(world));
 
         PIPELINE.executeDryRun(ctx);
 
