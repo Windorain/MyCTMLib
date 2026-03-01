@@ -303,7 +303,7 @@ public class CTMLibResourceLoader implements net.minecraft.client.resources.IRes
 
             // 构建资源位置
             String texPath = key.to(CTMKey.Format.TEXTURE_RESOURCE_LOCATION);
-            ResourceLocation texRes = new ResourceLocation(texPath);
+            ResourceLocation texRes = new ResourceLocation(key.domain(), texPath);
             String fullPath = "assets/" + texRes.getResourceDomain() + "/" + texRes.getResourcePath() + ".png";
 
             try {
