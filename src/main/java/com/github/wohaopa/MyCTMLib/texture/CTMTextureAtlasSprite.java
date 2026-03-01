@@ -172,7 +172,20 @@ public class CTMTextureAtlasSprite extends TextureAtlasSprite {
         try {
             ResourceLocation fullLocation;
             if (this.key != null) {
-                String resourcePath = this.key.to(CTMKey.Format.TEXTURE_RESOURCE_LOCATION) + ".png";
+                // 使用 CTMKey 字段手动构造正确的路径
+                String purePath = this.key.path();
+                if (purePath.startsWith("blocks/")) {
+                    purePath = purePath.substring("blocks/".length());
+                } else if (purePath.startsWith("items/")) {
+                    purePath = purePath.substring("items/".length());
+                }
+
+                String resourcePath;
+                if (this.key.textureCategory() == CTMKey.TextureCategory.ITEMS) {
+                    resourcePath = this.key.domain() + ":textures/items/" + purePath + ".png";
+                } else {
+                    resourcePath = this.key.domain() + ":textures/blocks/" + purePath + ".png";
+                }
                 fullLocation = new ResourceLocation(resourcePath);
             } else {
                 String path = location.getResourcePath();

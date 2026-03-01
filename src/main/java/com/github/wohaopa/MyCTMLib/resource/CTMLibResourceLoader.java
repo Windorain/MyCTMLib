@@ -301,9 +301,21 @@ public class CTMLibResourceLoader implements net.minecraft.client.resources.IRes
                 continue;
             }
 
-            // 构建资源位置
-            String texPath = key.to(CTMKey.Format.TEXTURE_RESOURCE_LOCATION);
-            ResourceLocation texRes = new ResourceLocation(key.domain(), texPath);
+            // 构建资源位置 - 使用 CTMKey 字段手动构造正确的路径
+            String purePath = key.path();
+            if (purePath.startsWith("blocks/")) {
+                purePath = purePath.substring("blocks/".length());
+            } else if (purePath.startsWith("items/")) {
+                purePath = purePath.substring("items/".length());
+            }
+
+            String texPath;
+            if (key.textureCategory() == CTMKey.TextureCategory.ITEMS) {
+                texPath = key.domain() + ":textures/items/" + purePath;
+            } else {
+                texPath = key.domain() + ":textures/blocks/" + purePath;
+            }
+            ResourceLocation texRes = new ResourceLocation(texPath);
             String fullPath = "assets/" + texRes.getResourceDomain() + "/" + texRes.getResourcePath() + ".png";
 
             try {
