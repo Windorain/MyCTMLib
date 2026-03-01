@@ -329,8 +329,7 @@ public class CTMLibResourceLoader implements net.minecraft.client.resources.IRes
                     TextureTypeData typeData = tms.getData();
 
                     // 创建 CTMTextureAtlasSprite
-                    String iconName = key.to(CTMKey.Format.TEXTURE_KEY);
-                    CTMTextureAtlasSprite sprite = new CTMTextureAtlasSprite(iconName);
+                    CTMTextureAtlasSprite sprite = new CTMTextureAtlasSprite(key);
 
                     // 设置 CTM 字段
                     if (typeData instanceof ConnectingTextureData ctd) {

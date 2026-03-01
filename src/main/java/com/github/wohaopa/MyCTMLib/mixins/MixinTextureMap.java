@@ -125,27 +125,27 @@ public abstract class MixinTextureMap extends AbstractTexture implements ITickab
                         ctmlibData = ((TextureMetadataSection) ctmlibSec).getData();
 
                         // 创建 CTMTextureAtlasSprite
-                        CTMTextureAtlasSprite ctmSprite = new CTMTextureAtlasSprite(textureName + "_ctm");
+                        CTMTextureAtlasSprite sprite = new CTMTextureAtlasSprite(key);
 
                         // 设置 CTM 字段
                         if (ctmlibData instanceof ConnectingTextureData ctd) {
                             LayoutHandler handler = LayoutHandlers.get(ctd.getLayout());
-                            ctmSprite.setGridWidth(handler.getWidth());
-                            ctmSprite.setGridHeight(handler.getHeight());
-                            ctmSprite.setLayoutStyle(ctd.getLayout());
+                            sprite.setGridWidth(handler.getWidth());
+                            sprite.setGridHeight(handler.getHeight());
+                            sprite.setLayoutStyle(ctd.getLayout());
                         } else if (ctmlibData instanceof RandomTextureData rtd) {
-                            ctmSprite.setGridWidth(rtd.getColumns());
-                            ctmSprite.setGridHeight(rtd.getRows());
-                            ctmSprite.setRandomCount(rtd.getCount());
-                            ctmSprite.setRandomSeed(rtd.getSeed() != null ? rtd.getSeed() : 0L);
+                            sprite.setGridWidth(rtd.getColumns());
+                            sprite.setGridHeight(rtd.getRows());
+                            sprite.setRandomCount(rtd.getCount());
+                            sprite.setRandomSeed(rtd.getSeed() != null ? rtd.getSeed() : 0L);
                         } else if (ctmlibData instanceof BaseTextureData btd) {
-                            ctmSprite.setRenderType(btd.getRenderType());
-                            ctmSprite.setEmissive(btd.isEmissive());
-                            ctmSprite.setTinting(btd.getTinting());
+                            sprite.setRenderType(btd.getRenderType());
+                            sprite.setEmissive(btd.isEmissive());
+                            sprite.setTinting(btd.getTinting());
                         }
 
                         // 注册到 TextureRegistry
-                        TextureRegistry.put(key, ctmSprite);
+                        TextureRegistry.put(key, sprite);
 
                         hadCtmlib = true;
                     }

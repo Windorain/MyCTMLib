@@ -12,6 +12,7 @@ import net.minecraft.client.resources.IResource;
 import net.minecraft.client.resources.IResourceManager;
 import net.minecraft.util.ResourceLocation;
 
+import com.github.wohaopa.MyCTMLib.ctmkey.CTMKey;
 import com.github.wohaopa.MyCTMLib.texture.BaseTextureData.QuadTinting;
 import com.github.wohaopa.MyCTMLib.texture.BaseTextureData.RenderType;
 import com.github.wohaopa.MyCTMLib.texture.layout.ConnectingLayout;
@@ -35,6 +36,13 @@ import lombok.Setter;
 public class CTMTextureAtlasSprite extends TextureAtlasSprite {
 
     // ========== CTM 配置字段 ==========
+
+    /**
+     * 关联的 CTMKey（用于 load() 时拼接资源路径）
+     */
+    @Getter
+    @Setter
+    private CTMKey key;
 
     /**
      * 网格宽度（用于 Random 和 Connecting 纹理）
@@ -95,7 +103,17 @@ public class CTMTextureAtlasSprite extends TextureAtlasSprite {
     // ========== 构造函数 ==========
 
     /**
-     * 构造函数
+     * 构造函数（推荐使用）
+     * 
+     * @param key CTMKey（包含完整的路径和类别信息）
+     */
+    public CTMTextureAtlasSprite(CTMKey key) {
+        super(key.to(CTMKey.Format.TEXTURE_KEY));
+        this.key = key;
+    }
+
+    /**
+     * 构造函数（兼容旧代码）
      * 
      * @param iconName 纹理名称（通常带 _ctm 后缀）
      */
@@ -151,10 +169,17 @@ public class CTMTextureAtlasSprite extends TextureAtlasSprite {
     @Override
     public boolean load(IResourceManager manager, ResourceLocation location) {
         resetSprite();
-        String path = location.getResourcePath();
-        String resourcePath = "textures/blocks/" + path + ".png";
-        ResourceLocation fullLocation = new ResourceLocation(location.getResourceDomain(), resourcePath);
         try {
+            ResourceLocation fullLocation;
+            if (this.key != null) {
+                String resourcePath = this.key.to(CTMKey.Format.TEXTURE_RESOURCE_LOCATION) + ".png";
+                fullLocation = new ResourceLocation(resourcePath);
+            } else {
+                String path = location.getResourcePath();
+                String resourcePath = "textures/blocks/" + path + ".png";
+                fullLocation = new ResourceLocation(location.getResourceDomain(), resourcePath);
+            }
+
             IResource resource = manager.getResource(fullLocation);
             try (InputStream in = resource.getInputStream()) {
                 BufferedImage img = ImageIO.read(in);
